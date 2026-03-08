@@ -1,0 +1,84 @@
+<section style="background: linear-gradient(135deg, #1A73E8 0%, #0D47A1 100%); padding: 100px 10%; color: white; margin-top: 0;">
+    <h1 style="font-weight: 900; font-size: 56px; margin: 0; letter-spacing: -2px; text-transform: uppercase;">Get in Touch</h1>
+    <p style="font-size: 22px; opacity: 0.9; margin-top: 15px; max-width: 600px;">Have questions about your @{{serviceDomain}} account? Our support team is ready to assist you 24/7.</p>
+</section>
+
+<div class="container-fluid" style="padding: 100px 10%; background: #ffffff;">
+    <div class="row" style="margin: 0;">
+        
+        <div class="col-md-7" style="padding-right: 60px;">
+            <h3 style="font-weight: 900; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 1px; color: #333;">Send us a Message</h3>
+            
+            <form action="/contact" method="POST">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group" style="margin-bottom: 25px;">
+                            <label style="text-transform: uppercase; font-size: 11px; font-weight: 700; color: #999; letter-spacing: 1px;">Full Name</label>
+                            <input type="text" name="name" class="form-control" placeholder="Gaurav Dhamija" style="border-radius: 0; border: 2px solid #eee; box-shadow: none; height: 55px; font-size: 16px;" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group" style="margin-bottom: 25px;">
+                            <label style="text-transform: uppercase; font-size: 11px; font-weight: 700; color: #999; letter-spacing: 1px;">Email Address</label>
+                            <input type="email" name="email" class="form-control" placeholder="name@example.com" style="border-radius: 0; border: 2px solid #eee; box-shadow: none; height: 55px; font-size: 16px;" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 25px;">
+                    <label style="text-transform: uppercase; font-size: 11px; font-weight: 700; color: #999; letter-spacing: 1px;">Subject</label>
+                    <select name="subject" class="form-control" style="border-radius: 0; border: 2px solid #eee; box-shadow: none; height: 55px; font-size: 16px; appearance: none;">
+                        <option>General Inquiry</option>
+                        <option>Technical Support</option>
+                        <option>Billing & Payments</option>
+                        <option>Business Partnership</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 25px;">
+                    <label style="text-transform: uppercase; font-size: 11px; font-weight: 700; color: #999; letter-spacing: 1px;">Your Message</label>
+                    <textarea name="message" rows="8" class="form-control" placeholder="How can we help you today?" style="border-radius: 0; border: 2px solid #eee; box-shadow: none; resize: none; font-size: 16px; padding: 15px;" required></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg" style="border-radius: 0; padding: 18px 50px; background: #1A73E8; border: none; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; margin-top: 10px; width: 100%;">
+                    SEND MESSAGE
+                </button>
+            </form>
+        </div>
+
+        <div class="col-md-5" style="background: #fbfcfd; padding: 60px; border: 1px solid #f0f0f0;">
+            <h3 style="font-weight: 900; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 1px; color: #333;">Support Channels</h3>
+            
+            <div style="margin-bottom: 45px;">
+                <h5 style="font-weight: 900; color: #1A73E8; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; margin-bottom: 15px;">Direct Email</h5>
+                <p style="font-size: 20px; font-weight: 700; color: #333; margin: 0;">support@{{serviceDomain}}</p>
+                <p style="font-size: 14px; color: #777; margin-top: 5px;">We typically respond within 2-4 business hours.</p>
+            </div>
+
+            <div style="margin-bottom: 45px;">
+                <h5 style="font-weight: 900; color: #1A73E8; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; margin-bottom: 15px;">Technical Docs</h5>
+                <p style="font-size: 16px; color: #555; line-height: 1.6;">Check our <a href="/help" style="color: #1A73E8; font-weight: 700; text-decoration: underline;">Help Center</a> for SMTP/IMAP settings and security guides.</p>
+            </div>
+
+            <div style="border-top: 1px solid #eee; padding-top: 40px;">
+                <h5 style="font-weight: 900; color: #333; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; margin-bottom: 15px;">Office Hours</h5>
+                <p style="font-size: 16px; color: #555; margin: 0;">Monday – Friday</p>
+                <p style="font-size: 16px; color: #555; font-weight: 700;">9:00 AM – 6:00 PM (IST)</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section style="background: #f8f9fa; padding: 60px 10%; border-top: 1px solid #eee; text-align: center;">
+    <p style="color: #888; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0;">
+        Yoover Secure Mail — Protecting your digital conversations since 2017.
+    </p>
+</section>
+
+<style>
+    /* Focus effects for the sharp inputs */
+    .form-control:focus {
+        border-color: #1A73E8 !important;
+        background: #fff;
+    }
+</style>

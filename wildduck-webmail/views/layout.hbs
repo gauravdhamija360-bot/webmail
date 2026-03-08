@@ -1,24 +1,95 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     {{>header}}
+    <style>
+        /* 1. Global Reset - Eliminates the "Ghost Margin" */
+        html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow-x: hidden;
+            background-color: #ffffff;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            /* 🚀 SPACE FOR THE FIXED NAV: Matches the 85px navbar height */
+            padding-top: 0px !important; 
+        }
+
+        /* 2. Navbar Absolute Reset */
+        .navbar-fixed-top {
+            top: 0 !important;
+            margin: 0 !important;
+            border-top: none !important;
+            width: 100%;
+        }
+
+        /* 3. Main Content Wrapper */
+        .main-content-wrapper {
+            width: 100%;
+            padding: 0;
+            margin: 0;
+            display: block;
+            position: relative;
+        }
+
+        /* 4. Flash Messages (Floating below the Blur) */
+        .flash-messages {
+            position: fixed;
+            top: 100px;
+            right: 30px;
+            z-index: 10001;
+            min-width: 320px;
+        }
+
+        /* 5. Sharp Edge Branding */
+        .alert, .btn, .modal-content, .dropdown-menu, .form-control {
+            border-radius: 0 !important;
+        }
+
+        
+
+        /* Utility: Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #1A73E8; }
+        ::-webkit-scrollbar-thumb:hover { background: #0D47A1; }
+
+        .alert-animate {
+            animation: slideDownFade 0.5s ease forwards;
+        }
+
+        @keyframes slideDownFade {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
 
-<body{{#if user}} class="is-logged-in"{{/if}}>
+<body{{#if user}} class="is-logged-in"{{/if}}{{#if isHome}} class="home-page"{{/if}}>
 
     {{>navbar}}
+
     <div class="flash-messages">
         {{flash_messages}}
     </div>
 
-
-
-    <div class="container">
+    <div class="main-content-wrapper">
 
         {{#if generalNotification}}
-        <div class="panel panel-warning">
-            <div class="panel-heading">{{{generalNotification}}}</div>
+        <div class="container-fluid alert-animate" style="padding: 0; margin-bottom: 0;">
+            <div class="alert alert-info alert-dismissible" role="alert" style="background: #1A73E8; color: white; border: none; padding: 25px 5%; margin: 0;">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close" style="color: white; opacity: 1; top: 18px; right: 5%;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <div style="display: flex; align-items: center; justify-content: center;">
+                    <span class="glyphicon glyphicon-bullhorn" style="margin-right: 15px; font-size: 20px;"></span> 
+                    <span style="font-weight: 600; font-size: 16px;">{{{generalNotification}}}</span>
+                </div>
+            </div>
         </div>
         {{/if}}
 
@@ -26,12 +97,178 @@
 
     </div>
 
-    <footer class="footer">
-        <div class="container">
-            <p class="text-muted">&copy; 2017 <a href="/">{{serviceName}}</a>. <a
-                    href="mailto:info@{{serviceDomain}}">info@{{serviceDomain}}</a>. </p>
+    <footer class="yoover-footer-elite">
+    <div class="container-fluid">
+        <div class="row footer-grid">
+            
+            <div class="col-md-4 footer-section-brand">
+                <img src="/images/duck.png" alt="Yoover Logo" class="footer-logo-white">
+                <p class="brand-mission">
+                    Engineering a private future through decentralized architecture and zero-compromise encryption.
+                </p>
+                <div class="status-indicator">
+                    <span class="status-dot"></span>
+                    <span class="status-text">SYSTEMS OPERATIONAL: 100% UP-TIME</span>
+                </div>
+            </div>
+
+            <div class="col-md-2 col-sm-4 col-xs-6 footer-col">
+                <h4>PLATFORM</h4>
+                <a href="/">Home</a>
+                <a href="/purchase">Pricing</a>
+                <a href="/account/login">Log In</a>
+                {{#if allowJoin}}<a href="/account/create">Create Account</a>{{/if}}
+            </div>
+
+            <div class="col-md-2 col-sm-4 col-xs-6 footer-col">
+                <h4>RESOURCES</h4>
+                <a href="/help">Documentation</a>
+                <a href="/contact">Contact Support</a>
+                <a href="/help#setup">Setup Guides</a>
+                <a href="/help#faq">FAQ</a>
+            </div>
+
+            <div class="col-md-2 col-sm-4 col-xs-6 footer-col">
+                <h4>COMPLIANCE</h4>
+                <a href="/terms">Terms of Service</a>
+                <a href="/privacy">Privacy Policy</a>
+                <a href="/privacy#encryption">Encryption Specs</a>
+                <a href="/privacy#gdpr">GDPR Rights</a>
+            </div>
+
+            <div class="col-md-2 col-sm-4 col-xs-6 footer-col text-right-md">
+                <h4>SECURITY</h4>
+                <div class="secure-badge-box">
+                    <span class="glyphicon glyphicon-shield"></span>
+                    <div class="badge-text">SSL SECURED</div>
+                </div>
+                <div class="secure-badge-box">
+                    <span class="glyphicon glyphicon-lock"></span>
+                    <div class="badge-text">AES-256</div>
+                </div>
+            </div>
         </div>
-    </footer>
+
+        <div class="footer-bottom">
+            <div class="row">
+                <div class="col-sm-6 text-left-sm">
+                    <p class="copyright">
+                        &copy; 2026 <strong>{{serviceName}}</strong>. AUTHENTICATED VIA <span class="highlight">{{serviceDomain}}</span>
+                    </p>
+                </div>
+                <div class="col-sm-6 text-right-sm">
+                    <p class="motto">PRIVACY IS NOT A FEATURE, IT'S A HUMAN RIGHT.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* 1. FOOTER BASE */
+    .yoover-footer-elite {
+        background-color: #000;
+        padding: 100px 5% 40px;
+        color: #ffffff;
+        border-top: 1px solid #111;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .footer-grid { margin-bottom: 60px; }
+
+    /* 2. BRANDING SECTION */
+    .footer-logo-white { height: 40px; filter: brightness(0) invert(1); margin-bottom: 25px; }
+    .brand-mission { 
+        color: #666; 
+        font-size: 13px; 
+        line-height: 1.8; 
+        max-width: 300px; 
+        margin-bottom: 30px;
+        font-weight: 500;
+    }
+
+    /* 3. STATUS INDICATOR */
+    .status-indicator {
+        display: inline-flex;
+        align-items: center;
+        background: rgba(26, 115, 232, 0.1);
+        padding: 8px 15px;
+        border: 1px solid rgba(26, 115, 232, 0.2);
+    }
+    .status-dot {
+        height: 6px; width: 6px;
+        background-color: #00ff88;
+        border-radius: 50%;
+        margin-right: 10px;
+        box-shadow: 0 0 10px #00ff88;
+        animation: pulseStatus 2s infinite;
+    }
+    @keyframes pulseStatus {
+        0% { opacity: 1; }
+        50% { opacity: 0.4; }
+        100% { opacity: 1; }
+    }
+    .status-text { color: #1A73E8; font-size: 9px; font-weight: 900; letter-spacing: 1px; }
+
+    /* 4. NAVIGATION COLUMNS */
+    .footer-col h4 {
+        color: #fff;
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 2px;
+        margin-bottom: 25px;
+        text-transform: uppercase;
+    }
+    .footer-col a {
+        display: block;
+        color: #666;
+        font-size: 12px;
+        text-decoration: none !important;
+        margin-bottom: 12px;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+    .footer-col a:hover { color: #1A73E8; transform: translateX(5px); }
+
+    /* 5. SECURITY BADGES */
+    .secure-badge-box {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        margin-bottom: 15px;
+        opacity: 0.5;
+    }
+    .secure-badge-box span { font-size: 18px; margin-right: 10px; color: #1A73E8; }
+    .badge-text { font-size: 9px; font-weight: 900; letter-spacing: 1px; }
+
+    /* 6. FOOTER BOTTOM */
+    .footer-bottom {
+        border-top: 1px solid #111;
+        padding-top: 40px;
+    }
+    .copyright, .motto {
+        font-size: 10px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #444;
+        margin: 0;
+    }
+    .copyright strong { color: #777; }
+    .highlight { color: #1A73E8; }
+
+    /* 7. RESPONSIVE ALIGNMENT */
+    @media (min-width: 992px) {
+        .text-right-md { text-align: right; }
+        .text-left-sm { text-align: left; }
+    }
+    @media (max-width: 991px) {
+        .footer-section-brand { margin-bottom: 50px; text-align: center; }
+        .brand-mission { margin: 0 auto 30px; }
+        .secure-badge-box { justify-content: center; }
+        .footer-col { margin-bottom: 30px; text-align: center; }
+        .text-right-sm { text-align: center; margin-top: 10px; }
+    }
+</style>
 
     {{> scripts}}
 </body>

@@ -1,79 +1,227 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     {{>header}}
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 
-<body{{#if user}} class="is-logged-in"{{/if}}>
+<body class="{{#if user}}is-logged-in{{/if}} yoover-body">
 
     {{>navbar}}
 
-    <div class="flash-messages">
+    <div class="flash-messages-container">
         {{flash_messages}}
     </div>
 
-    <div class="webmail-container">
-        <div class="sidebar-container">
-            <div class="sidebar">
-                <div class="sidebar-logo">
+    <div class="yoover-dashboard-wrapper">
+        
+        <aside class="yoover-sidebar">
+            <div class="sidebar-inner">
+                <div class="sidebar-logo-box">
                     <a href="/webmail">
-                        <img src="/logo.png">
+                        <img src="/images/yoover-logo.svg" alt="Yoover Logo" class="main-logo">
                     </a>
                 </div>
 
-                <div style="margin: 10px 0 10px 0;" class="text-center">
-                    <a href="/webmail/send" style="width: 100%" class="btn btn-default"><span
-                            class="glyphicon glyphicon-edit" aria-hidden="true"></span> Compose message</a>
+                <div class="compose-wrapper">
+                    <a href="/webmail/send" class="btn btn-yoover-compose">
+                        <span class="glyphicon glyphicon-edit"></span> 
+                        <span>Compose</span>
+                    </a>
                 </div>
 
-                <ul class="nav nav-sidebar">
-                    {{#each mailboxes}}
-                    <li id="mailbox-list-{{id}}" {{#if selected}} class="active" {{/if}}>
-                        <a href="/webmail/{{id}}">
-                            <span class="badge pull-right unseen-counter-{{id}}" {{#if unseen}}style="display: block;"
-                                {{else}}style="display: none;" {{/if}}>{{unseen}}</span>
-                            {{{prefix}}}
-                            {{#if icon}}
-                            <span class="glyphicon glyphicon-{{icon}}" aria-hidden="true"></span>
-                            {{else}}
-                            <span class="glyphicon glyphicon-triangle-right" aria-hidden="true"></span>
-                            {{/if}}
-                            <span>{{formatted}}</span> {{{suffix}}}
-                        </a>
-                    </li>
-                    {{/each}}
-                    <li style="margin-top: 20px;">
-                        <a href="/webmail/create" class="text-muted"><span class="glyphicon glyphicon-plus"
-                                aria-hidden="true"></span> Create folder</a>
-                    </li>
-                </ul>
+                <nav class="sidebar-nav-container">
+                    <ul class="yoover-nav-list">
+                        {{#each mailboxes}}
+                        <li id="mailbox-list-{{id}}" class="nav-item {{#if selected}}active-folder{{/if}}">
+                            <a href="/webmail/{{id}}" class="nav-link">
+                                <span class="nav-icon">
+                                    {{#if icon}}
+                                    <span class="glyphicon glyphicon-{{icon}}"></span>
+                                    {{else}}
+                                    <span class="glyphicon glyphicon-folder-close"></span>
+                                    {{/if}}
+                                </span>
+                                
+                                <span class="nav-text">{{{prefix}}} {{formatted}}</span>
+                                
+                                <span class="badge badge-yoover unseen-counter-{{id}}" 
+                                      {{#if unseen}}style="display: flex;"{{else}}style="display: none;"{{/if}}>
+                                    {{unseen}}
+                                </span>
+                            </a>
+                        </li>
+                        {{/each}}
+                    </ul>
+
+                    <div class="sidebar-divider"></div>
+
+                    <ul class="yoover-nav-list">
+                        <li class="nav-item">
+                            <a href="/webmail/create" class="nav-link create-folder-link">
+                                <span class="glyphicon glyphicon-plus"></span>
+                                <span>Create folder</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
-        </div>
+        </aside>
 
-        <div class="webmail-main">
-
+        <main class="yoover-main-content">
             {{#if generalNotification}}
-            <div class="panel panel-warning">
-                <div class="panel-heading">{{{generalNotification}}}</div>
+            <div class="yoover-system-alert">
+                <div class="alert-inner">
+                    <span class="glyphicon glyphicon-bullhorn"></span>
+                    <div class="alert-content">{{{generalNotification}}}</div>
+                </div>
             </div>
             {{/if}}
 
-            {{{body}}}
-
-        </div>
+            <div class="view-render-area">
+                {{{body}}}
+            </div>
+        </main>
     </div>
 
-
-    <footer class="footer">
-        <div class="container">
-            <p class="text-muted">&copy; 2017 <a href="/">{{serviceName}}</a>. <a
-                    href="mailto:info@{{serviceDomain}}">info@{{serviceDomain}}</a>. </p>
+    <footer class="yoover-footer">
+        <div class="container-fluid">
+            <p>&copy; 2026 <a href="/">{{serviceName}}</a> &bull; <a href="mailto:info@{{serviceDomain}}">Support</a></p>
         </div>
     </footer>
 
     {{> scripts}}
 
 </body>
+
+<style>
+    :root {
+        --yoover-blue: #1A73E8;
+        --yoover-gradient: linear-gradient(135deg, #1A73E8 0%, #0d47a1 100%);
+        --sidebar-bg: #ffffff;
+        --main-bg: #f8f9fa;
+        --text-main: #3c4043;
+    }
+
+    .yoover-body {
+        background-color: var(--main-bg);
+        font-family: 'Inter', -apple-system, sans-serif;
+        color: var(--text-main);
+    }
+
+    .yoover-dashboard-wrapper {
+        display: flex;
+        min-height: calc(100vh - 70px); /* Adjust based on navbar height */
+        padding: 20px;
+        gap: 20px;
+    }
+
+    /* SIDEBAR CUSTOMIZATION */
+    .yoover-sidebar {
+        width: 280px;
+        flex-shrink: 0;
+    }
+
+    .sidebar-inner {
+        background: var(--sidebar-bg);
+        border-radius: 16px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        border: 1px solid #e1e8ed;
+        padding: 20px;
+        position: sticky;
+        top: 20px;
+    }
+
+    .sidebar-logo-box { padding-bottom: 25px; text-align: center; }
+    .main-logo { height: 40px; width: auto; }
+
+    .btn-yoover-compose {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        background: var(--yoover-gradient);
+        color: white !important;
+        border-radius: 12px;
+        padding: 14px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 15px rgba(26, 115, 232, 0.3);
+        transition: 0.3s;
+        margin-bottom: 30px;
+        border: none;
+    }
+    .btn-yoover-compose:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26, 115, 232, 0.4); }
+
+    /* NAVIGATION LINKS */
+    .yoover-nav-list { list-style: none; padding: 0; margin: 0; }
+    .nav-item { margin-bottom: 4px; }
+    
+    .nav-link {
+        display: flex;
+        align-items: center;
+        padding: 12px 15px;
+        color: #5f6368;
+        font-weight: 600;
+        border-radius: 10px;
+        text-decoration: none !important;
+        transition: 0.2s;
+    }
+
+    .nav-link:hover { background: #f1f3f4; color: var(--yoover-blue); }
+    
+    .active-folder .nav-link {
+        background: #e8f0fe;
+        color: var(--yoover-blue);
+    }
+
+    .nav-icon { margin-right: 12px; font-size: 16px; opacity: 0.8; }
+    .nav-text { flex-grow: 1; }
+
+    .badge-yoover {
+        background: var(--yoover-blue);
+        color: white;
+        font-size: 11px;
+        padding: 4px 8px;
+        border-radius: 20px;
+        font-weight: 800;
+        min-width: 24px;
+        justify-content: center;
+    }
+
+    .sidebar-divider { height: 1px; background: #eee; margin: 20px 0; }
+    .create-folder-link { color: #80868b !important; font-size: 13px; }
+
+    /* MAIN CONTENT */
+    .yoover-main-content {
+        flex-grow: 1;
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e1e8ed;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .yoover-system-alert {
+        background: #fef7e0;
+        padding: 15px 25px;
+        border-bottom: 1px solid #feefc3;
+    }
+    .alert-inner { display: flex; align-items: center; gap: 12px; color: #b06000; font-weight: 600; }
+
+    .yoover-footer { padding: 30px; text-align: center; font-size: 13px; color: #9aa0a6; }
+    .yoover-footer a { color: #5f6368; font-weight: 600; }
+
+    @media (max-width: 992px) {
+        .yoover-dashboard-wrapper { flex-direction: column; padding: 10px; }
+        .yoover-sidebar { width: 100%; }
+        .sidebar-inner { position: relative; top: 0; }
+    }
+</style>
 
 </html>

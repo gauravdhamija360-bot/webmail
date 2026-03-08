@@ -1,22 +1,99 @@
+<div class="yoover-webmail-container">
+    <header class="webmail-header-gradient">
+        <div class="header-flex">
+            <div class="mailbox-info">
+                <div class="icon-circle">
+                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                </div>
+                <h2 class="mailbox-name">Create New Folder</h2>
+            </div>
+            
+            <div class="header-actions">
+                <a href="/webmail" class="btn btn-yoover-outline">
+                    <span class="glyphicon glyphicon-arrow-left"></span> Cancel
+                </a>
+            </div>
+        </div>
+    </header>
 
-<h2 class="sub-header"><span class="glyphicon glyphicon-inbox" aria-hidden="true"></span> Create folder</h2>
+    <div class="settings-content-wrapper">
+        <div class="settings-card">
+            <form method="post" action="/webmail/create">
+                <input type="hidden" name="_csrf" value="{{csrfToken}}">
 
-<form method="post" action="/webmail/create">
-    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                <div class="mailbox-partial-container">
+                    {{> mailbox}}
+                </div>
 
-    {{> mailbox}}
+                <hr class="settings-divider">
 
-    <div class="form-group">
-        <button type="submit" class="btn btn-success"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Create</button>
+                <div class="form-actions-flex">
+                    <button type="submit" class="btn btn-yoover-success">
+                        <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span> CREATE FOLDER
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
+</div>
 
-</form>
+<style>
+    /* REUSING YOOVER CORE THEME */
+    .yoover-webmail-container { background: #f8f9fa; min-height: 100vh; font-family: 'Segoe UI', Roboto, sans-serif; }
+    
+    .webmail-header-gradient {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        padding: 40px 5%;
+        border-bottom: 1px solid #e1e8ed;
+    }
+    .header-flex { display: flex; justify-content: space-between; align-items: center; max-width: 1000px; margin: 0 auto; }
+    .mailbox-info { display: flex; align-items: center; gap: 15px; }
+    .icon-circle { width: 45px; height: 45px; background: #1A73E8; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
+    .mailbox-name { margin: 0; font-weight: 800; color: #1A73E8; font-size: 28px; letter-spacing: -0.5px; }
+
+    /* CARD STYLING */
+    .settings-content-wrapper { padding: 50px 5%; }
+    .settings-card { 
+        max-width: 1000px; 
+        margin: 0 auto; 
+        background: white; 
+        padding: 40px; 
+        border-radius: 15px; 
+        border: 1px solid #eee; 
+        box-shadow: 0 15px 35px rgba(0,0,0,0.05); 
+    }
+
+    .settings-divider { margin: 30px 0; border-top: 1px solid #f1f3f4; }
+
+    /* ACTION BUTTONS */
+    .btn-yoover-outline { border: 2px solid #1A73E8; color: #1A73E8; font-weight: 700; border-radius: 25px; padding: 8px 25px; text-decoration: none; transition: 0.2s; }
+    .btn-yoover-outline:hover { background: #1A73E8; color: white; }
+
+    .btn-yoover-success { 
+        background: #34A853; /* Success Green from your site */
+        color: white; 
+        border: none; 
+        border-radius: 50px; 
+        padding: 18px 45px; 
+        font-weight: 800; 
+        font-size: 16px; 
+        letter-spacing: 1px;
+        box-shadow: 0 10px 20px rgba(52, 168, 83, 0.2);
+        transition: all 0.3s ease;
+    }
+    .btn-yoover-success:hover { 
+        transform: translateY(-3px); 
+        box-shadow: 0 15px 25px rgba(52, 168, 83, 0.3);
+        background: #2e9449;
+        color: white;
+    }
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var stream = new EventSource('/api/events');
     stream.onmessage = function(e) {
-        var data, row, star, redrawTimer;
+        var data;
         try {
             data = JSON.parse(e.data);
         } catch (E) {
@@ -25,14 +102,14 @@ document.addEventListener('DOMContentLoaded', function() {
         switch (data.command) {
             case 'COUNTERS': {
                 if (data.mailbox) {
-                    if(FAVICON && data.mailbox === INBOX_ID){
+                    if(typeof FAVICON !== 'undefined' && data.mailbox === INBOX_ID){
                         FAVICON.badge(data.unseen);
                     }
                     [].slice.call(document.querySelectorAll('.unseen-counter-' + data.mailbox)).forEach(function(row){
                         if(data.unseen){
                             row.style.display = 'block';
                             row.textContent = data.unseen;
-                        }else {
+                        } else {
                             row.style.display = 'none';
                             row.textContent = 0;
                         }

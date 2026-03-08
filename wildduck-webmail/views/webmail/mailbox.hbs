@@ -1,51 +1,142 @@
-
-<h2 class="sub-header"><span class="glyphicon glyphicon-inbox" aria-hidden="true"></span> {{mailbox.name}}</h2>
-
-<form method="post" action="/webmail/{{mailbox.id}}/settings">
-    <input type="hidden" name="_csrf" value="{{csrfToken}}">
-
-    {{> mailbox}}
-
-    {{#unless isInbox}}
-        <div class="form-group">
-            {{#unless isSpecial}}
-                <div class="pull-right">
-                    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteModal"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete</button>
+<div class="yoover-webmail-container">
+    <header class="webmail-header-gradient">
+        <div class="header-flex">
+            <div class="mailbox-info">
+                <div class="icon-circle">
+                    <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
                 </div>
-            {{/unless}}
-            <button type="submit" class="btn btn-success"><span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Update</button>
+                <h2 class="mailbox-name">{{mailbox.name}} <small style="color: #5f6368; font-size: 16px; margin-left: 10px;">Settings</small></h2>
+            </div>
+            
+            <div class="header-actions">
+                <a href="/webmail/{{mailbox.id}}" class="btn btn-yoover-outline">
+                    <span class="glyphicon glyphicon-arrow-left"></span> Back to Mail
+                </a>
+            </div>
         </div>
-    {{/unless}}
+    </header>
 
-</form>
+    <div class="settings-content-wrapper">
+        <div class="settings-card">
+            <form method="post" action="/webmail/{{mailbox.id}}/settings">
+                <input type="hidden" name="_csrf" value="{{csrfToken}}">
 
-<div class="modal" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel">
+                <div class="mailbox-partial-container">
+                    {{> mailbox}}
+                </div>
+
+                <hr class="settings-divider">
+
+                {{#unless isInbox}}
+                    <div class="form-actions-flex">
+                        <div class="action-left">
+                            <button type="submit" class="btn btn-yoover-primary">
+                                <span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> UPDATE SETTINGS
+                            </button>
+                        </div>
+                        
+                        {{#unless isSpecial}}
+                            <div class="action-right">
+                                <button type="button" class="btn btn-yoover-danger" data-toggle="modal" data-target="#deleteModal">
+                                    <span class="glyphicon glyphicon-trash" aria-hidden="true"></span> DELETE FOLDER
+                                </button>
+                            </div>
+                        {{/unless}}
+                    </div>
+                {{/unless}}
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel">
   <div class="modal-dialog" role="document">
-    <div class="modal-content">
+    <div class="modal-content yoover-modal">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="deleteModalLabel">Delete folder</h4>
+        <h4 class="modal-title" id="deleteModalLabel" style="font-weight: 800; color: #d93025;">Delete folder</h4>
       </div>
-      <div class="modal-body">
-            Are you sure you want to permanently delete <strong>{{mailbox.name}}</strong> and all its contents?
+      <div class="modal-body" style="padding: 30px; font-size: 16px; color: #555;">
+            Are you sure you want to permanently delete <strong>{{mailbox.name}}</strong>? <br>
+            <span class="text-danger" style="font-weight: 600;">This will erase all messages inside this folder forever.</span>
       </div>
-      <div class="modal-footer">
+      <div class="modal-footer" style="border-top: 1px solid #eee; padding: 20px;">
         <form method="post" action="/webmail/{{mailbox.id}}/delete">
             <input type="hidden" name="_csrf" value="{{csrfToken}}">
-
-            <button type="button" class="btn btn-default" data-dismiss="modal">No, cancel</button>
-            <button type="submit" class="btn btn-danger">Yes, delete</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal" style="border-radius: 50px; font-weight: 700;">CANCEL</button>
+            <button type="submit" class="btn btn-danger" style="border-radius: 50px; padding: 10px 30px; font-weight: 800; background: #d93025;">YES, DELETE EVERYTHING</button>
         </form>
       </div>
     </div>
   </div>
 </div>
 
+<style>
+    /* REUSING YOOVER CORE STYLES */
+    .yoover-webmail-container { background: #f8f9fa; min-height: 100vh; font-family: 'Segoe UI', Roboto, sans-serif; }
+    
+    .webmail-header-gradient {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        padding: 40px 5%;
+        border-bottom: 1px solid #e1e8ed;
+    }
+    .header-flex { display: flex; justify-content: space-between; align-items: center; max-width: 1000px; margin: 0 auto; }
+    .mailbox-info { display: flex; align-items: center; gap: 15px; }
+    .icon-circle { width: 45px; height: 45px; background: #1A73E8; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
+    .mailbox-name { margin: 0; font-weight: 800; color: #1A73E8; font-size: 28px; }
+
+    /* CONTENT CARD */
+    .settings-content-wrapper { padding: 50px 5%; }
+    .settings-card { 
+        max-width: 1000px; 
+        margin: 0 auto; 
+        background: white; 
+        padding: 40px; 
+        border-radius: 12px; 
+        border: 1px solid #eee; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
+    }
+
+    .settings-divider { margin: 30px 0; border-top: 1px solid #eee; }
+
+    /* BUTTONS - MATCHING YOUR SITE */
+    .btn-yoover-outline { border: 2px solid #1A73E8; color: #1A73E8; font-weight: 700; border-radius: 25px; padding: 8px 20px; text-decoration: none; transition: 0.2s; }
+    .btn-yoover-outline:hover { background: #1A73E8; color: white; }
+
+    .btn-yoover-primary { 
+        background: #1A73E8; 
+        color: white; 
+        border: none; 
+        border-radius: 50px; 
+        padding: 15px 40px; 
+        font-weight: 800; 
+        font-size: 14px; 
+        letter-spacing: 1px;
+        box-shadow: 0 4px 14px rgba(26,115,232,0.4);
+    }
+    .btn-yoover-primary:hover { transform: translateY(-2px); opacity: 0.9; color: white; }
+
+    .btn-yoover-danger { 
+        background: transparent; 
+        color: #d93025; 
+        border: 2px solid #d93025; 
+        border-radius: 50px; 
+        padding: 12px 30px; 
+        font-weight: 700;
+    }
+    .btn-yoover-danger:hover { background: #d93025; color: white; }
+
+    .form-actions-flex { display: flex; justify-content: space-between; align-items: center; }
+
+    /* MODAL STYLE */
+    .yoover-modal { border-radius: 20px; border: none; overflow: hidden; }
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var stream = new EventSource('/api/events');
     stream.onmessage = function(e) {
-        var data, row, star, redrawTimer;
+        var data;
         try {
             data = JSON.parse(e.data);
         } catch (E) {
@@ -54,14 +145,14 @@ document.addEventListener('DOMContentLoaded', function() {
         switch (data.command) {
             case 'COUNTERS': {
                 if (data.mailbox) {
-                    if(FAVICON && data.mailbox === INBOX_ID){
+                    if(typeof FAVICON !== 'undefined' && data.mailbox === INBOX_ID){
                         FAVICON.badge(data.unseen);
                     }
                     [].slice.call(document.querySelectorAll('.unseen-counter-' + data.mailbox)).forEach(function(row){
                         if(data.unseen){
                             row.style.display = 'block';
                             row.textContent = data.unseen;
-                        }else {
+                        } else {
                             row.style.display = 'none';
                             row.textContent = 0;
                         }

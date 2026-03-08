@@ -1,129 +1,197 @@
-<div class="row">
-    <div class="col-md-12">
-        <h1><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Account</h1>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-12">
-
-        <!-- Nav tabs -->
-        <ul class="nav nav-tabs" role="tablist">
-            {{> accountmenu}}
-        </ul>
-
-        <div class="tab-content">
-            <div role="tabpanel" class="tab-pane active" id="overview">
-
-                <p>&nbsp;</p>
-
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Manage identities</h3></div>
-                    <div class="panel-body">
-                        <p>Here you can add and modify alias addresses for your account. Aliases act just like your main address. You can not send out emails from identities that you do not own.</p>
-                    </div>
-                    <table class="table table-responsive table-no-header-radius table-no-bottom-radius identities-table">
-                        <thead>
-                            <th>
-                                &nbsp;
-                            </th>
-                            <th>
-                                Identity name
-                            </th>
-                            <th>
-                                Alias Address
-                            </th>
-                            <th>
-                                Created
-                            </th>
-                            <th>
-                                &nbsp;
-                            </th>
-                        </thead>
-                        <tbody>
-                            {{#each identities}}
-                                <tr class="{{#if main}}identity-main{{/if}}">
-                                    <th class="identity-index">
-                                        {{index}}
-                                    </th>
-
-                                    <td>
-                                        {{#if name}}
-                                            {{name}}
-                                        {{else}}
-                                            <em>–</em>
-                                        {{/if}}
-                                    </td>
-
-                                    <td>
-                                        {{#if main}}
-                                            {{address}} <span>(default)</span>
-                                        {{else}}
-                                            {{address}}
-                                        {{/if}}
-                                    </td>
-
-                                    <td class="datestring" title="{{created}}">
-                                        {{created}}
-                                    </td>
-
-                                    <td class="text-right">
-                                        {{#if ../canEdit}}
-                                            <a href="/account/identities/edit?id={{id}}" class="btn btn-info btn-xs"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> Edit</a>
-                                        {{/if}}
-                                        <button class="btn btn-danger btn-xs" data-address="{{address}}" {{#if main}}disabled{{else}}data-identity="{{id}}" data-toggle="modal" data-target="#deleteModal"{{/if}}><span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete</button>
-                                    </td>
-                                </tr>
-                            {{/each}}
-                        </tbody>
-                    </table>
-
-                    <div class="panel-body">
-                        <div class="form-group">
-                            {{#if canCreate}}
-                                <a href="/account/identities/create" class="btn btn-success"><span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span> Add new address</a>
-                            {{else}}
-                                <p class="text-muted">
-                                    Maximum amount of identities created
-                                </p>
-                            {{/if}}
-                        </div>
-                    </div>
-                </div>
-            </div>
+<div class="yoover-centered-container">
+    <div class="yoover-view-header">
+        <div class="header-icon-bg">
+            <span class="glyphicon glyphicon-tags"></span>
+        </div>
+        <div class="header-text">
+            <h1>Email Identities</h1>
+            <p class="text-muted">Manage your primary address and secondary aliases.</p>
         </div>
     </div>
+
+    <div class="yoover-tabs-wrapper">
+        <ul class="nav nav-tabs yoover-nav-tabs" role="tablist">
+            {{> accountmenu}}
+        </ul>
+    </div>
+
+    <div class="restore-info-box mb-30">
+        <div class="info-icon"><span class="glyphicon glyphicon-info-sign"></span></div>
+        <div class="info-content">
+            <p class="mb-0">Aliases act exactly like your main address. Use them to organize your incoming mail or protect your primary identity from spam.</p>
+        </div>
+    </div>
+
+    <div class="settings-section-card glass-card-list">
+        <div class="section-header flex-header">
+            <h3 class="section-title">Registered Addresses</h3>
+            {{#if canCreate}}
+                <a href="/account/identities/create" class="btn btn-yoover-success-sm">
+                    <span class="glyphicon glyphicon-plus"></span> Add Identity
+                </a>
+            {{/if}}
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table yoover-table">
+                <thead>
+                    <tr>
+                        <th width="60">#</th>
+                        <th>Display Name</th>
+                        <th>Email Address</th>
+                        <th>Created</th>
+                        <th class="text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each identities}}
+                    <tr class="{{#if main}}row-main-identity{{/if}}">
+                        <td class="text-muted small-index">{{index}}</td>
+                        <td class="font-weight-600">
+                            {{#if name}}{{name}}{{else}}<span class="text-muted empty-dash">–</span>{{/if}}
+                        </td>
+                        <td>
+                            <span class="address-text">{{address}}</span>
+                            {{#if main}}<span class="badge-default-tag">PRIMARY</span>{{/if}}
+                        </td>
+                        <td class="datestring text-muted table-date" title="{{created}}">
+                            {{created}}
+                        </td>
+                        <td class="text-right">
+                            <div class="btn-group-yoover">
+                                {{#if ../canEdit}}
+                                    <a href="/account/identities/edit?id={{id}}" class="btn-action-icon" title="Edit Profile">
+                                        <span class="glyphicon glyphicon-pencil"></span>
+                                    </a>
+                                {{/if}}
+                                <button class="btn-action-icon text-danger" 
+                                        data-address="{{address}}" 
+                                        {{#if main}}disabled{{else}}data-identity="{{id}}" data-toggle="modal" data-target="#deleteModal"{{/if}}
+                                        title="{{#if main}}Primary cannot be deleted{{else}}Delete Identity{{/if}}">
+                                    <span class="glyphicon glyphicon-trash"></span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+
+        {{#unless canCreate}}
+        <div class="section-footer-note">
+            <p class="text-muted small mb-0"><span class="glyphicon glyphicon-lock"></span> Identity limit reached for your current plan tier.</p>
+        </div>
+        {{/unless}}
+    </div>
 </div>
 
-<!-- Modal -->
-<div class="modal" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="deleteModalLabel">Delete address</h4>
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-sm centered-modal" role="document">
+    <div class="modal-content yoover-modal shadow-lg">
+      <div class="modal-body text-center">
+        <div class="modal-icon-danger pulse-danger">
+            <span class="glyphicon glyphicon-trash"></span>
+        </div>
+        <h4 class="modal-heading">Remove Identity?</h4>
+        <p class="text-muted">Are you sure you want to delete <strong id="delete-form-identity-val" class="text-dark"></strong>? This action cannot be undone.</p>
       </div>
-      <div class="modal-body">
-        Are you sure you want to permanently delete <strong id="delete-form-identity-val">this address</strong>?
-      </div>
-      <div class="modal-footer">
-        <form method="post" action="/account/identities/delete">
+      <div class="modal-footer flex-footer">
+        <form method="post" action="/account/identities/delete" class="full-width-form">
             <input type="hidden" name="_csrf" value="{{csrfToken}}">
             <input type="hidden" id="delete-form-identity" name="id" value="">
-            <button type="button" class="btn btn-default" data-dismiss="modal">No, cancel</button>
-            <button type="submit" class="btn btn-danger bulk-delete-confirm">Yes, delete</button>
+            <div class="modal-action-grid">
+                <button type="button" class="btn btn-yoover-light" data-dismiss="modal">Keep it</button>
+                <button type="submit" class="btn btn-yoover-danger">Delete</button>
+            </div>
         </form>
       </div>
     </div>
   </div>
 </div>
 
+<style>
+    /* CENTERED CONTAINER ENGINE */
+    .yoover-centered-container {
+        max-width: 950px;
+        margin: 40px auto;
+        padding: 0 20px;
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    /* GLASS CARD LIST */
+    .glass-card-list {
+        background: #fff;
+        border: 1px solid #e1e8ed;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+        overflow: hidden;
+    }
+
+    /* TABLE STYLING */
+    .yoover-table { margin-bottom: 0; }
+    .yoover-table thead th { 
+        background: #fafbfc; 
+        border-bottom: 1px solid #f1f3f4; 
+        padding: 16px 20px; 
+        font-size: 11px; 
+        text-transform: uppercase; 
+        letter-spacing: 1.2px; 
+        color: #80868b; 
+        font-weight: 800;
+    }
+    .yoover-table tbody td { padding: 20px; vertical-align: middle; border-top: 1px solid #f8f9fa; font-size: 14px; }
+    
+    .row-main-identity { background: #f8fbff; }
+    .address-text { font-weight: 700; color: #202124; }
+    .table-date { font-size: 12px; }
+    
+    .badge-default-tag { 
+        font-size: 9px; background: #1A73E8; color: #fff; padding: 3px 8px; 
+        border-radius: 5px; font-weight: 900; margin-left: 10px; vertical-align: middle;
+        box-shadow: 0 2px 4px rgba(26,115,232,0.2);
+    }
+
+    /* ACTIONS */
+    .btn-group-yoover { display: flex; justify-content: flex-end; gap: 8px; }
+    .btn-action-icon { 
+        background: #f1f3f4; border: none; color: #5f6368; padding: 10px; 
+        border-radius: 10px; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: inline-flex; align-items: center; justify-content: center;
+        text-decoration: none !important;
+    }
+    .btn-action-icon:hover { background: #e8f0fe; color: #1A73E8; transform: translateY(-2px); }
+    .btn-action-icon.text-danger:hover { background: #feebeb; color: #d93025; }
+    .btn-action-icon[disabled] { cursor: not-allowed; opacity: 0.4; background: #f8f9fa; color: #ccc; }
+
+    /* MODAL ENHANCEMENTS */
+    .yoover-modal { border-radius: 24px; padding: 20px; border: none; }
+    .modal-icon-danger { width: 70px; height: 70px; background: #feebeb; color: #d93025; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 20px; }
+    .modal-heading { font-weight: 800; color: #202124; margin-bottom: 10px; }
+    .modal-action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+    
+    .btn-yoover-light { background: #f1f3f4; color: #5f6368; font-weight: 700; border-radius: 12px; padding: 12px; border: none; }
+    .btn-yoover-danger { background: #d93025; color: #fff; font-weight: 700; border-radius: 12px; padding: 12px; border: none; box-shadow: 0 4px 12px rgba(217,48,37,0.2); }
+
+    .section-footer-note { padding: 20px; background: #fafbfc; border-top: 1px solid #f1f3f4; text-align: center; }
+
+    /* FLEX HEADER */
+    .flex-header { display: flex; justify-content: space-between; align-items: center; }
+    .btn-yoover-success-sm { 
+        background: #34A853; color: white !important; padding: 10px 20px; 
+        border-radius: 10px; font-size: 13px; font-weight: 800; border: none; transition: 0.3s;
+        box-shadow: 0 4px 10px rgba(52,168,83,0.2);
+    }
+    .btn-yoover-success-sm:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(52,168,83,0.3); }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     $('#deleteModal').on('show.bs.modal', function (event) {
-        var button = $(event.relatedTarget); // Button that triggered the modal
-        var identity = button.data('identity'); // Extract info from data-* attributes
+        var button = $(event.relatedTarget);
+        var identity = button.data('identity');
         document.getElementById('delete-form-identity').value = identity;
         document.getElementById('delete-form-identity-val').textContent = button.data('address');
     });

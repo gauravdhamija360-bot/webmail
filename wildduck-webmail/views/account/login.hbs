@@ -1,60 +1,73 @@
-<div class="row">
-    <div class="col-md-12">
-        <h1><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Log in</h1>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-12">
-
-        <form method="post" action="/account/login">
-            <input type="hidden" name="_csrf" value="{{csrfToken}}">
-            <input type="hidden" name="_2faToken" id="_2faToken" value="">
-
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Account information</h3>
-                </div>
-                <div class="panel-body">
-
-                    <div class="row">
-                        <div class="col-md-6">
-
-                            <div class="form-group{{#if errors.username}} has-error{{/if}}">
-                                <label class="control-label" for="username">Username</label>
-                                <input type="text" class="form-control lowercase" name="username" id="username" placeholder="username" value="{{values.username}}" required>
-                                {{#if errors.username}}
-                                    <span class="help-block">{{errors.username}}{{#if errors.username_action}} –  <a href="{{errors.username_action.target}}">{{errors.username_action.title}}</a>{{/if}}</span>
-                                {{/if}}
-                            </div>
-
-                            <div class="form-group{{#if errors.password}} has-error{{/if}}">
-                                <label for="password">Your password</label>
-                                <input type="password" class="form-control" name="password" id="password" placeholder="v3rys3cret" required>
-                                {{#if errors.password}}
-                                    <span class="help-block">{{errors.password}}</span>
-                                {{/if}}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" name="remember"> Remember me
-                            </label>
-                        </div>
-                    </div>
-
-
-                    <div class="form-group">
-                        <button type="submit" class="btn btn-success"><span class="glyphicon glyphicon-log-in" aria-hidden="true"></span> Log in</button>
-                    </div>
-                </div>
-                
+<div class="split-viewport">
+    
+    <div class="split-brand-side">
+        <div class="brand-overlay"></div>
+        <div class="brand-content fade-in">
+            <img src="/images/yoover-logo.svg" alt="Yoover" class="brand-logo-white">
+            <div class="brand-text-box">
+                <h2 class="hero-text">The Private <br><span class="text-blue">Standard.</span></h2>
+                <p class="hero-subtext">Advanced encryption. Zero tracking. Your identity, reclaimed.</p>
             </div>
-        </form>
+            <div class="security-ticker">
+                <span class="glyphicon glyphicon-shield"></span>
+                <span class="ticker-label">NODE STATUS: ENCRYPTED // PORT: 443</span>
+            </div>
+        </div>
+    </div>
 
+    <div class="split-form-side">
+        <div class="form-container fade-in-up">
+            <div class="mobile-logo-only">
+                <img src="/images/yoover-logo.svg" alt="Yoover">
+            </div>
+
+            <h1 class="form-title">Welcome Back</h1>
+            <p class="form-subtitle">Authenticate to access your secure vault.</p>
+
+            <form method="post" action="/account/login" class="yoover-modern-form">
+                <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                <input type="hidden" name="_2faToken" id="_2faToken" value="">
+
+                <div class="input-field-glow {{#if errors.username}}field-error{{/if}}">
+                    <div class="glow-container">
+                        <input type="text" name="username" id="username" value="{{values.username}}" required autofocus placeholder=" ">
+                        <label for="username">Username / Identity</label>
+                        <div class="glow-border"></div>
+                        <span class="input-icon glyphicon glyphicon-user"></span>
+                    </div>
+                    {{#if errors.username}}<span class="err-msg">{{errors.username}}</span>{{/if}}
+                </div>
+
+                <div class="input-field-glow {{#if errors.password}}field-error{{/if}}">
+                    <div class="glow-container">
+                        <input type="password" name="password" id="password" required placeholder=" ">
+                        <label for="password">Security Key</label>
+                        <div class="glow-border"></div>
+                        <span class="input-icon glyphicon glyphicon-lock"></span>
+                    </div>
+                    {{#if errors.password}}<span class="err-msg">{{errors.password}}</span>{{/if}}
+                </div>
+
+                <div class="form-options">
+                    <label class="custom-checkbox">
+                        <input type="checkbox" name="remember">
+                        <span class="cb-box"></span>
+                        Keep me logged in
+                    </label>
+                    <a href="/account/reset" class="link-minimal">Forgot Key?</a>
+                </div>
+
+                <button type="submit" class="btn-elite-action">
+                    <span>ACCESS ACCOUNT</span>
+                    <i class="glyphicon glyphicon-menu-right"></i>
+                </button>
+            </form>
+
+            <div class="form-footer">
+                <span>New here?</span>
+                <a href="/account/create">Register Identity</a>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -66,3 +79,169 @@ loginKeyHandler.setup(
     '2fa'
 );
 </script>
+
+<style>
+    /* 0. GLOBAL RESET FOR INPUTS (Kill all round corners) */
+    input, .form-control, .glow-container, .glow-border, .btn, .cb-box, .btn-elite-action {
+        border-radius: 0px !important;
+        -webkit-border-radius: 0px !important;
+        -moz-border-radius: 0px !important;
+    }
+
+    /* 1. CORE LAYOUT */
+    .split-viewport {
+        display: flex;
+        min-height: calc(100vh - 85px);
+        background: #fff;
+    }
+
+    /* 2. LEFT BRAND SIDE */
+    .split-brand-side {
+        flex: 1.2;
+        background: #000;
+        position: relative;
+        display: flex;
+        align-items: center;
+        padding: 80px;
+        overflow: hidden;
+    }
+    .brand-overlay {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: linear-gradient(45deg, #000 30%, transparent 100%);
+        z-index: 1;
+    }
+    .brand-content { position: relative; z-index: 2; width: 100%; }
+    .brand-logo-white { height: 60px; filter: brightness(0) invert(1); margin-bottom: 60px; }
+    .hero-text { font-size: 72px; font-weight: 900; color: #fff; line-height: 0.9; letter-spacing: -4px; margin-bottom: 20px; text-transform: uppercase; }
+    .text-blue { color: #1A73E8; }
+    .hero-subtext { color: #888; font-size: 18px; max-width: 400px; line-height: 1.6; }
+    
+    .security-ticker {
+        margin-top: 100px;
+        background: rgba(255,255,255,0.05);
+        padding: 12px 20px;
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    .security-ticker span { color: #00ff88; font-size: 10px; font-weight: 900; letter-spacing: 2px; }
+    .security-ticker .glyphicon { margin-right: 12px; }
+
+    /* 3. RIGHT FORM SIDE */
+    .split-form-side {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 60px;
+        background: #fff;
+    }
+    .form-container { width: 100%; max-width: 480px; }
+    .form-title { font-size: 32px; font-weight: 900; letter-spacing: -1px; margin-bottom: 8px; }
+    .form-subtitle { color: #666; font-size: 16px; margin-bottom: 40px; }
+
+    /* 4. SHARP GLOW INPUTS */
+    .input-field-glow { margin-bottom: 30px; position: relative; }
+    
+    .glow-container {
+        position: relative;
+        background: #fdfdfd;
+        border: 2px solid #f0f0f0;
+        transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+        height: 65px;
+        border-radius: 0px !important; /* Force Sharp */
+    }
+
+    /* ATTRACIVE HOVER STATE (Before Focus) */
+    .glow-container:hover {
+        border-color: #ccc;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+    }
+
+    .glow-container label {
+        position: absolute; left: 45px; top: 20px; color: #999;
+        font-size: 14px; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 1px; pointer-events: none; transition: 0.3s ease;
+    }
+
+    .glow-container input {
+        width: 100%; height: 100%; border: none; background: transparent;
+        padding: 25px 20px 10px 45px; font-size: 16px; font-weight: 800;
+        color: #000; outline: none;
+        border-radius: 0px !important;
+    }
+
+    .glow-container input:focus + label,
+    .glow-container input:not(:placeholder-shown) + label {
+        top: 10px; left: 45px; font-size: 10px; color: #1A73E8;
+    }
+
+    .input-icon { position: absolute; left: 15px; top: 23px; color: #ccc; font-size: 16px; transition: 0.3s; }
+    
+    /* THE ACTUAL GLOWING BORDER */
+    .glow-border {
+        position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px;
+        border: 2px solid #1A73E8; opacity: 0; transition: 0.3s;
+        pointer-events: none;
+        border-radius: 0px !important;
+    }
+    
+    /* ATTRACTIVE ACTIVE STATE (Focus) */
+    .glow-container:focus-within {
+        border-color: #1A73E8;
+        background: #fff;
+        box-shadow: 0 0 20px rgba(26, 115, 232, 0.15); /* Soft outer glow */
+        transform: translateY(-2px);
+    }
+    .glow-container:focus-within .glow-border { 
+        opacity: 1; 
+    }
+    .glow-container:focus-within .input-icon { color: #1A73E8; }
+
+    /* 5. BUTTON & OPTIONS */
+    .form-options { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+    .custom-checkbox { display: flex; align-items: center; cursor: pointer; font-size: 14px; font-weight: 600; color: #444; }
+    .custom-checkbox input { display: none; }
+    .cb-box { width: 18px; height: 18px; border: 2px solid #eee; margin-right: 12px; transition: 0.3s; }
+    .custom-checkbox input:checked + .cb-box { background: #1A73E8; border-color: #1A73E8; }
+    .link-minimal { color: #111; font-weight: 800; font-size: 12px; text-transform: uppercase; text-decoration: none; }
+
+    .btn-elite-action {
+        width: 100%; padding: 22px; background: #000; color: #fff; border: none;
+        font-weight: 900; letter-spacing: 2px; display: flex; justify-content: space-between; align-items: center;
+        transition: all 0.3s ease; cursor: pointer;
+        border-radius: 0px !important;
+    }
+    
+    .btn-elite-action:hover {
+        background: #1A73E8;
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(26, 115, 232, 0.3); /* Intense Attractive Glow */
+    }
+
+    .form-footer { margin-top: 30px; text-align: center; font-size: 14px; color: #888; }
+    .form-footer a { color: #1A73E8; font-weight: 800; text-decoration: none; margin-left: 5px; }
+
+    /* 6. RESPONSIVE */
+    @media (max-width: 1024px) {
+        .split-brand-side { display: none; }
+        .split-form-side { flex: 1; padding: 40px; }
+        .mobile-logo-only { display: block; margin-bottom: 40px; }
+        .mobile-logo-only img { height: 40px; }
+    }
+
+    /* ANIMATIONS */
+    .fade-in { animation: opac 1s ease-in; }
+    .fade-in-up { animation: fup 0.8s ease-out; }
+    @keyframes opac { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fup { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    
+    /* Error State Glow */
+    .field-error .glow-container { border-color: #d93025 !important; }
+    .field-error .glow-border {
+        border-color: #d93025 !important;
+        box-shadow: 0 0 20px rgba(217, 48, 37, 0.25);
+    }
+    .err-msg { color: #d93025; font-size: 11px; font-weight: 800; text-transform: uppercase; margin-top: 8px; display: block; }
+</style>

@@ -1,90 +1,170 @@
-<nav class="navbar navbar-default navbar-static-top">
-    <div class="container">
+<nav class="navbar navbar-default navbar-fixed-top yoover-navbar-full">
+    <div class="container-fluid nav-flex-container"> 
+        
         <div class="navbar-header">
             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
-                data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-                <span class="sr-only">Toggle navigation</span>
+                data-target="#yoover-nav-collapse" aria-expanded="false">
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="{{#if user}}/webmail{{else}}/{{/if}}">
-                <img alt="{{serviceName}}" src="/favicon-32x32.png" width="20" height="20">
+            <a class="navbar-brand yoover-brand-animate" href="{{#if user}}/webmail{{else}}/{{/if}}">
+                <img alt="Yoover Logo" src="/images/yoover-logo.svg" class="nav-logo">
+                <span class="nav-brand-text">Yoover</span>
             </a>
         </div>
 
-        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-            <ul class="nav navbar-nav navbar-right">
+        <div class="collapse navbar-collapse" id="yoover-nav-collapse">
+            <ul class="nav navbar-nav navbar-right flex-nav-list">
+
+                {{#unless user}}
+                <li class="nav-link-hover {{#if isHome}}active{{/if}}">
+                    <a href="/">HOME</a>
+                </li>
+                <li class="nav-link-hover {{#if activePurchase}}active{{/if}}">
+                    <a href="/purchase">PRICING</a>
+                </li>
+                {{/unless}}
+
+                <li class="nav-link-hover {{#if activeContact}}active{{/if}}">
+                    <a href="/contact">CONTACT</a>
+                </li>
 
                 {{#if user}}
-                <li {{#if activeWebmail}} class="active" {{/if}}>
+                <li class="nav-link-hover {{#if activeWebmail}}active{{/if}}">
                     <a href="/webmail/">
-                        <span class="glyphicon glyphicon-inbox" aria-hidden="true"></span> Webmail
-                        <span class="badge pull-right unseen-counter-{{inboxId}}"
-                            {{#if inboxUnseen}}style="display: block;" {{else}}style="display: none;"
-                            {{/if}}>{{inboxUnseen}}</span>
+                        <span class="glyphicon glyphicon-inbox"></span> INBOX
+                        <span class="badge unseen-indicator">{{inboxUnseen}}</span>
                     </a>
                 </li>
-                <li {{#if activeFilters}} class="active" {{/if}}>
-                    <a href="/account/filters">
-                        <span class="glyphicon glyphicon-filter" aria-hidden="true"></span> Filters
+                
+                <li class="dropdown profile-zone">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                        <div class="avatar-box">
+                            <img src="{{user.gravatar}}" class="avatar-sharp">
+                        </div>
+                        <span class="user-label">{{#if user.name}}{{user.name}}{{else}}{{user.username}}{{/if}}</span>
+                        <span class="caret"></span>
                     </a>
-                </li>
-                <li {{#if activeAutoreply}} class="active" {{/if}}>
-                    <a href="/account/autoreply">
-                        <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span> Autoreply
-                    </a>
-                </li>
-                <li {{#if activeHelp}} class="active" {{/if}}>
-                    <a href="/help">
-                        <span class="glyphicon glyphicon glyphicon-question-sign" aria-hidden="true"></span> Help
-                    </a>
-                </li>
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
-                        aria-expanded="false">
-                        <img src="{{user.gravatar}}" class="profile-image img-circle" width="20" height="20">
-
-                        {{#if user.name}}
-                        {{user.name}}
-                        {{else}}
-                        {{user.username}}
-                        {{/if}}
-
-                        <span class="caret"></span></a>
-                    <ul class="dropdown-menu">
-                        <li {{#if activeHome}} class="active" {{/if}}>
-                            <a href="/account/">
-                                <span class="glyphicon glyphicon-user" aria-hidden="true"></span> Account
-                            </a>
-                        </li>
-                        <li class="{{#if activeSecurity}}active{{/if}} dropdown-item-spaced">
-                            <a href="/account/security">
-                                <span class="glyphicon glyphicon-lock" aria-hidden="true"></span> Security
-                            </a>
-                        </li>
+                    <ul class="dropdown-menu slide-up-menu">
+                        <li><a href="/account/"><span class="glyphicon glyphicon-user"></span> ACCOUNT INFO</a></li>
+                        <li><a href="/account/security"><span class="glyphicon glyphicon-lock"></span> SECURITY</a></li>
                         <li role="separator" class="divider"></li>
-                        <li><a href="/account/logout"><span class="glyphicon glyphicon-log-out"
-                                    aria-hidden="true"></span> Log out</a></li>
+                        <li><a href="/account/logout" class="text-danger"><span class="glyphicon glyphicon-log-out"></span> LOG OUT</a></li>
                     </ul>
                 </li>
-                {{else}}
-                {{#if allowJoin}}
-                <li {{#if activeCreate}} class="active" {{/if}}>
-                    <a href="/account/create">
-                        <span class="glyphicon glyphicon-user" aria-hidden="true"></span> Create account
-                    </a>
-                </li>
-                {{/if}}
-                <li {{#if activeLogin}} class="active" {{/if}}>
-                    <a href="/account/login">
-                        <span class="glyphicon glyphicon-log-in" aria-hidden="true"></span> Log in
-                    </a>
-                </li>
-                {{/if}}
 
+                {{else}}
+                <li class="nav-link-hover {{#if activeLogin}}active{{/if}}">
+                    <a href="/account/login">LOG IN</a>
+                </li>
+
+                {{#if allowJoin}}
+                <li class="nav-link-hover {{#if activeCreate}}active{{/if}}">
+                    <a href="/account/create">CREATE ACCOUNT</a>
+                </li>
+
+                <li class="cta-section">
+                    <a href="/purchase" class="btn-ultra-sharp">
+                        GET @{{serviceDomain}}
+                        <span class="btn-shimmer"></span>
+                    </a>
+                </li>
+                {{/if}}
+                {{/if}}
             </ul>
         </div>
-
     </div>
+    <div id="scroll-progress"></div>
 </nav>
+
+<style>
+    /* FLEXBOX CENTERING - Keeping everything in one row on Desktop */
+    .nav-flex-container {
+        display: flex !important;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 85px;
+        padding: 0 5% !important;
+    }
+
+    @media (min-width: 768px) {
+        .navbar-collapse.collapse {
+            display: flex !important;
+            height: auto !important;
+            align-items: center;
+            overflow: visible !important;
+        }
+        .flex-nav-list {
+            display: flex;
+            align-items: center;
+            margin: 0 !important;
+        }
+    }
+
+    /* THEME & BRANDING */
+    .yoover-navbar-full {
+        background: rgba(255, 255, 255, 0.85) !important;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(0,0,0,0.05) !important;
+        z-index: 9999;
+        border-radius: 0 !important;
+    }
+
+    .yoover-brand-animate { height: 85px; display: flex; align-items: center; padding: 0 !important; }
+    .nav-logo { height: 35px; width: auto; }
+    .nav-brand-text { font-weight: 900; color: #1A73E8; font-size: 26px; letter-spacing: -2px; text-transform: uppercase; margin-left: 12px; }
+
+    /* LINKS & HOVER */
+    .nav-link-hover a {
+        font-weight: 800 !important;
+        font-size: 12px !important;
+        letter-spacing: 1.5px;
+        color: #111 !important;
+        padding: 10px 15px !important;
+        background: transparent !important;
+        position: relative;
+    }
+    
+    .nav-link-hover a::before {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 15px;
+        width: 0; height: 3px;
+        background: #1A73E8;
+        transition: width 0.3s;
+    }
+    .nav-link-hover:hover a::before, .nav-link-hover.active a::before {
+        width: calc(100% - 30px);
+    }
+
+    /* CTA BUTTON & MOBILE */
+    .cta-section { padding-left: 15px; }
+    .btn-ultra-sharp {
+        background: #1A73E8;
+        color: #fff !important;
+        padding: 12px 22px !important;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 11px;
+        border-radius: 0 !important;
+        position: relative;
+        overflow: hidden;
+        border: none;
+    }
+
+    @media (max-width: 767px) {
+        .nav-flex-container { display: block !important; }
+        .navbar-header { height: 85px; display: flex; align-items: center; justify-content: space-between; }
+        .navbar-collapse { background: white; border-top: 1px solid #eee; }
+    }
+
+    /* UTILITIES */
+    .btn-shimmer { position: absolute; top: 0; left: -150%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); animation: shimmer 4s infinite; }
+    @keyframes shimmer { 0% { left: -150%; } 30% { left: 150%; } 100% { left: 150%; } }
+    #scroll-progress { position: absolute; bottom: 0; left: 0; height: 3px; background: #1A73E8; width: 0%; transition: width 0.1s; }
+    .avatar-box { border: 2px solid #1A73E8; padding: 2px; display: flex; align-items: center; margin-right: 10px; }
+    .avatar-sharp { border-radius: 0 !important; width: 24px; height: 24px; }
+</style>

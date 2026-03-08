@@ -1,98 +1,157 @@
-<div class="row">
-    <div class="col-md-12">
-        <h1><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Account</h1>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-12">
-
-        <!-- Nav tabs -->
-        <ul class="nav nav-tabs" role="tablist">
-            {{> accountmenu}}
-        </ul>
-
-        <div class="tab-content">
-            <div role="tabpanel" class="tab-pane active" id="overview">
-
-                <p>&nbsp;</p>
-
-
-                <form method="post" action="/account/profile">
-                    <input type="hidden" name="_csrf" value="{{csrfToken}}">
-
-                    <fieldset>
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title">General</h3>
-                            </div>
-                            <div class="panel-body">
-
-                                <div class="form-group">
-                                    <label class="control-label">Username</label>
-                                    <div class="input-group">
-                                        <p class="form-control-static">{{values.username}}</p>
-                                    </div>
-                                </div>
-
-                                <div class="form-group{{#if errors.name}} has-error{{/if}}">
-                                    <label for="name">Your name</label>
-                                    <input type="text" class="form-control" name="name" id="name" placeholder="eg. &quot;Jaan Tamm&quot;" value="{{values.name}}">
-                                    {{#if errors.name}}
-                                        <span class="help-block">{{errors.name}}</span>
-                                    {{/if}}
-                                </div>
-
-                                <div class="form-group{{#if errors.spamLevel}} has-error{{/if}}">
-                                    <label for="name">Spam detection level</label>
-                                    <select class="form-control select-spam-level" name="spamLevel">
-                                        <option value="">
-                                            -- Select --
-                                        </option>
-                                        {{#each spamLevels}}
-                                            <option value="{{value}}" {{#if selected}}selected{{/if}}>
-                                                {{description}}
-                                            </option>
-                                        {{/each}}
-                                    </select>
-
-                                    {{#if errors.spamLevel}}
-                                        <span class="help-block">{{errors.spamLevel}}</span>
-                                    {{/if}}
-                                </div>
-
-                            </div>
-                        </div>
-
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title">Message forwarding</h3>
-                            </div>
-                            <div class="panel-body">
-
-                                <p>
-                                    Leave the following fields blank if you do not wish to forward all incoming emails
-                                </p>
-
-                                <div class="form-group{{#if errors.targets}} has-error{{/if}}">
-                                    <label for="targets">Forward incoming messages to:</label>
-                                    <input type="text" class="form-control" name="targets" id="targets" placeholder="user@example.com" value="{{values.targets}}">
-                                    {{#if errors.targets}}
-                                        <span class="help-block">{{errors.targets}}</span>
-                                    {{/if}}
-                                    <span class="help-block">Use comma separated list of addresses for multiple recipients</span>
-                                </div>
-                            </div>
-                        </div>
-
-                    </fieldset>
-
-                    <div class="form-group">
-                        <button type="submit" class="btn btn-success"><span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Update</button>
-                    </div>
-
-                </form>
-            </div>
+<div class="yoover-centered-container">
+    <div class="yoover-view-header">
+        <div class="header-icon-bg">
+            <span class="glyphicon glyphicon-cog"></span>
+        </div>
+        <div class="header-text">
+            <h1>Profile Settings</h1>
+            <p class="text-muted">Personalize your account details and mail handling preferences.</p>
         </div>
     </div>
+
+    <div class="yoover-tabs-wrapper">
+        <ul class="nav nav-tabs yoover-nav-tabs" role="tablist">
+            {{> accountmenu}}
+        </ul>
+    </div>
+
+    <form method="post" action="/account/profile" class="yoover-form">
+        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+
+        <div class="settings-section-card">
+            <div class="section-header">
+                <h3 class="section-title">General Information</h3>
+            </div>
+            
+            <div class="section-body">
+                <div class="form-group-yoover">
+                    <label class="yoover-label">Username</label>
+                    <div class="static-display">
+                        <span class="glyphicon glyphicon-lock"></span>
+                        <strong>{{values.username}}</strong>
+                    </div>
+                </div>
+
+                <div class="form-group-yoover {{#if errors.name}}has-error-yoover{{/if}}">
+                    <label for="name" class="yoover-label">Display Name</label>
+                    <input type="text" class="form-control-yoover" name="name" id="name" 
+                           placeholder="e.g. Gaurav Dhamija" value="{{values.name}}">
+                    {{#if errors.name}}
+                        <span class="error-text"><span class="glyphicon glyphicon-warning-sign"></span> {{errors.name}}</span>
+                    {{/if}}
+                </div>
+
+                <div class="form-group-yoover {{#if errors.spamLevel}}has-error-yoover{{/if}}">
+                    <label for="spamLevel" class="yoover-label">Spam Detection Sensitivity</label>
+                    <div class="select-wrapper">
+                        <select class="form-control-yoover select-spam-level" name="spamLevel" id="spamLevel">
+                            <option value="">-- Select Level --</option>
+                            {{#each spamLevels}}
+                                <option value="{{value}}" {{#if selected}}selected{{/if}}>
+                                    {{description}}
+                                </option>
+                            {{/each}}
+                        </select>
+                    </div>
+                    <p class="help-text-yoover">Determines how aggressively we filter suspicious incoming mail.</p>
+                    {{#if errors.spamLevel}}
+                        <span class="error-text"><span class="glyphicon glyphicon-warning-sign"></span> {{errors.spamLevel}}</span>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-section-card">
+            <div class="section-header">
+                <h3 class="section-title">Message Forwarding</h3>
+                <p class="section-desc">Automatically route your incoming mail to other addresses.</p>
+            </div>
+            
+            <div class="section-body">
+                <div class="form-group-yoover {{#if errors.targets}}has-error-yoover{{/if}}">
+                    <label for="targets" class="yoover-label">Forward To:</label>
+                    <div class="input-with-icon">
+                        <span class="glyphicon glyphicon-share-alt"></span>
+                        <input type="text" class="form-control-yoover" name="targets" id="targets" 
+                               placeholder="user@example.com" value="{{values.targets}}">
+                    </div>
+                    {{#if errors.targets}}
+                        <span class="error-text"><span class="glyphicon glyphicon-warning-sign"></span> {{errors.targets}}</span>
+                    {{/if}}
+                    <p class="help-text-yoover">Use commas for multiple addresses. Leave empty to keep mail local.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-footer-actions">
+            <button type="submit" class="btn btn-yoover-success-lg">
+                <span class="glyphicon glyphicon-save"></span> Save Changes
+            </button>
+        </div>
+    </form>
 </div>
+
+<style>
+    /* CENTERED CONTAINER ENGINE */
+    .yoover-centered-container {
+        max-width: 850px; /* Slightly tighter than overview for form focus */
+        margin: 40px auto;
+        padding: 0 20px;
+        animation: slideInUp 0.4s ease-out;
+    }
+
+    /* SECTION CARDS */
+    .settings-section-card { 
+        background: #fff; 
+        border: 1px solid #e1e8ed; 
+        border-radius: 20px; 
+        margin-bottom: 30px; 
+        overflow: hidden; 
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.03); 
+    }
+    .section-header { padding: 22px 30px; border-bottom: 1px solid #f1f3f4; background: #fafbfc; }
+    .section-title { margin: 0; font-size: 15px; font-weight: 800; color: #202124; letter-spacing: 0.5px; text-transform: uppercase; }
+    .section-desc { margin: 6px 0 0; font-size: 13px; color: #80868b; }
+    .section-body { padding: 35px 30px; }
+
+    /* FORM LAYOUT */
+    .form-group-yoover { margin-bottom: 25px; max-width: 480px; }
+    .yoover-label { display: block; font-size: 13px; font-weight: 700; color: #3c4043; margin-bottom: 10px; }
+    
+    .form-control-yoover { 
+        width: 100%; padding: 13px 16px; border-radius: 12px; border: 1px solid #dadce0; 
+        font-size: 14px; transition: all 0.25s ease; background: #fff; color: #202124;
+    }
+    .form-control-yoover:focus { border-color: #1A73E8; outline: none; box-shadow: 0 0 0 4px rgba(26,115,232,0.1); }
+
+    /* SPECIAL ELEMENTS */
+    .static-display { padding: 10px 0; font-size: 16px; color: #202124; display: flex; align-items: center; gap: 12px; }
+    .static-display .glyphicon { color: #1A73E8; font-size: 14px; opacity: 0.7; }
+
+    .input-with-icon { position: relative; }
+    .input-with-icon .glyphicon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #9aa0a6; }
+    .input-with-icon .form-control-yoover { padding-left: 45px; }
+
+    .help-text-yoover { font-size: 12px; color: #80868b; margin-top: 8px; line-height: 1.4; }
+    .error-text { color: #d93025; font-size: 12px; font-weight: 600; margin-top: 8px; display: flex; align-items: center; gap: 5px; }
+
+    /* ACTION BUTTON */
+    .form-footer-actions { margin-top: 40px; display: flex; justify-content: center; }
+    .btn-yoover-success-lg { 
+        background: #34A853; color: white; border: none; border-radius: 14px; padding: 18px 45px; 
+        font-weight: 800; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 8px 20px rgba(52,168,83,0.25);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .btn-yoover-success-lg:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(52,168,83,0.35); background: #2e9449; }
+
+    /* TABS OVERRIDE FROM PREVIOUS STYLE */
+    .yoover-tabs-wrapper { margin-bottom: 35px; border-bottom: 2px solid #f1f3f4; }
+    .yoover-nav-tabs { border: none; display: flex; justify-content: center; }
+    .yoover-nav-tabs > li > a { border: none !important; font-weight: 700; color: #80868b; padding: 15px 25px; }
+    .yoover-nav-tabs > li.active > a:after { content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 3px; background: #1A73E8; }
+
+    @keyframes slideInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>

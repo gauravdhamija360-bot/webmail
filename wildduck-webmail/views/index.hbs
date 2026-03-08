@@ -1,206 +1,320 @@
-<div class="row">
-    <div class="col-md-12">
-        <h1><span class="glyphicon glyphicon-inbox" aria-hidden="true"></span> {{serviceName}}</h1>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-12">
-
-        <h3>
-          What is this?
-        </h3>
-
-        <p>
-            <a href="https://github.com/nodemailer/wildduck">WildDuck</a> is an open source email server software and this webpage runs on the default webmail software for WildDuck.
-        </p>
-
-        <p>
-            <a class="btn btn-primary btn-md" href="https://github.com/nodemailer/wildduck" role="button"><span class="glyphicon glyphicon-cloud-download" aria-hidden="true"></span> Source for the mail server</a>
-
-            <a class="btn btn-primary btn-md" href="https://github.com/nodemailer/wildduck-webmail" role="button"><span class="glyphicon glyphicon-cloud-download" aria-hidden="true"></span> Source for the Webmail</a>
-
-            <a class="btn btn-success btn-md" href="/account/create" role="button"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Create demo account</a>
-        </p>
-
-        <p>
-            To test it out create a new account <strong><a href="/account/create">here</a></strong>. This would give you an actual working email address. Next you could try turning on two factor authentication or logging into IMAP with an application specific password.
-        </p>
-
-        <p>
-            This entire webservice is just a front-end to <a href="https://api.wildduck.email/">WildDuck API</a>. The web application does not make any database connections, everything is handled by using REST API calls against the API.
-        </p>
-
-        <h3>
-          Screenshots
-        </h3>
-
-        <div class="row">
-            <div class="col-md-8">
-
-                <div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
-                  <!-- Indicators -->
-                  <ol class="carousel-indicators">
-                    <li data-target="#carousel-example-generic" data-slide-to="0" class="active"></li>
-                    <li data-target="#carousel-example-generic" data-slide-to="1"></li>
-                    <li data-target="#carousel-example-generic" data-slide-to="2"></li>
-                    <li data-target="#carousel-example-generic" data-slide-to="3"></li>
-                    <li data-target="#carousel-example-generic" data-slide-to="4"></li>
-                  </ol>
-
-                  <!-- Wrapper for slides -->
-                  <div class="carousel-inner" role="listbox">
-
-                    <div class="item active">
-                      <img src="/demo/img01.png" alt="...">
-                    </div>
-
-                    <div class="item">
-                      <img src="/demo/img02.png" alt="...">
-                    </div>
-
-                    <div class="item">
-                      <img src="/demo/img03.png" alt="...">
-                    </div>
-
-                    <div class="item">
-                      <img src="/demo/img04.png" alt="...">
-                    </div>
-
-                    <div class="item">
-                      <img src="/demo/img05.png" alt="...">
-                    </div>
-
-                  </div>
-
-                  <!-- Controls -->
-                  <a class="left carousel-control" href="#carousel-example-generic" role="button" data-slide="prev">
-                    <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
-                    <span class="sr-only">Previous</span>
-                  </a>
-                  <a class="right carousel-control" href="#carousel-example-generic" role="button" data-slide="next">
-                    <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
-                    <span class="sr-only">Next</span>
-                  </a>
-                </div>
-
+<section style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 100px 5%; border-bottom: 1px solid #e1e8ed;">
+    <div class="row text-center">
+        <div class="col-md-8 col-md-offset-2">
+            <h2 style="font-weight: 800; font-size: 38px; color: #1A73E8; margin-bottom: 10px;">Claim Your Digital Identity</h2>
+            <p style="font-size: 18px; color: #555; margin-bottom: 40px;">Check if your preferred @{{serviceDomain}} address is still available.</p>
+            
+            <div class="input-group input-group-lg" style="max-width: 700px; margin: 0 auto; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border-radius: 50px; overflow: hidden; background: white; padding: 5px;">
+                <input type="text" id="usernameInput" class="form-control" placeholder="yourname" style="border: none; box-shadow: none; font-size: 24px; height: 70px; padding-left: 30px; font-weight: 600;">
+                <span class="input-group-addon" style="background: white; border: none; font-size: 24px; color: #999; font-weight: 400; padding-right: 20px;">@{{serviceDomain}}</span>
+                <span class="input-group-btn">
+                    <button id="checkBtn" class="btn btn-primary" type="button" style="height: 70px; border-radius: 0 50px 50px 0; padding: 0 40px; font-weight: 800; background: #1A73E8; font-size: 18px;">
+                        CHECK AVAILABILITY
+                    </button>
+                </span>
             </div>
-            <div class="col-md-2"></div>
+            
+            <div id="checkResult" style="margin-top: 25px; min-height: 30px; font-weight: 600; font-size: 18px; display: none;">
+                </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.getElementById('checkBtn').addEventListener('click', async function() {
+    const username = document.getElementById('usernameInput').value.trim();
+    const resultDiv = document.getElementById('checkResult');
+    const checkBtn = this;
+
+    if (!username || username.length < 3) {
+        resultDiv.style.display = 'block';
+        resultDiv.style.color = '#d93025';
+        resultDiv.innerHTML = '<span class="glyphicon glyphicon-exclamation-sign"></span> Please enter at least 3 characters.';
+        return;
+    }
+
+    // Visual feedback
+    checkBtn.innerHTML = 'CHECKING...';
+    checkBtn.disabled = true;
+    resultDiv.style.display = 'none';
+
+    try {
+        /* NOTE: You need to create a route on your server /api/check-username 
+           that calls WildDuck's GET /user/resolve?address=username@domain
+        */
+        const response = await fetch(`/api/check-username?username=${username}`);
+        const data = await response.json();
+
+        resultDiv.style.display = 'block';
+
+        if (data.available) {
+            resultDiv.style.color = '#34A853';
+            resultDiv.innerHTML = `<span class="glyphicon glyphicon-ok-circle"></span> Good news! <strong>${username}@{{serviceDomain}}</strong> is available. 
+                                   <br><br><a href="/purchase?username=${username}" class="btn btn-success" style="border-radius: 25px; padding: 10px 30px;">BUY NOW</a>`;
+        } else {
+            resultDiv.style.color = '#d93025';
+            resultDiv.innerHTML = `<span class="glyphicon glyphicon-remove-circle"></span> Sorry, <strong>${username}</strong> is already taken. Try another?`;
+        }
+    } catch (err) {
+        resultDiv.style.display = 'block';
+        resultDiv.style.color = '#f4b400';
+        resultDiv.innerHTML = 'Error checking availability. Please try again later.';
+    } finally {
+        checkBtn.innerHTML = 'CHECK AVAILABILITY';
+        checkBtn.disabled = false;
+    }
+});
+</script>
+
+
+
+
+
+
+
+
+<div id="yoover-carousel" class="carousel slide" data-ride="carousel" style="background: #f8f9fa; border-bottom: 1px solid #eee; width: 100%; margin: 0; border-radius: 0;">
+    <ol class="carousel-indicators">
+        <li data-target="#yoover-carousel" data-slide-to="0" class="active"></li>
+        <li data-target="#yoover-carousel" data-slide-to="1"></li>
+        <li data-target="#yoover-carousel" data-slide-to="2"></li>
+    </ol>
+
+    <div class="carousel-inner" role="listbox" style="border-radius: 0;">
+        
+        <div class="item active">
+            <div class="container-fluid" style="padding: 0;">
+                <div class="row" style="margin: 0; padding: 120px 10%; display: flex; align-items: center; flex-wrap: wrap;">
+                    <div class="col-md-6">
+                        <h2 style="font-weight: 800; font-size: 48px; color: #1A73E8; margin-bottom: 20px; letter-spacing: -1px;">Your Privacy, <br>Our Priority.</h2>
+                        <p style="font-size: 20px; color: #666; margin-bottom: 35px; line-height: 1.6;">Switch to the email service that doesn't track you. Secure, encrypted, and built for your peace of mind.</p>
+                        <a href="/purchase" class="btn btn-primary btn-lg" style="border-radius: 0; padding: 15px 45px; background: #1A73E8; border: none; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Learn More</a>
+                    </div>
+                    <div class="col-md-6 text-center">
+                        <div style="background: white; padding: 10px; border-radius: 0; box-shadow: 0 30px 60px rgba(0,0,0,0.1); border: 1px solid #eee;">
+                            <img src="/demo/img01.png" class="img-responsive" alt="Yoover Webmail Interface" style="border-radius: 0;">
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
+        <div class="item">
+            <div class="container-fluid" style="padding: 0;">
+                <div class="row" style="margin: 0; padding: 120px 10%; display: flex; align-items: center; flex-wrap: wrap;">
+                    <div class="col-md-6 col-md-push-6">
+                        <h2 style="font-weight: 800; font-size: 48px; color: #1A73E8; margin-bottom: 20px; letter-spacing: -1px;">Email Anywhere.</h2>
+                        <p style="font-size: 20px; color: #666; margin-bottom: 35px; line-height: 1.6;">Sync seamlessly with iPhone, Android, or Outlook. Take your @{{serviceDomain}} address wherever you go.</p>
+                        <a href="/help" class="btn btn-primary btn-lg" style="border-radius: 0; padding: 15px 45px; background: #1A73E8; border: none; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Setup Guide</a>
+                    </div>
+                    <div class="col-md-6 col-md-pull-6 text-center">
+                         <span class="glyphicon glyphicon-phone" style="font-size: 200px; color: #1A73E8; opacity: 0.9;"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-        <h3 id="mobileconfig">1. OSX Profile demo</h3>
-        <p>
-            The following video demonstrates:
-        </p>
-        <ul>
-            <li>
-                Creating a new account and logging in
-            </li>
-            <li>
-                Generating a new Application Specific Password
-            </li>
-            <li>
-                Exporting the password as OSX Mobileconfig file to set up OSX/iOS mail applications
-            </li>
-            <li>
-                <a href="https://github.com/nodemailer/wildduck/tree/master/emails">Inserting messages</a> to the INBOX of new users
-            </li>
-        </ul>
+        <div class="item" style="background: linear-gradient(135deg, #1A73E8 0%, #0D47A1 100%); color: white;">
+            <div class="container-fluid text-center" style="padding: 140px 0;">
+                <h2 style="font-weight: 800; font-size: 56px; margin-bottom: 25px; letter-spacing: -1.5px;">Fast. Reliable. Secure.</h2>
+                <p style="font-size: 22px; opacity: 0.9; max-width: 800px; margin: 0 auto 45px;">Experience the power of enterprise-grade email infrastructure with Yoover's lightning-fast delivery.</p>
+                <a href="/account/create" class="btn btn-default btn-lg" style="border-radius: 0; padding: 18px 50px; font-weight: 800; color: #1A73E8; border: none; text-transform: uppercase; letter-spacing: 1px;">Create Test Account</a>
+            </div>
+        </div>
 
-        <p>
-            <iframe width="560" height="315" src="https://www.youtube.com/embed/Pld5m9UJ8SE" frameborder="0" allowfullscreen></iframe>
-        </p>
+    </div>
 
-        <h3 id="pgp">2. PGP encryption demo</h3>
-        <p>
-            The following video demonstrates:
-        </p>
-        <ul>
-            <li>
-                Sending and receiving a cleartext message
-            </li>
-            <li>
-                Setting up PGP encryption for cleartext messages
-            </li>
-            <li>
-                Receiving a cleartext message that the server encrypts before storing it to the mail store
-            </li>
-        </ul>
+    <a class="left carousel-control" href="#yoover-carousel" role="button" data-slide="prev" style="background: none; color: #1A73E8; opacity: 1;">
+        <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+        <span class="sr-only">Previous</span>
+    </a>
+    <a class="right carousel-control" href="#yoover-carousel" role="button" data-slide="next" style="background: none; color: #1A73E8; opacity: 1;">
+        <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+        <span class="sr-only">Next</span>
+    </a>
+</div>
 
-        <pd>
-            <iframe width="560" height="315" src="https://www.youtube.com/embed/nJ4KdXJRi1w" frameborder="0" allowfullscreen></iframe>
-        </p>
+<style>
+    /* Force Sharp Edges Globally for the Carousel */
+    #yoover-carousel, 
+    #yoover-carousel .carousel-inner, 
+    #yoover-carousel .item, 
+    #yoover-carousel .btn {
+        border-radius: 0 !important;
+    }
 
-        <h3 id="onion">3. Sending to the onion network</h3>
-        <p>
-            The following video demonstrates:
-        </p>
-        <ul>
-            <li>
-                Composing a normal email message and addressing it to an onion email address
-            </li>
-            <li>
-                Sending the message
-            </li>
-            <li>
-                Receiving the message sent from WildDuck Mail Server to an onion email service
-            </li>
-        </ul>
+    .carousel-indicators li { 
+        border-radius: 0; 
+        width: 12px; 
+        height: 12px; 
+        border-color: #1A73E8; 
+    }
+    .carousel-indicators .active { 
+        border-radius: 0; 
+        width: 12px; 
+        height: 12px; 
+        background-color: #1A73E8; 
+    }
+    
+    /* Control Visibility */
+    .carousel-control { width: 5%; }
+    .carousel-control .glyphicon { font-size: 40px; }
 
-        <p>
-            <iframe width="560" height="315" src="https://www.youtube.com/embed/p2eiyHAPwkQ" frameborder="0" allowfullscreen></iframe>
-        </p>
+    /* Responsive Adjustment */
+    @media (max-width: 768px) {
+        .item .row { display: block !important; padding: 60px 20px !important; }
+        .item h2 { font-size: 36px !important; }
+    }
+</style>
 
-        <h3>Features</h3>
-        <ul>
-            <li>
-                Generated email address is a real address and can be used with any mail client. IMAP is handled by WildDuck, MX messages are received by Haraka and outgoing messages are delivered by ZoneMTA.
-            </li>
-            <li>
-                All data is stored in a sharded MongoDB database. If there is not enough space then adding a new shard should fix that
-            </li>
-            <li>
-                Mail daemon processes avoid touching the filesystem (WildDuck and ZoneMTA do not touch file system after startup, Haraka writes and reads messages from a queue and spool folder) and do not execute any shell commands. Daemon processes run as unprivileged
-                users. All compiled node dependencies are optional and can be removed to avoid potential buffer overflows and such.
-            </li>
-            <li>
-                Messages sent through SMTP are automatically copied to the <em>Sent Mail</em> folder. This mostly affects POP3 users as IMAP clients usually upload the message by themselves
-            </li>
-            <li>
-                When sending, non-authorized From: address in the message header is replaced. <em>"From: User Name &lt;otheruser@domain&gt;"</em> becomes <em>"From: User Name &lt;username@example.com&gt;"</em>
-            </li>
-            <li>
-                Dots in usernames and addresses are ignored. <em>user.name@example.com</em> is the same as <em>username@example.com</em>
-            </li>
-            <li>
-                Labels in incoming email addresses are ignored. <em>user+label@example.com</em> is the same as <em>user@example.com</em>
-            </li>
-            <li>
-                Moving messages to and out of the Junk Mail folder raises a junk status change event for that message. This is currently not used though
-            </li>
-            <li>
-                Enabling TOTP based 2FA disables account password for IMAP, POP3 and SMTP
-            </li>
-            <li>
-                Application Specific Password comes with automatically generated mobileconfig file for iOS/OSX mail applications
-            </li>
-            <li>
-                Incoming messages are checked against user defined filters. Matching messages can be marked as seen or flagged. Messages can be moved to specific mailbox folder. Messages tagged as spam are moved to Junk Mail folder.
-            </li>
-            <li>
-                Messages can be forwarded to another email address or uploaded to an URL account wide (all incoming messages are forwarded) or filter based (only messages matching specific filter are forwarded)
-            </li>
-            <li>
-                All authentication related events are logged and shown in the account security page. This behavior will change in the future as mail clients generate a lot of noise (re-authenticating after short period of time). Such logins should be joined somehow into
-                single events.
-            </li>
-            <li>
-                This web service also makes use of the built-in GPG encryption feature of WildDuck where all cleartext messages are encrypted with user's public key before stored to disk. The encryption step is applied after filtering step so you could still filter messages by body text.
-            </li>
-            <li>
-                All new users get <a href="https://github.com/nodemailer/wildduck/tree/master/emails">default emails generated</a> and injected to INBOX as flagged messages.
-            </li>
-        </ul>
+
+
+<div class="row jumbotron" style="background: #fff; padding: 80px 0; border: none; margin-bottom: 0;">
+    <div class="col-md-10 col-md-offset-1 text-center">
+        <img src="/images/yoover-logo.svg" alt="Yoover Logo" style="height: 120px; margin-bottom: 30px; filter: drop-shadow(0 10px 15px rgba(26,115,232,0.2));">
+        <h1 style="font-weight: 800; font-size: 52px; color: #1A73E8; letter-spacing: -1.5px;">Email, Reimagined.</h1>
+        <p style="font-size: 24px; color: #5f6368; max-width: 800px; margin: 20px auto 40px;">Get a professional <strong>@{{serviceDomain}}</strong> address. Zero ads, total privacy, and enterprise-grade security.</p>
+        
+        <div style="margin-top: 40px;">
+            <a class="btn btn-success btn-lg" href="/purchase" style="padding: 20px 50px; border-radius: 50px; font-weight: 800; font-size: 20px; box-shadow: 0 10px 20px rgba(92, 184, 92, 0.3);">
+                GET STARTED NOW
+            </a>
+            <div style="margin-top: 15px;">
+                <a href="/account/login" style="color: #1A73E8; font-weight: 600;">Already a member? Log in</a>
+            </div>
+        </div>
     </div>
 </div>
+
+<div class="row text-center" style="background: #f8f9fa; padding: 30px 0; border-top: 1px solid #eee; border-bottom: 1px solid #eee;">
+    <div class="col-md-12">
+        <p style="text-transform: uppercase; letter-spacing: 2px; color: #999; font-weight: 700; font-size: 12px; margin-bottom: 0;">
+            Powered by Secure & Encrypted Infrastructure
+        </p>
+    </div>
+</div>
+
+<div class="container" style="padding: 100px 0;">
+    <div class="row">
+        <div class="col-md-4 text-center">
+            <div style="padding: 20px;">
+                <span class="glyphicon glyphicon-eye-close" style="font-size: 50px; color: #1A73E8;"></span>
+                <h3 style="font-weight: 700; margin-top: 25px;">No Data Mining</h3>
+                <p class="text-muted">We don't read your emails to show you ads. Your conversations are private and encrypted.</p>
+            </div>
+        </div>
+        <div class="col-md-4 text-center">
+            <div style="padding: 20px;">
+                <span class="glyphicon glyphicon-send" style="font-size: 50px; color: #1A73E8;"></span>
+                <h3 style="font-weight: 700; margin-top: 25px;">Global Reach</h3>
+                <p class="text-muted">Lightning-fast delivery with 99.9% uptime. Your mail arrives exactly when it's supposed to.</p>
+            </div>
+        </div>
+        <div class="col-md-4 text-center">
+            <div style="padding: 20px;">
+                <span class="glyphicon glyphicon-phone" style="font-size: 50px; color: #1A73E8;"></span>
+                <h3 style="font-weight: 700; margin-top: 25px;">Native App Support</h3>
+                <p class="text-muted">Works perfectly with Outlook, Apple Mail, and Android via secure IMAP/SMTP protocols.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row" style="background: #1A73E8; color: white; padding: 100px 0;">
+    <div class="col-md-5 col-md-offset-1">
+        <h2 style="font-weight: 800; font-size: 36px; margin-bottom: 30px;">Security is our priority, not an option.</h2>
+        <ul style="list-style: none; padding: 0; font-size: 18px; line-height: 2;">
+            <li><span class="glyphicon glyphicon-ok"></span> 2FA / Two-Factor Authentication</li>
+            <li><span class="glyphicon glyphicon-ok"></span> Encrypted storage at rest</li>
+            <li><span class="glyphicon glyphicon-ok"></span> Spam & Virus protection filters</li>
+            <li><span class="glyphicon glyphicon-ok"></span> Secure TLS/SSL encryption for all mail</li>
+        </ul>
+    </div>
+    <div class="col-md-5 text-center">
+        <div style="background: rgba(255,255,255,0.1); padding: 40px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2);">
+            <span class="glyphicon glyphicon-lock" style="font-size: 120px;"></span>
+            <p style="margin-top: 20px; font-weight: 600;">Yoover Security Shield Enabled</p>
+        </div>
+    </div>
+</div>
+
+<div class="container" style="padding: 100px 0;">
+    <div class="text-center" style="margin-bottom: 60px;">
+        <h2 style="font-weight: 800; font-size: 40px;">Choose Your Plan</h2>
+        <p class="text-muted">Transparent pricing. No hidden fees.</p>
+    </div>
+    <div class="row">
+        <div class="col-md-4 col-md-offset-2">
+            <div class="panel panel-default text-center" style="border-radius: 20px; overflow: hidden; border: 1px solid #eee; transition: all 0.3s ease;">
+                <div class="panel-heading" style="background: #fff; padding: 40px 0;">
+                    <h4 style="font-weight: 700; color: #777;">PERSONAL</h4>
+                    <h2 style="font-size: 56px; font-weight: 800; margin: 10px 0;">$5<small style="font-size: 14px;">/year</small></h2>
+                </div>
+                <div class="panel-body" style="padding: 40px;">
+                    <ul class="list-unstyled" style="line-height: 3; font-size: 16px;">
+                        <li><strong>1 GB</strong> Secure Storage</li>
+                        <li>Webmail Access</li>
+                        <li>Mobile Sync (IMAP)</li>
+                        <li class="text-muted"><del>Custom Identities</del></li>
+                    </ul>
+                    <a href="/purchase?plan=personal" class="btn btn-default btn-lg btn-block" style="border-radius: 50px; margin-top: 30px; font-weight: 700;">CHOOSE PLAN</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="panel panel-primary text-center" style="border-radius: 20px; overflow: hidden; box-shadow: 0 20px 40px rgba(26,115,232,0.15); border: none;">
+                <div class="panel-heading" style="background: #1A73E8; padding: 40px 0;">
+                    <h4 style="font-weight: 700;">PROFESSIONAL</h4>
+                    <h2 style="font-size: 56px; font-weight: 800; margin: 10px 0; color: #fff;">$15<small style="font-size: 14px; color: rgba(255,255,255,0.7);">/year</small></h2>
+                </div>
+                <div class="panel-body" style="padding: 40px;">
+                    <ul class="list-unstyled" style="line-height: 3; font-size: 16px;">
+                        <li><strong>10 GB</strong> Secure Storage</li>
+                        <li>Priority Support</li>
+                        <li>Mobile Sync (IMAP)</li>
+                        <li><strong>Custom Identities</strong></li>
+                    </ul>
+                    <a href="/purchase?plan=pro" class="btn btn-success btn-lg btn-block" style="border-radius: 50px; margin-top: 30px; font-weight: 800; background: #1A73E8; border: none;">CHOOSE PLAN</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row" style="background: #fdfdfd; padding: 100px 0;">
+    <div class="col-md-6 col-md-offset-3">
+        <h2 class="text-center" style="font-weight: 800; margin-bottom: 50px;">Frequently Asked Questions</h2>
+        <div class="panel-group">
+            <div class="panel panel-default" style="border: none; background: transparent; border-bottom: 1px solid #eee;">
+                <div class="panel-body">
+                    <h4 style="font-weight: 700;">Can I use my own domain?</h4>
+                    <p class="text-muted">Yes! Our Professional plan supports custom identities and domain mapping.</p>
+                </div>
+            </div>
+            <div class="panel panel-default" style="border: none; background: transparent; border-bottom: 1px solid #eee;">
+                <div class="panel-body">
+                    <h4 style="font-weight: 700;">Is there a mobile app?</h4>
+                    <p class="text-muted">You can use any email app (Outlook, Gmail app, Apple Mail) by connecting via our secure IMAP settings.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row text-center" style="padding: 100px 0; background: #fff;">
+    <div class="col-md-12">
+        <h2 style="font-weight: 800; font-size: 32px;">Ready for better email?</h2>
+        <p style="margin-bottom: 30px;">Join thousands of users who trust Yoover for their daily communication.</p>
+        <a href="/account/create" class="btn btn-primary btn-lg" style="padding: 15px 60px; border-radius: 50px; font-weight: 700; background: #1A73E8;">CREATE TEST ACCOUNT</a>
+    </div>
+</div>
+
+<style>
+    /* Add subtle hover animations to pricing cards */
+    .panel:hover {
+        transform: translateY(-10px);
+    }
+    .btn {
+        transition: all 0.2s ease;
+    }
+</style>
