@@ -1,0 +1,134 @@
+<h2 class="sub-header" style="display: flex;">
+    <div style="flex-grow: 1">
+        <table class="limited">
+            <tr class="messagerow-{{message.mailbox}}-{{messageData.id}}">
+                <td class="message-subject-line">
+                    <span>{{messageData.subject}}</span>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div>
+        <a href="/webmail/{{mailbox.id}}/message/{{messageData.id}}" class="btn btn-default"><span class="glyphicon glyphicon-menu-left" aria-hidden="true"></span></a>
+    </div>
+</h2>
+
+<p>
+    Below are displayed timeline events related to the selected message. This includes receive info, forwarding and autoreplies
+</p>
+
+{{#each events}}
+    <dl class="dl-horizontal">
+
+        {{#if actionDescription}}
+            {{#if action}}
+                  <dt>Action</dt>
+                  <dd><strong><span class="text-{{actionLabel}}">{{actionDescription}}</span></strong></dd>
+            {{/if}}
+        {{else}}
+            {{#if action}}
+                  <dt>Action</dt>
+                  <dd><strong>{{action}}</strong></dd>
+            {{/if}}
+        {{/if}}
+
+        <dt>ID</dt>
+        <dd><strong>{{id}}{{#if seq}}.{{seq}}{{/if}}</strong></dd>
+
+        <dt>Time</dt>
+        <dd><span class="datestring-fixed" title="{{time}}">{{time}}</span></dd>
+
+        {{#if messageId}}
+          <dt>Message-ID</dt>
+          <dd>{{messageId}}</dd>
+        {{/if}}
+
+        {{#if from}}
+              <dt>From</dt>
+              <dd>{{from}}</dd>
+        {{/if}}
+
+        {{#if to}}
+              <dt>To</dt>
+              <dd>{{to}}</dd>
+        {{/if}}
+
+        {{#if targetList}}
+            <dt>{{#if toTitle}}{{toTitle}}{{else}}Forwarding{{/if}}</dt>
+            <dd>
+                {{#each targetList}}
+                    <div><strong>{{../id}}.{{seq}}:</strong> {{text}} <code class="response">{{value}}</code></div>
+                {{/each}}
+            </dd>
+        {{/if}}
+
+        {{#if origin}}
+              <dt>Sending host</dt>
+              <dd>{{origin}}</dd>
+        {{/if}}
+
+        {{#if src}}
+              <dt>Local address</dt>
+              <dd>{{src}}</dd>
+        {{/if}}
+
+        {{#if mx}}
+              <dt>Destination</dt>
+              <dd>{{mx}}
+                  {{#if dst}}
+                  [{{dst}}]
+                  {{/if}}
+              </dd>
+        {{/if}}
+
+        {{#if response}}
+              <dt>Server response</dt>
+              <dd><code class="response">{{response}}</code></dd>
+        {{/if}}
+
+        {{#if error}}
+              <dt>Error message</dt>
+              <dd><code class="response">{{error}}</code></dd>
+        {{/if}}
+
+    </dl>
+{{/each}}
+
+<p>
+    &nbsp;
+</p>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var stream = new EventSource('/api/events');
+    stream.onmessage = function(e) {
+        var data, row, star, redrawTimer;
+        try {
+            data = JSON.parse(e.data);
+        } catch (E) {
+            return;
+        }
+        switch (data.command) {
+            case 'COUNTERS': {
+                if (data.mailbox) {
+                    if(FAVICON && data.mailbox === INBOX_ID){
+                        FAVICON.badge(data.unseen);
+                    }
+
+                    [].slice.call(document.querySelectorAll('.unseen-counter-' + data.mailbox)).forEach(function(row){
+                        if(data.unseen){
+                            row.style.display = 'block';
+                            row.textContent = data.unseen;
+                        }else {
+                            row.style.display = 'none';
+                            row.textContent = 0;
+                        }
+                    });
+                }
+                break;
+            }
+        }
+    };
+});
+</script>

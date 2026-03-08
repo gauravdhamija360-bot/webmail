@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    {{>header}}
+</head>
+
+<body{{#if user}} class="is-logged-in"{{/if}}>
+
+    {{>navbar}}
+    <div class="flash-messages">
+        {{flash_messages}}
+    </div>
+
+
+
+    <div class="container">
+
+        {{#if generalNotification}}
+        <div class="panel panel-warning">
+            <div class="panel-heading">{{{generalNotification}}}</div>
+        </div>
+        {{/if}}
+
+        {{{body}}}
+
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p class="text-muted">&copy; 2017 <a href="/">{{serviceName}}</a>. <a
+                    href="mailto:info@{{serviceDomain}}">info@{{serviceDomain}}</a>. </p>
+        </div>
+    </footer>
+
+    {{> scripts}}
+</body>
+
+</html>

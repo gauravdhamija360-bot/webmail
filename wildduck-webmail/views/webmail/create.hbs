@@ -1,0 +1,46 @@
+
+<h2 class="sub-header"><span class="glyphicon glyphicon-inbox" aria-hidden="true"></span> Create folder</h2>
+
+<form method="post" action="/webmail/create">
+    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+
+    {{> mailbox}}
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-success"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Create</button>
+    </div>
+
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var stream = new EventSource('/api/events');
+    stream.onmessage = function(e) {
+        var data, row, star, redrawTimer;
+        try {
+            data = JSON.parse(e.data);
+        } catch (E) {
+            return;
+        }
+        switch (data.command) {
+            case 'COUNTERS': {
+                if (data.mailbox) {
+                    if(FAVICON && data.mailbox === INBOX_ID){
+                        FAVICON.badge(data.unseen);
+                    }
+                    [].slice.call(document.querySelectorAll('.unseen-counter-' + data.mailbox)).forEach(function(row){
+                        if(data.unseen){
+                            row.style.display = 'block';
+                            row.textContent = data.unseen;
+                        }else {
+                            row.style.display = 'none';
+                            row.textContent = 0;
+                        }
+                    });
+                }
+                break;
+            }
+        }
+    };
+});
+</script>
