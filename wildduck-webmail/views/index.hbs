@@ -1,22 +1,363 @@
-<section style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 100px 5%; border-bottom: 1px solid #e1e8ed;">
-    <div class="row text-center">
-        <div class="col-md-8 col-md-offset-2">
-            <h2 style="font-weight: 800; font-size: 38px; color: #1A73E8; margin-bottom: 10px;">Claim Your Digital Identity</h2>
-            <p style="font-size: 18px; color: #555; margin-bottom: 40px;">Check if your preferred @{{serviceDomain}} address is still available.</p>
-            
-            <div class="input-group input-group-lg" style="max-width: 700px; margin: 0 auto; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border-radius: 50px; overflow: hidden; background: white; padding: 5px;">
-                <input type="text" id="usernameInput" class="form-control" placeholder="yourname" style="border: none; box-shadow: none; font-size: 24px; height: 70px; padding-left: 30px; font-weight: 600;">
-                <span class="input-group-addon" style="background: white; border: none; font-size: 24px; color: #999; font-weight: 400; padding-right: 20px;">@{{serviceDomain}}</span>
-                <span class="input-group-btn">
-                    <button id="checkBtn" class="btn btn-primary" type="button" style="height: 70px; border-radius: 0 50px 50px 0; padding: 0 40px; font-weight: 800; background: #1A73E8; font-size: 18px;">
-                        CHECK AVAILABILITY
-                    </button>
-                </span>
-            </div>
-            
-            <div id="checkResult" style="margin-top: 25px; min-height: 30px; font-weight: 600; font-size: 18px; display: none;">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    :root {
+        --primary: #1A73E8;
+        --primary-dark: #1557b0;
+        --secondary: #6c757d;
+        --success: #34A853;
+        --bg-white: #ffffff;
+        --bg-alt: #f8fbff;
+        --text-main: #202124;
+        --text-muted: #5f6368;
+        --radius-pill: 50px;
+        --radius-lg: 24px;
+        --shadow-soft: 0 10px 40px rgba(26,115,232,0.08);
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        color: var(--text-main);
+        background-color: var(--bg-white);
+        line-height: 1.7;
+        margin: 0;
+    }
+
+    /* --- Hero Section --- */
+    .hero-wrapper {
+        padding: 140px 0 100px;
+        background: radial-gradient(circle at 80% 20%, #e8f0fe 0%, #ffffff 50%);
+        text-align: center;
+    }
+
+    .hero-badge {
+        display: inline-block;
+        padding: 8px 20px;
+        background: rgba(26,115,232,0.1);
+        color: var(--primary);
+        border-radius: var(--radius-pill);
+        font-weight: 700;
+        font-size: 13px;
+        margin-bottom: 25px;
+        letter-spacing: 1px;
+    }
+
+    .hero-title {
+        font-weight: 800;
+        font-size: 4rem;
+        letter-spacing: -2px;
+        margin-bottom: 20px;
+        line-height: 1.1;
+    }
+
+    .hero-title span { color: var(--primary); }
+
+    .hero-subtitle {
+        font-size: 1.35rem;
+        color: var(--text-muted);
+        max-width: 750px;
+        margin: 0 auto 50px;
+    }
+
+    /* --- Domain Search Bar --- */
+    .domain-search {
+        max-width: 800px;
+        margin: 0 auto;
+        background: #fff;
+        padding: 10px;
+        border-radius: var(--radius-pill);
+        display: flex;
+        align-items: center;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        border: 1px solid #eee;
+    }
+
+    .domain-search input {
+        flex: 1;
+        border: none;
+        padding: 0 35px;
+        font-size: 1.3rem;
+        font-weight: 600;
+        outline: none;
+        color: var(--text-main);
+    }
+
+    .domain-ext {
+        font-size: 1.3rem;
+        color: #bdc1c6;
+        padding-right: 25px;
+        font-weight: 500;
+    }
+
+    .btn-search {
+        background: var(--primary);
+        color: #fff;
+        border: none;
+        padding: 20px 45px;
+        border-radius: var(--radius-pill);
+        font-weight: 800;
+        cursor: pointer;
+        transition: var(--transition);
+        text-transform: uppercase;
+        font-size: 14px;
+    }
+
+    .btn-search:hover { background: var(--primary-dark); transform: scale(1.03); }
+
+    /* --- Features Grid --- */
+    .section-padding { padding: 100px 0; }
+
+    .feature-card {
+        padding: 50px 35px;
+        border-radius: var(--radius-lg);
+        background: #fff;
+        border: 1px solid #f0f0f0;
+        transition: var(--transition);
+        height: 100%;
+    }
+
+    .feature-card:hover { transform: translateY(-12px); box-shadow: var(--shadow-soft); border-color: var(--primary-soft); }
+
+    .icon-box {
+        width: 70px;
+        height: 70px;
+        background: #f1f6ff;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 30px;
+        font-size: 30px;
+        color: var(--primary);
+    }
+
+    /* --- Security Shield Section --- */
+    .security-section {
+        background: #041E42;
+        color: #fff;
+        border-radius: 40px;
+        margin: 0 20px;
+        padding: 100px 60px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .security-shield-bg {
+        position: absolute;
+        right: -5%;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 400px;
+        opacity: 0.05;
+        color: #fff;
+    }
+
+    /* --- Pricing --- */
+    .pricing-card {
+        background: #fff;
+        border-radius: 30px;
+        padding: 60px 40px;
+        border: 1px solid #eee;
+        transition: var(--transition);
+        position: relative;
+    }
+
+    .pricing-card.pro {
+        background: var(--primary);
+        color: #fff;
+        border: none;
+        transform: scale(1.05);
+        z-index: 2;
+    }
+
+    .pricing-card.pro .text-muted { color: rgba(255,255,255,0.7); }
+    .pricing-card.pro .btn-plan { background: #fff; color: var(--primary); }
+
+    .btn-plan {
+        width: 100%;
+        padding: 18px;
+        border-radius: var(--radius-pill);
+        border: 2px solid #eee;
+        background: transparent;
+        font-weight: 800;
+        margin-top: 40px;
+        transition: var(--transition);
+    }
+
+    /* --- Carousel Overrides --- */
+    .carousel-inner { border-radius: 40px; }
+    .carousel-control { opacity: 0; transition: 0.3s; }
+    #yoover-carousel:hover .carousel-control { opacity: 1; }
+
+    @media (max-width: 768px) {
+        .hero-title { font-size: 2.5rem; }
+        .domain-search { flex-direction: column; border-radius: 30px; }
+        .btn-search { width: 100%; margin-top: 15px; }
+        .pricing-card.pro { transform: none; margin: 30px 0; }
+    }
+</style>
+
+<header class="hero-wrapper">
+    <div class="container">
+        <div class="hero-badge">SECURE EMAIL PLATFORM</div>
+        <h1 class="hero-title">Your Identity, <span>Perfected.</span></h1>
+        <p class="hero-subtitle">
+            Ditch the generic providers. Get a clean, professional address with <strong>@{{serviceDomain}}</strong>. 
+            Built for privacy-conscious individuals and modern professionals.
+        </p>
+
+        <div class="domain-search">
+            <input type="text" id="usernameInput" placeholder="choose.your.name" autocomplete="off">
+            <span class="domain-ext">@{{serviceDomain}}</span>
+            <button id="checkBtn" class="btn-search">Check Availability</button>
+        </div>
+        <div id="checkResult" style="margin-top: 25px; min-height: 40px; font-weight: 600;"></div>
+    </div>
+</header>
+
+<section class="section-padding">
+    <div class="container">
+        <div id="yoover-carousel" class="carousel slide" data-ride="carousel">
+            <div class="carousel-inner">
+                <div class="item active">
+                    <div class="row" style="display:flex; align-items:center; flex-wrap:wrap; padding: 40px;">
+                        <div class="col-md-6">
+                            <h2 style="font-weight: 800; font-size: 2.5rem; margin-bottom: 20px;">Clean. Minimal. Fast.</h2>
+                            <p class="text-muted" style="font-size: 1.2rem;">Our webmail interface is designed to remove the noise. No banner ads, no promotional tabs—just your conversations, beautifully rendered.</p>
+                            <ul style="list-style: none; padding: 0; margin: 30px 0;">
+                                <li><i class="fa fa-check-circle text-success"></i> Instant Search Indexing</li>
+                                <li><i class="fa fa-check-circle text-success"></i> Drag & Drop Attachments</li>
+                                <li><i class="fa fa-check-circle text-success"></i> Threaded Conversations</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <img src="/demo/img01.png" class="img-responsive" style="border-radius: 20px; box-shadow: var(--shadow-soft);">
+                        </div>
+                    </div>
+                </div>
                 </div>
         </div>
+    </div>
+</section>
+
+<section class="section-padding" style="background: var(--bg-alt);">
+    <div class="container">
+        <div class="text-center" style="margin-bottom: 70px;">
+            <h2 style="font-weight: 800; font-size: 2.8rem;">Why switch to Yoover?</h2>
+            <p class="text-muted" style="font-size: 1.2rem;">We provide the tools of a giant with the ethics of a friend.</p>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="icon-box"><i class="fa-solid fa-fingerprint"></i></div>
+                    <h3 style="font-weight: 700;">Absolute Privacy</h3>
+                    <p class="text-muted">Unlike "Free" email providers, we don't scan your content to build advertising profiles. Your private life remains private.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="icon-box"><i class="fa-solid fa-server"></i></div>
+                    <h3 style="font-weight: 700;">Rock-Solid Reliability</h3>
+                    <p class="text-muted">Built on enterprise-grade WildDuck infrastructure. We guarantee 99.9% uptime so you never miss an important message.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="icon-box"><i class="fa-solid fa-sync"></i></div>
+                    <h3 style="font-weight: 700;">Anywhere Access</h3>
+                    <p class="text-muted">Full IMAP/SMTP support. Use your favorite apps like Outlook, Apple Mail, or Thunderbird on any device, anywhere.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="container" style="margin-top: 60px;">
+    <div class="security-section">
+        <i class="fa fa-shield-halved security-shield-bg"></i>
+        <div class="row" style="position: relative; z-index: 2;">
+            <div class="col-md-7">
+                <h2 style="font-weight: 800; font-size: 3rem; margin-bottom: 30px;">Fortress-Grade Security</h2>
+                <p style="font-size: 1.2rem; opacity: 0.9; margin-bottom: 40px;">
+                    We employ the same encryption standards used by global financial institutions to ensure your data is safe from hackers and prying eyes.
+                </p>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <h4 style="font-weight: 700;"><i class="fa fa-lock" style="margin-right: 10px; color: var(--success);"></i> At-Rest Encryption</h4>
+                        <p style="opacity: 0.8;">Your emails are encrypted before they ever hit our storage disks.</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <h4 style="font-weight: 700;"><i class="fa fa-key" style="margin-right: 10px; color: var(--success);"></i> Two-Factor (2FA)</h4>
+                        <p style="opacity: 0.8;">Secure your account with hardware keys or mobile authenticator apps.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section-padding">
+    <div class="container">
+        <div class="text-center" style="margin-bottom: 60px;">
+            <h2 style="font-weight: 800; font-size: 2.8rem;">Transparent Plans</h2>
+            <p class="text-muted">No hidden fees, no data selling, just great email.</p>
+        </div>
+        <div class="row" style="display: flex; align-items: center; flex-wrap: wrap;">
+            <div class="col-md-4 col-md-offset-2">
+                <div class="pricing-card">
+                    <h4 style="font-weight: 700; color: var(--text-muted);">PERSONAL</h4>
+                    <div style="font-size: 3.5rem; font-weight: 800; margin: 20px 0;">$5<small style="font-size: 1rem; color: #aaa;">/year</small></div>
+                    <ul class="list-unstyled" style="line-height: 2.5;">
+                        <li><i class="fa fa-check text-success"></i> 1 GB Secure Storage</li>
+                        <li><i class="fa fa-check text-success"></i> Standard IMAP/SMTP</li>
+                        <li><i class="fa fa-check text-success"></i> No Advertisements</li>
+                        <li style="opacity: 0.4;"><del>Custom Domain Support</del></li>
+                    </ul>
+                    <button class="btn-plan">GET STARTED</button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="pricing-card pro">
+                    <h4 style="font-weight: 700;">PROFESSIONAL</h4>
+                    <div style="font-size: 3.5rem; font-weight: 800; margin: 20px 0;">$15<small style="font-size: 1rem; color: rgba(255,255,255,0.6);">/year</small></div>
+                    <ul class="list-unstyled" style="line-height: 2.5;">
+                        <li><i class="fa fa-check" style="color: #fff;"></i> 10 GB Storage</li>
+                        <li><i class="fa fa-check" style="color: #fff;"></i> <strong>Custom Domain Mapping</strong></li>
+                        <li><i class="fa fa-check" style="color: #fff;"></i> Priority Human Support</li>
+                        <li><i class="fa fa-check" style="color: #fff;"></i> Unlimited Aliases</li>
+                    </ul>
+                    <button class="btn-plan">GO PRO NOW</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section-padding" style="background: #fafafa;">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h2 class="text-center" style="font-weight: 800; margin-bottom: 50px;">Got Questions?</h2>
+                <div class="feature-card" style="padding: 40px; margin-bottom: 20px;">
+                    <h4 style="font-weight: 700;">Can I move my existing emails to Yoover?</h4>
+                    <p class="text-muted">Absolutely. We offer a built-in migration tool that allows you to import your emails from Gmail, Yahoo, or Outlook in just a few clicks.</p>
+                </div>
+                <div class="feature-card" style="padding: 40px;">
+                    <h4 style="font-weight: 700;">Is my custom address forever?</h4>
+                    <p class="text-muted">As long as your subscription is active, the address is yours. You are claiming a unique digital identity on our service.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section-padding text-center">
+    <div class="container">
+        <h2 style="font-weight: 800; font-size: 3rem; margin-bottom: 20px;">Ready to reclaim your inbox?</h2>
+        <p class="text-muted" style="font-size: 1.3rem; margin-bottom: 40px;">Join the community of users who choose privacy over tracking.</p>
+        <a href="/account/create" class="btn-search" style="text-decoration: none; display: inline-block;">Create Your Account</a>
     </div>
 </section>
 
@@ -24,44 +365,34 @@
 document.getElementById('checkBtn').addEventListener('click', async function() {
     const username = document.getElementById('usernameInput').value.trim();
     const resultDiv = document.getElementById('checkResult');
-    const checkBtn = this;
+    const btn = this;
 
     if (!username || username.length < 3) {
-        resultDiv.style.display = 'block';
-        resultDiv.style.color = '#d93025';
-        resultDiv.innerHTML = '<span class="glyphicon glyphicon-exclamation-sign"></span> Please enter at least 3 characters.';
+        resultDiv.innerHTML = '<span style="color: #d93025;">⚠️ Username must be at least 3 characters.</span>';
         return;
     }
 
-    // Visual feedback
-    checkBtn.innerHTML = 'CHECKING...';
-    checkBtn.disabled = true;
-    resultDiv.style.display = 'none';
+    btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> CHECKING...';
+    btn.disabled = true;
 
     try {
-        /* NOTE: You need to create a route on your server /api/check-username 
-           that calls WildDuck's GET /user/resolve?address=username@domain
-        */
         const response = await fetch(`/api/check-username?username=${username}`);
         const data = await response.json();
 
-        resultDiv.style.display = 'block';
-
         if (data.available) {
-            resultDiv.style.color = '#34A853';
-            resultDiv.innerHTML = `<span class="glyphicon glyphicon-ok-circle"></span> Good news! <strong>${username}@{{serviceDomain}}</strong> is available. 
-                                   <br><br><a href="/purchase?username=${username}" class="btn btn-success" style="border-radius: 25px; padding: 10px 30px;">BUY NOW</a>`;
+            resultDiv.innerHTML = `
+                <div style="background: #e6f4ea; color: #1e7e34; padding: 15px 30px; border-radius: 50px; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                    <i class="fa fa-check-circle"></i> <strong>${username}@{{serviceDomain}}</strong> is available! 
+                    <a href="/purchase?username=${username}" style="margin-left: 15px; font-weight: 800; text-decoration: underline; color: #1e7e34;">CLAIM NOW</a>
+                </div>`;
         } else {
-            resultDiv.style.color = '#d93025';
-            resultDiv.innerHTML = `<span class="glyphicon glyphicon-remove-circle"></span> Sorry, <strong>${username}</strong> is already taken. Try another?`;
+            resultDiv.innerHTML = '<span style="color: #d93025;"><i class="fa fa-circle-xmark"></i> Sorry, that name is already taken.</span>';
         }
     } catch (err) {
-        resultDiv.style.display = 'block';
-        resultDiv.style.color = '#f4b400';
-        resultDiv.innerHTML = 'Error checking availability. Please try again later.';
+        resultDiv.innerHTML = '<span style="color: #f4b400;">Connection error. Please try again.</span>';
     } finally {
-        checkBtn.innerHTML = 'CHECK AVAILABILITY';
-        checkBtn.disabled = false;
+        btn.innerHTML = 'CHECK AVAILABILITY';
+        btn.disabled = false;
     }
 });
 </script>
@@ -73,248 +404,897 @@ document.getElementById('checkBtn').addEventListener('click', async function() {
 
 
 
-<div id="yoover-carousel" class="carousel slide" data-ride="carousel" style="background: #f8f9fa; border-bottom: 1px solid #eee; width: 100%; margin: 0; border-radius: 0;">
-    <ol class="carousel-indicators">
-        <li data-target="#yoover-carousel" data-slide-to="0" class="active"></li>
-        <li data-target="#yoover-carousel" data-slide-to="1"></li>
-        <li data-target="#yoover-carousel" data-slide-to="2"></li>
-    </ol>
+<style>
+    .setup-guide-container {
+        padding: 120px 0;
+        background: #fff;
+    }
 
-    <div class="carousel-inner" role="listbox" style="border-radius: 0;">
-        
-        <div class="item active">
-            <div class="container-fluid" style="padding: 0;">
-                <div class="row" style="margin: 0; padding: 120px 10%; display: flex; align-items: center; flex-wrap: wrap;">
-                    <div class="col-md-6">
-                        <h2 style="font-weight: 800; font-size: 48px; color: #1A73E8; margin-bottom: 20px; letter-spacing: -1px;">Your Privacy, <br>Our Priority.</h2>
-                        <p style="font-size: 20px; color: #666; margin-bottom: 35px; line-height: 1.6;">Switch to the email service that doesn't track you. Secure, encrypted, and built for your peace of mind.</p>
-                        <a href="/purchase" class="btn btn-primary btn-lg" style="border-radius: 0; padding: 15px 45px; background: #1A73E8; border: none; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Learn More</a>
-                    </div>
-                    <div class="col-md-6 text-center">
-                        <div style="background: white; padding: 10px; border-radius: 0; box-shadow: 0 30px 60px rgba(0,0,0,0.1); border: 1px solid #eee;">
-                            <img src="/demo/img01.png" class="img-responsive" alt="Yoover Webmail Interface" style="border-radius: 0;">
+    .setup-card {
+        background: #fff;
+        border: 1px solid #f0f0f0;
+        border-radius: 24px;
+        padding: 40px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+        height: 100%;
+        transition: var(--transition);
+    }
+
+    .setup-card:hover {
+        border-color: var(--primary);
+        box-shadow: var(--shadow-soft);
+    }
+
+    .server-table {
+        width: 100%;
+        margin-top: 25px;
+        border-collapse: separate;
+        border-spacing: 0 10px;
+    }
+
+    .server-table td {
+        padding: 12px 15px;
+        background: var(--bg-alt);
+        font-size: 14px;
+    }
+
+    .server-table td:first-child {
+        border-radius: 10px 0 0 10px;
+        font-weight: 700;
+        color: var(--text-muted);
+        width: 40%;
+    }
+
+    .server-table td:last-child {
+        border-radius: 0 10px 10px 0;
+        font-family: 'Monaco', 'Consolas', monospace;
+        color: var(--primary);
+        word-break: break-all;
+    }
+
+    .protocol-toggle {
+        display: inline-flex;
+        background: var(--bg-alt);
+        padding: 5px;
+        border-radius: 100px;
+        margin-bottom: 30px;
+    }
+
+    .protocol-btn {
+        padding: 8px 25px;
+        border-radius: 100px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 13px;
+        transition: 0.3s;
+    }
+
+    .protocol-btn.active {
+        background: var(--primary);
+        color: #fff;
+    }
+
+    .encryption-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        background: #e6f4ea;
+        color: #1e7e34;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 800;
+        margin-top: 5px;
+    }
+</style>
+
+<section class="setup-guide-container" id="setup-details">
+    <div class="container">
+        <div class="text-center" style="margin-bottom: 70px;">
+            <div class="hero-badge">TECHNICAL CONFIGURATION</div>
+            <h2 style="font-weight: 800; font-size: 3rem;">Connect Any Device in Seconds</h2>
+            <p class="text-muted" style="font-size: 1.25rem; max-width: 700px; margin: 20px auto;">
+                Whether you're on a flagship smartphone or a desktop workstation, our servers use standardized, high-security protocols to sync your life.
+            </p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="setup-card">
+                    <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                        <div class="icon-box" style="margin-bottom: 0; margin-right: 20px; width: 50px; height: 50px; font-size: 20px;">
+                            <i class="fa-solid fa-download"></i>
                         </div>
+                        <h3 style="font-weight: 800; margin: 0;">Incoming Mail (Receive)</h3>
                     </div>
+                    <p class="text-muted">Choose <strong>IMAP</strong> to keep all devices in sync, or <strong>POP3</strong> if you prefer to store emails locally on a single device.</p>
+                    
+                    <table class="server-table">
+                        <tr>
+                            <td>IMAP Hostname</td>
+                            <td>imap.{{serviceDomain}}</td>
+                        </tr>
+                        <tr>
+                            <td>IMAP Port</td>
+                            <td>993</td>
+                        </tr>
+                        <tr>
+                            <td>POP3 Hostname</td>
+                            <td>pop.{{serviceDomain}}</td>
+                        </tr>
+                        <tr>
+                            <td>POP3 Port</td>
+                            <td>995</td>
+                        </tr>
+                        <tr>
+                            <td>Security Type</td>
+                            <td><span class="encryption-badge">SSL / TLS REQUIRED</span></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="setup-card">
+                    <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                        <div class="icon-box" style="margin-bottom: 0; margin-right: 20px; width: 50px; height: 50px; font-size: 20px; color: var(--success); background: #e6f4ea;">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </div>
+                        <h3 style="font-weight: 800; margin: 0;">Outgoing Mail (Send)</h3>
+                    </div>
+                    <p class="text-muted">Our <strong>SMTP</strong> servers are optimized for high deliverability, ensuring your emails never land in the recipient's spam folder.</p>
+                    
+                    <table class="server-table">
+                        <tr>
+                            <td>SMTP Hostname</td>
+                            <td>smtp.{{serviceDomain}}</td>
+                        </tr>
+                        <tr>
+                            <td>SMTP Port</td>
+                            <td>465 <small>(Recommended)</small></td>
+                        </tr>
+                        <tr>
+                            <td>Alternative Port</td>
+                            <td>587 <small>(STARTTLS)</small></td>
+                        </tr>
+                        <tr>
+                            <td>Authentication</td>
+                            <td>Required <small>(Same as Email)</small></td>
+                        </tr>
+                        <tr>
+                            <td>Security Type</td>
+                            <td><span class="encryption-badge">SSL / TLS REQUIRED</span></td>
+                        </tr>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <div class="item">
-            <div class="container-fluid" style="padding: 0;">
-                <div class="row" style="margin: 0; padding: 120px 10%; display: flex; align-items: center; flex-wrap: wrap;">
-                    <div class="col-md-6 col-md-push-6">
-                        <h2 style="font-weight: 800; font-size: 48px; color: #1A73E8; margin-bottom: 20px; letter-spacing: -1px;">Email Anywhere.</h2>
-                        <p style="font-size: 20px; color: #666; margin-bottom: 35px; line-height: 1.6;">Sync seamlessly with iPhone, Android, or Outlook. Take your @{{serviceDomain}} address wherever you go.</p>
-                        <a href="/help" class="btn btn-primary btn-lg" style="border-radius: 0; padding: 15px 45px; background: #1A73E8; border: none; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Setup Guide</a>
-                    </div>
-                    <div class="col-md-6 col-md-pull-6 text-center">
-                         <span class="glyphicon glyphicon-phone" style="font-size: 200px; color: #1A73E8; opacity: 0.9;"></span>
-                    </div>
+        <div class="row" style="margin-top: 60px;">
+            <div class="col-md-10 col-md-offset-1">
+                <div style="background: #f8fbff; border-radius: 20px; padding: 40px; border: 1px dashed var(--primary); text-align: center;">
+                    <h4 style="font-weight: 800; color: var(--primary);"><i class="fa-solid fa-circle-info"></i> Pro Tip for Mobile Users</h4>
+                    <p style="font-size: 1.1rem; margin-top: 10px;">
+                        When setting up your <strong>Android</strong> or <strong>iOS</strong> device, always select <strong>"Personal (IMAP)"</strong>. 
+                        Enter your full email address (<em>username@{{serviceDomain}}</em>) as the username for both Incoming and Outgoing server settings.
+                    </p>
                 </div>
             </div>
         </div>
-
-        <div class="item" style="background: linear-gradient(135deg, #1A73E8 0%, #0D47A1 100%); color: white;">
-            <div class="container-fluid text-center" style="padding: 140px 0;">
-                <h2 style="font-weight: 800; font-size: 56px; margin-bottom: 25px; letter-spacing: -1.5px;">Fast. Reliable. Secure.</h2>
-                <p style="font-size: 22px; opacity: 0.9; max-width: 800px; margin: 0 auto 45px;">Experience the power of enterprise-grade email infrastructure with Yoover's lightning-fast delivery.</p>
-                <a href="/account/create" class="btn btn-default btn-lg" style="border-radius: 0; padding: 18px 50px; font-weight: 800; color: #1A73E8; border: none; text-transform: uppercase; letter-spacing: 1px;">Create Test Account</a>
-            </div>
-        </div>
-
     </div>
+</section>
 
-    <a class="left carousel-control" href="#yoover-carousel" role="button" data-slide="prev" style="background: none; color: #1A73E8; opacity: 1;">
-        <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
-        <span class="sr-only">Previous</span>
-    </a>
-    <a class="right carousel-control" href="#yoover-carousel" role="button" data-slide="next" style="background: none; color: #1A73E8; opacity: 1;">
-        <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
-        <span class="sr-only">Next</span>
-    </a>
-</div>
+<section class="section-padding" style="background: #041E42; color: #fff;">
+    <div class="container">
+        <div class="row" style="display: flex; align-items: center; flex-wrap: wrap;">
+            <div class="col-md-6">
+                <h2 style="font-weight: 800; font-size: 3rem; margin-bottom: 30px;">What is "Triple-Sided" Encryption?</h2>
+                <p style="font-size: 1.2rem; opacity: 0.8; margin-bottom: 40px;">Most providers only encrypt your connection. Yoover secures the **Sender, the Journey, and the Destination.**</p>
+                
+                <div style="margin-bottom: 30px;">
+                    <h4 style="font-weight: 700; color: var(--success);"><i class="fa fa-shield-virus"></i> Side 1: Client-to-Server Tunnel</h4>
+                    <p style="opacity: 0.7;">Your connection is forced through an SSL/TLS tunnel. This prevents "Sniffing" on public Wi-Fi (like coffee shops or airports).</p>
+                </div>
+
+                <div style="margin-bottom: 30px;">
+                    <h4 style="font-weight: 700; color: var(--success);"><i class="fa fa-microchip"></i> Side 2: Hardware Level Encryption</h4>
+                    <p style="opacity: 0.7;">We use AES-256 Bit encryption on the physical storage layer. If a hacker physically stole a server, your data remains an uncrackable puzzle.</p>
+                </div>
+
+                <div style="margin-bottom: 30px;">
+                    <h4 style="font-weight: 700; color: var(--success);"><i class="fa fa-network-wired"></i> Side 3: Inter-Server Privacy (MTA-STS)</h4>
+                    <p style="opacity: 0.7;">We use MTA-STS protocols to ensure that when we send mail to other providers (like Gmail), it is sent through a secure, authenticated channel.</p>
+                </div>
+            </div>
+            <div class="col-md-5 col-md-offset-1">
+                <div style="border: 2px solid rgba(255,255,255,0.1); border-radius: 40px; padding: 40px; text-align: center; position: relative; background: rgba(255,255,255,0.02);">
+                    <div style="font-size: 150px; color: var(--success); filter: drop-shadow(0 0 20px rgba(52, 168, 83, 0.4));">
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
+                    <h3 style="margin-top: 30px; font-weight: 800;">100% SECURE</h3>
+                    <p style="opacity: 0.5; font-size: 12px; letter-spacing: 2px;">END-TO-END INFRASTRUCTURE PROTECTION</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+
+
 
 <style>
-    /* Force Sharp Edges Globally for the Carousel */
-    #yoover-carousel, 
-    #yoover-carousel .carousel-inner, 
-    #yoover-carousel .item, 
-    #yoover-carousel .btn {
-        border-radius: 0 !important;
+    .migration-section {
+        background: radial-gradient(circle at bottom left, #f8fbff 0%, #ffffff 100%);
+        padding: 100px 0;
+        border-top: 1px solid #eee;
     }
 
-    .carousel-indicators li { 
-        border-radius: 0; 
-        width: 12px; 
-        height: 12px; 
-        border-color: #1A73E8; 
+    .glass-card {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(26, 115, 232, 0.1);
+        border-radius: 30px;
+        padding: 50px;
+        box-shadow: var(--shadow-soft);
     }
-    .carousel-indicators .active { 
-        border-radius: 0; 
-        width: 12px; 
-        height: 12px; 
-        background-color: #1A73E8; 
-    }
-    
-    /* Control Visibility */
-    .carousel-control { width: 5%; }
-    .carousel-control .glyphicon { font-size: 40px; }
 
-    /* Responsive Adjustment */
-    @media (max-width: 768px) {
-        .item .row { display: block !important; padding: 60px 20px !important; }
-        .item h2 { font-size: 36px !important; }
+    .platform-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 10px 20px;
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 100px;
+        margin: 10px;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+
+    .platform-pill i { margin-right: 10px; font-size: 1.2rem; }
+    .platform-pill:hover { border-color: var(--primary); transform: translateY(-3px); }
+
+    .stat-circle {
+        text-align: center;
+        padding: 30px;
+    }
+
+    .stat-number {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: var(--primary);
+        line-height: 1;
+        margin-bottom: 10px;
+    }
+
+    .stat-label {
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+
+    .device-tab-container {
+        margin-top: 40px;
+        background: #fff;
+        border-radius: 20px;
+        padding: 30px;
+        border: 1px solid #eee;
+    }
+
+    /* Pulse effect for the "Live" status */
+    .pulse {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        background: var(--success);
+        border-radius: 50%;
+        margin-right: 8px;
+        box-shadow: 0 0 0 rgba(52, 168, 83, 0.4);
+        animation: pulse-animation 2s infinite;
+    }
+
+    @keyframes pulse-animation {
+        0% { box-shadow: 0 0 0 0px rgba(52, 168, 83, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(52, 168, 83, 0); }
+        100% { box-shadow: 0 0 0 0px rgba(52, 168, 83, 0); }
     }
 </style>
 
+<section class="migration-section">
+    <div class="container">
+        <div class="row" style="display: flex; align-items: center; flex-wrap: wrap;">
+            <div class="col-md-6">
+                <div class="hero-badge" style="background: rgba(26,115,232,0.1); color: var(--primary);">EASY SWITCHING</div>
+                <h2 style="font-weight: 800; font-size: 3rem; margin-bottom: 25px;">Leave Big Tech behind. <br>We'll help you move.</h2>
+                <p class="text-muted" style="font-size: 1.2rem; margin-bottom: 35px;">
+                    Worried about losing your old emails? Our <strong>One-Click Migration Tool</strong> securely syncs your existing inbox from your old provider to Yoover.
+                </p>
+                
+                <div style="margin-bottom: 40px;">
+                    <p style="font-weight: 700; margin-bottom: 15px;">Compatible with all major providers:</p>
+                    <div class="platform-pill"><i class="fa-brands fa-google" style="color: #DB4437;"></i> Gmail</div>
+                    <div class="platform-pill"><i class="fa-brands fa-microsoft" style="color: #00A4EF;"></i> Outlook</div>
+                    <div class="platform-pill"><i class="fa-brands fa-yahoo" style="color: #6001d2;"></i> Yahoo!</div>
+                    <div class="platform-pill"><i class="fa-solid fa-envelope"></i> Any IMAP Provider</div>
+                </div>
 
+                <div class="glass-card" style="padding: 30px;">
+                    <h4 style="font-weight: 800; margin-bottom: 15px;"><i class="fa-solid fa-wand-magic-sparkles" style="color: var(--primary);"></i> How it works:</h4>
+                    <ul style="list-style: none; padding: 0; line-height: 2;">
+                        <li><i class="fa fa-check text-success"></i> Connect your old account via Secure OAuth</li>
+                        <li><i class="fa fa-check text-success"></i> Select folders to migrate (Inbox, Sent, Drafts)</li>
+                        <li><i class="fa fa-check text-success"></i> Sit back while we move your history over TLS</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-5 col-md-offset-1 text-center">
+                <i class="fa-solid fa-truck-fast" style="font-size: 200px; color: var(--primary); opacity: 0.1; position: absolute; top: 0; right: 10%;"></i>
+                <img src="/images/migration-graphic.svg" alt="Migration" class="img-responsive" style="position: relative; z-index: 2;">
+            </div>
+        </div>
+    </div>
+</section>
 
-<div class="row jumbotron" style="background: #fff; padding: 80px 0; border: none; margin-bottom: 0;">
-    <div class="col-md-10 col-md-offset-1 text-center">
-        <img src="/images/yoover-logo.svg" alt="Yoover Logo" style="height: 120px; margin-bottom: 30px; filter: drop-shadow(0 10px 15px rgba(26,115,232,0.2));">
-        <h1 style="font-weight: 800; font-size: 52px; color: #1A73E8; letter-spacing: -1.5px;">Email, Reimagined.</h1>
-        <p style="font-size: 24px; color: #5f6368; max-width: 800px; margin: 20px auto 40px;">Get a professional <strong>@{{serviceDomain}}</strong> address. Zero ads, total privacy, and enterprise-grade security.</p>
+<section class="section-padding" style="background: #fff;">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-circle">
+                    <div class="stat-number">99.9%</div>
+                    <div class="stat-label">Server Uptime</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-circle">
+                    <div class="stat-number">&lt;10ms</div>
+                    <div class="stat-label">Internal Latency</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-circle">
+                    <div class="stat-number">256-bit</div>
+                    <div class="stat-label">AES Encryption</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-circle">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Threat Monitoring</div>
+                </div>
+            </div>
+        </div>
         
-        <div style="margin-top: 40px;">
-            <a class="btn btn-success btn-lg" href="/purchase" style="padding: 20px 50px; border-radius: 50px; font-weight: 800; font-size: 20px; box-shadow: 0 10px 20px rgba(92, 184, 92, 0.3);">
-                GET STARTED NOW
-            </a>
-            <div style="margin-top: 15px;">
-                <a href="/account/login" style="color: #1A73E8; font-weight: 600;">Already a member? Log in</a>
+        <div class="row" style="margin-top: 50px;">
+            <div class="col-md-12 text-center">
+                <p style="font-weight: 600; color: var(--text-muted);">
+                    <span class="pulse"></span> System Status: <span style="color: var(--success); font-weight: 800;">ALL SYSTEMS OPERATIONAL</span>
+                </p>
             </div>
         </div>
     </div>
-</div>
+</section>
 
-<div class="row text-center" style="background: #f8f9fa; padding: 30px 0; border-top: 1px solid #eee; border-bottom: 1px solid #eee;">
-    <div class="col-md-12">
-        <p style="text-transform: uppercase; letter-spacing: 2px; color: #999; font-weight: 700; font-size: 12px; margin-bottom: 0;">
-            Powered by Secure & Encrypted Infrastructure
-        </p>
-    </div>
-</div>
+<section class="section-padding" style="background: var(--bg-alt);">
+    <div class="container">
+        <div class="text-center" style="margin-bottom: 60px;">
+            <h2 style="font-weight: 800; font-size: 2.8rem;">Mobile Setup Walkthrough</h2>
+            <p class="text-muted" style="font-size: 1.2rem;">Quick-start steps for your specific phone.</p>
+        </div>
 
-<div class="container" style="padding: 100px 0;">
-    <div class="row">
-        <div class="col-md-4 text-center">
-            <div style="padding: 20px;">
-                <span class="glyphicon glyphicon-eye-close" style="font-size: 50px; color: #1A73E8;"></span>
-                <h3 style="font-weight: 700; margin-top: 25px;">No Data Mining</h3>
-                <p class="text-muted">We don't read your emails to show you ads. Your conversations are private and encrypted.</p>
-            </div>
-        </div>
-        <div class="col-md-4 text-center">
-            <div style="padding: 20px;">
-                <span class="glyphicon glyphicon-send" style="font-size: 50px; color: #1A73E8;"></span>
-                <h3 style="font-weight: 700; margin-top: 25px;">Global Reach</h3>
-                <p class="text-muted">Lightning-fast delivery with 99.9% uptime. Your mail arrives exactly when it's supposed to.</p>
-            </div>
-        </div>
-        <div class="col-md-4 text-center">
-            <div style="padding: 20px;">
-                <span class="glyphicon glyphicon-phone" style="font-size: 50px; color: #1A73E8;"></span>
-                <h3 style="font-weight: 700; margin-top: 25px;">Native App Support</h3>
-                <p class="text-muted">Works perfectly with Outlook, Apple Mail, and Android via secure IMAP/SMTP protocols.</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row" style="background: #1A73E8; color: white; padding: 100px 0;">
-    <div class="col-md-5 col-md-offset-1">
-        <h2 style="font-weight: 800; font-size: 36px; margin-bottom: 30px;">Security is our priority, not an option.</h2>
-        <ul style="list-style: none; padding: 0; font-size: 18px; line-height: 2;">
-            <li><span class="glyphicon glyphicon-ok"></span> 2FA / Two-Factor Authentication</li>
-            <li><span class="glyphicon glyphicon-ok"></span> Encrypted storage at rest</li>
-            <li><span class="glyphicon glyphicon-ok"></span> Spam & Virus protection filters</li>
-            <li><span class="glyphicon glyphicon-ok"></span> Secure TLS/SSL encryption for all mail</li>
-        </ul>
-    </div>
-    <div class="col-md-5 text-center">
-        <div style="background: rgba(255,255,255,0.1); padding: 40px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2);">
-            <span class="glyphicon glyphicon-lock" style="font-size: 120px;"></span>
-            <p style="margin-top: 20px; font-weight: 600;">Yoover Security Shield Enabled</p>
-        </div>
-    </div>
-</div>
-
-<div class="container" style="padding: 100px 0;">
-    <div class="text-center" style="margin-bottom: 60px;">
-        <h2 style="font-weight: 800; font-size: 40px;">Choose Your Plan</h2>
-        <p class="text-muted">Transparent pricing. No hidden fees.</p>
-    </div>
-    <div class="row">
-        <div class="col-md-4 col-md-offset-2">
-            <div class="panel panel-default text-center" style="border-radius: 20px; overflow: hidden; border: 1px solid #eee; transition: all 0.3s ease;">
-                <div class="panel-heading" style="background: #fff; padding: 40px 0;">
-                    <h4 style="font-weight: 700; color: #777;">PERSONAL</h4>
-                    <h2 style="font-size: 56px; font-weight: 800; margin: 10px 0;">$5<small style="font-size: 14px;">/year</small></h2>
-                </div>
-                <div class="panel-body" style="padding: 40px;">
-                    <ul class="list-unstyled" style="line-height: 3; font-size: 16px;">
-                        <li><strong>1 GB</strong> Secure Storage</li>
-                        <li>Webmail Access</li>
-                        <li>Mobile Sync (IMAP)</li>
-                        <li class="text-muted"><del>Custom Identities</del></li>
-                    </ul>
-                    <a href="/purchase?plan=personal" class="btn btn-default btn-lg btn-block" style="border-radius: 50px; margin-top: 30px; font-weight: 700;">CHOOSE PLAN</a>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="device-tab-container">
+                    <h3 style="font-weight: 800; margin-bottom: 20px;"><i class="fa-brands fa-apple"></i> iOS (iPhone/iPad)</h3>
+                    <ol style="padding-left: 20px; line-height: 2.2; font-weight: 500;">
+                        <li>Open <strong>Settings</strong> > <strong>Mail</strong> > <strong>Accounts</strong>.</li>
+                        <li>Tap <strong>Add Account</strong> > <strong>Other</strong> > <strong>Add Mail Account</strong>.</li>
+                        <li>Enter your name, @{{serviceDomain}} address, and password.</li>
+                        <li>Select <strong>IMAP</strong> at the top.</li>
+                        <li>Enter <strong>imap.{{serviceDomain}}</strong> for Incoming and <strong>smtp.{{serviceDomain}}</strong> for Outgoing.</li>
+                        <li>Tap <strong>Save</strong> and wait for the checkmarks!</li>
+                    </ol>
                 </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="panel panel-primary text-center" style="border-radius: 20px; overflow: hidden; box-shadow: 0 20px 40px rgba(26,115,232,0.15); border: none;">
-                <div class="panel-heading" style="background: #1A73E8; padding: 40px 0;">
-                    <h4 style="font-weight: 700;">PROFESSIONAL</h4>
-                    <h2 style="font-size: 56px; font-weight: 800; margin: 10px 0; color: #fff;">$15<small style="font-size: 14px; color: rgba(255,255,255,0.7);">/year</small></h2>
-                </div>
-                <div class="panel-body" style="padding: 40px;">
-                    <ul class="list-unstyled" style="line-height: 3; font-size: 16px;">
-                        <li><strong>10 GB</strong> Secure Storage</li>
-                        <li>Priority Support</li>
-                        <li>Mobile Sync (IMAP)</li>
-                        <li><strong>Custom Identities</strong></li>
-                    </ul>
-                    <a href="/purchase?plan=pro" class="btn btn-success btn-lg btn-block" style="border-radius: 50px; margin-top: 30px; font-weight: 800; background: #1A73E8; border: none;">CHOOSE PLAN</a>
+
+            <div class="col-md-6">
+                <div class="device-tab-container">
+                    <h3 style="font-weight: 800; margin-bottom: 20px;"><i class="fa-brands fa-android" style="color: #3DDC84;"></i> Android (Samsung/Pixel/etc)</h3>
+                    <ol style="padding-left: 20px; line-height: 2.2; font-weight: 500;">
+                        <li>Open your <strong>Gmail</strong> or <strong>Samsung Mail</strong> app.</li>
+                        <li>Go to <strong>Settings</strong> > <strong>Add Account</strong> > <strong>Other</strong>.</li>
+                        <li>Enter your full email and tap <strong>Manual Setup</strong>.</li>
+                        <li>Select <strong>Personal (IMAP)</strong>.</li>
+                        <li>Verify <strong>imap.{{serviceDomain}}</strong> is set with <strong>Port 993 (SSL/TLS)</strong>.</li>
+                        <li>For Outgoing, use <strong>smtp.{{serviceDomain}}</strong> with <strong>Port 465 (SSL/TLS)</strong>.</li>
+                    </ol>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>
 
-<div class="row" style="background: #fdfdfd; padding: 100px 0;">
-    <div class="col-md-6 col-md-offset-3">
-        <h2 class="text-center" style="font-weight: 800; margin-bottom: 50px;">Frequently Asked Questions</h2>
-        <div class="panel-group">
-            <div class="panel panel-default" style="border: none; background: transparent; border-bottom: 1px solid #eee;">
-                <div class="panel-body">
-                    <h4 style="font-weight: 700;">Can I use my own domain?</h4>
-                    <p class="text-muted">Yes! Our Professional plan supports custom identities and domain mapping.</p>
+<section class="section-padding" style="background: #fff;">
+    <div class="container">
+        <div class="row" style="display: flex; align-items: center; flex-wrap: wrap;">
+            <div class="col-md-5">
+                <div style="background: #fff9e6; padding: 50px; border-radius: 30px; border: 1px solid #ffeeba;">
+                    <i class="fa-solid fa-filter-circle-xmark" style="font-size: 80px; color: #f4b400; margin-bottom: 20px;"></i>
+                    <h3 style="font-weight: 800;">Zero Inbox, Zero Noise.</h3>
+                    <p class="text-muted">Our AI-powered spam filters identify 99.8% of malicious emails before they ever reach your phone. No more pharmaceutical ads or phishing attempts.</p>
                 </div>
             </div>
-            <div class="panel panel-default" style="border: none; background: transparent; border-bottom: 1px solid #eee;">
-                <div class="panel-body">
-                    <h4 style="font-weight: 700;">Is there a mobile app?</h4>
-                    <p class="text-muted">You can use any email app (Outlook, Gmail app, Apple Mail) by connecting via our secure IMAP settings.</p>
+            <div class="col-md-6 col-md-offset-1">
+                <h2 style="font-weight: 800; font-size: 2.5rem; margin-bottom: 30px;">Advanced Threat Protection</h2>
+                <div style="margin-bottom: 25px;">
+                    <h4 style="font-weight: 700;"><i class="fa fa-virus-slash text-success"></i> Real-time Virus Scanning</h4>
+                    <p class="text-muted">Every attachment is scanned in a secure sandbox to ensure you never accidentally download malware.</p>
+                </div>
+                <div style="margin-bottom: 25px;">
+                    <h4 style="font-weight: 700;"><i class="fa fa-user-ninja text-success"></i> Phishing Prevention</h4>
+                    <p class="text-muted">We verify the sender's identity using SPF, DKIM, and DMARC records to protect you from spoofed addresses.</p>
+                </div>
+                <div>
+                    <h4 style="font-weight: 700;"><i class="fa fa-envelope-open-text text-success"></i> Customizable Filters</h4>
+                    <p class="text-muted">Create your own rules to automatically sort newsletters, receipts, and personal mail into specific folders.</p>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>
 
-<div class="row text-center" style="padding: 100px 0; background: #fff;">
-    <div class="col-md-12">
-        <h2 style="font-weight: 800; font-size: 32px;">Ready for better email?</h2>
-        <p style="margin-bottom: 30px;">Join thousands of users who trust Yoover for their daily communication.</p>
-        <a href="/account/create" class="btn btn-primary btn-lg" style="padding: 15px 60px; border-radius: 50px; font-weight: 700; background: #1A73E8;">CREATE TEST ACCOUNT</a>
-    </div>
-</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 <style>
-    /* Add subtle hover animations to pricing cards */
-    .panel:hover {
-        transform: translateY(-10px);
+    /* --- Comparison & Infrastructure Styles --- */
+    .comparison-section {
+        background: #fff;
+        padding: 120px 0;
     }
-    .btn {
-        transition: all 0.2s ease;
+
+    .comparison-table {
+        width: 100%;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: var(--shadow-soft);
+        border: 1px solid #eee;
+    }
+
+    .comparison-table th {
+        background: #f8fbff;
+        padding: 25px;
+        font-weight: 800;
+        font-size: 1.2rem;
+        text-align: center;
+    }
+
+    .comparison-table td {
+        padding: 20px;
+        border-bottom: 1px solid #f0f0f0;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .comparison-table .feature-name {
+        text-align: left;
+        font-weight: 700;
+        padding-left: 40px;
+        background: #fff;
+        width: 40%;
+    }
+
+    .check-yes { color: var(--success); font-size: 1.5rem; }
+    .check-no { color: #d93025; font-size: 1.5rem; opacity: 0.5; }
+
+    .api-section {
+        background: #111;
+        color: #fff;
+        padding: 100px 0;
+        border-radius: 40px;
+        margin: 40px 20px;
+    }
+
+    .code-window {
+        background: #1e1e1e;
+        border-radius: 12px;
+        padding: 25px;
+        font-family: 'Fira Code', 'Monaco', monospace;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        border: 1px solid #333;
+        text-align: left;
+    }
+
+    .dot { height: 12px; width: 12px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+
+    /* Infrastructure Map Visual */
+    .map-container {
+        position: relative;
+        background: url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg') no-repeat center;
+        background-size: contain;
+        height: 400px;
+        opacity: 0.1;
     }
 </style>
+
+<section class="comparison-section">
+    <div class="container">
+        <div class="text-center" style="margin-bottom: 70px;">
+            <div class="hero-badge">THE TRANSPARENCY REPORT</div>
+            <h2 style="font-weight: 800; font-size: 3rem;">How we stack up.</h2>
+            <p class="text-muted" style="font-size: 1.25rem;">Why thousands are leaving "Free" email for Yoover.</p>
+        </div>
+
+        <div class="table-responsive">
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th class="feature-name">Features</th>
+                        <th style="color: var(--primary);">Yoover</th>
+                        <th>Big Tech (Gmail/Yahoo)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="feature-name">Data Mining for Ads</td>
+                        <td><i class="fa-solid fa-circle-xmark check-no"></i> NEVER</td>
+                        <td><i class="fa-solid fa-circle-check check-yes"></i> ALWAYS</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">IMAP/SMTP/POP3 Access</td>
+                        <td><i class="fa-solid fa-circle-check check-yes"></i> INCLUDED</td>
+                        <td><i class="fa-solid fa-circle-check check-yes"></i> INCLUDED</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Custom @{{serviceDomain}} Identity</td>
+                        <td><i class="fa-solid fa-circle-check check-yes"></i> YES</td>
+                        <td><i class="fa-solid fa-circle-xmark check-no"></i> NO</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Triple-Layer Encryption</td>
+                        <td><i class="fa-solid fa-circle-check check-yes"></i> STANDARD</td>
+                        <td><i class="fa-solid fa-circle-xmark check-no"></i> LIMITED</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Human Support (No Bots)</td>
+                        <td><i class="fa-solid fa-circle-check check-yes"></i> 24/7</td>
+                        <td><i class="fa-solid fa-circle-xmark check-no"></i> IMPOSSIBLE</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<section class="section-padding" style="background: var(--bg-alt);">
+    <div class="container">
+        <div class="row" style="display: flex; align-items: center; flex-wrap: wrap;">
+            <div class="col-md-6">
+                <div class="hero-badge" style="background: rgba(52, 168, 83, 0.1); color: var(--success);">GLOBAL PERFORMANCE</div>
+                <h2 style="font-weight: 800; font-size: 2.8rem; margin-bottom: 25px;">Lightning-Fast Delivery. <br>Globally Distributed.</h2>
+                <p class="text-muted" style="font-size: 1.2rem; margin-bottom: 30px;">
+                    Our mail nodes are strategically located in Tier-4 data centers across the globe. This ensures that whether you are in New York, London, or Tokyo, your mail sends and receives in milliseconds.
+                </p>
+                <div class="row">
+                    <div class="col-xs-6">
+                        <h4 style="font-weight: 800; color: var(--primary);"><i class="fa fa-bolt"></i> Low Latency</h4>
+                        <p class="small text-muted">Direct peering with major ISPs for instant sync.</p>
+                    </div>
+                    <div class="col-xs-6">
+                        <h4 style="font-weight: 800; color: var(--primary);"><i class="fa fa-cloud"></i> Anycast DNS</h4>
+                        <p class="small text-muted">Optimized routing to the nearest secure node.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 text-center">
+                <div class="map-container"></div>
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%;">
+                    <i class="fa-solid fa-earth-americas" style="font-size: 200px; color: var(--primary); opacity: 0.2;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="api-section">
+    <div class="container">
+        <div class="row" style="display: flex; align-items: center; flex-wrap: wrap;">
+            <div class="col-md-5">
+                <h2 style="font-weight: 800; font-size: 2.5rem; margin-bottom: 20px;">Built for Developers.</h2>
+                <p style="font-size: 1.1rem; opacity: 0.8; margin-bottom: 30px;">
+                    Need to automate your workflow? Our Professional plan includes full REST API access. Manage aliases, check quotas, and integrate your inbox with your custom apps.
+                </p>
+                <ul style="list-style: none; padding: 0; line-height: 2.5;">
+                    <li><i class="fa fa-code text-success"></i> RESTful JSON API</li>
+                    <li><i class="fa fa-code text-success"></i> Webhook Notifications</li>
+                    <li><i class="fa fa-code text-success"></i> Custom Domain API Management</li>
+                </ul>
+            </div>
+            <div class="col-md-7">
+                <div class="code-window">
+                    <div style="margin-bottom: 15px;">
+                        <span class="dot" style="background: #ff5f56;"></span>
+                        <span class="dot" style="background: #ffbd2e;"></span>
+                        <span class="dot" style="background: #27c93f;"></span>
+                    </div>
+                    <pre style="background: transparent; border: none; color: #d4d4d4; padding: 0;">
+<span style="color: #569cd6;">GET</span> <span style="color: #ce9178;">/api/v1/user/stats</span>
+<span style="color: #9cdcfe;">Authorization:</span> <span style="color: #ce9178;">Bearer {YOUR_API_KEY}</span>
+
+{
+  <span style="color: #9cdcfe;">"status"</span>: <span style="color: #ce9178;">"success"</span>,
+  <span style="color: #9cdcfe;">"data"</span>: {
+    <span style="color: #9cdcfe;">"storage_used"</span>: <span style="color: #b5cea8;">"1.2GB"</span>,
+    <span style="color: #9cdcfe;">"quota"</span>: <span style="color: #b5cea8;">"10GB"</span>,
+    <span style="color: #9cdcfe;">"encryption"</span>: <span style="color: #ce9178;">"AES-256-GCM"</span>
+  }
+}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section-padding text-center">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <i class="fa-solid fa-leaf" style="font-size: 50px; color: var(--success); margin-bottom: 20px;"></i>
+                <h2 style="font-weight: 800;">100% Carbon Neutral Infrastructure</h2>
+                <p class="text-muted" style="font-size: 1.2rem;">
+                    We believe privacy shouldn't cost the earth. Our servers run on 100% renewable energy, ensuring your digital footprint is as light as possible.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<style>
+    /* --- Testimonials & Trust Styles --- */
+    .testimonials-section {
+        background: radial-gradient(circle at top right, #ffffff, #f1f6ff);
+        padding: 120px 0;
+    }
+
+    .testimonial-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+        margin-top: 50px;
+    }
+
+    .testimonial-card {
+        background: #fff;
+        padding: 40px;
+        border-radius: 24px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        border: 1px solid #f0f0f0;
+        position: relative;
+        transition: var(--transition);
+    }
+
+    .testimonial-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-soft);
+    }
+
+    .quote-icon {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        font-size: 40px;
+        color: var(--primary-soft);
+        opacity: 0.3;
+    }
+
+    .user-meta {
+        display: flex;
+        align-items: center;
+        margin-top: 25px;
+    }
+
+    .user-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: var(--primary-soft);
+        margin-right: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        color: var(--primary);
+    }
+
+    .trust-bar {
+        padding: 60px 0;
+        border-bottom: 1px solid #eee;
+        background: #fff;
+    }
+
+    .logo-cloud {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        flex-wrap: wrap;
+        opacity: 0.5;
+        filter: grayscale(100%);
+    }
+
+    .logo-cloud i { font-size: 30px; margin: 20px; }
+
+    /* --- Detailed Footer --- */
+    .mega-footer {
+        background: #041E42;
+        color: #fff;
+        padding: 80px 0 30px;
+        margin-top: 100px;
+    }
+
+    .footer-column h4 {
+        font-weight: 800;
+        margin-bottom: 25px;
+        font-size: 16px;
+        letter-spacing: 1px;
+    }
+
+    .footer-links {
+        list-style: none;
+        padding: 0;
+    }
+
+    .footer-links li { margin-bottom: 12px; }
+
+    .footer-links a {
+        color: rgba(255,255,255,0.6);
+        text-decoration: none;
+        transition: 0.3s;
+    }
+
+    .footer-links a:hover { color: #fff; padding-left: 5px; }
+
+    .social-icons a {
+        font-size: 20px;
+        margin-right: 20px;
+        color: rgba(255,255,255,0.6);
+        transition: 0.3s;
+    }
+
+    .social-icons a:hover { color: var(--primary); }
+
+    .newsletter-box {
+        background: rgba(255,255,255,0.05);
+        padding: 30px;
+        border-radius: 20px;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+</style>
+
+<section class="trust-bar">
+    <div class="container text-center">
+        <p style="text-transform: uppercase; letter-spacing: 2px; font-size: 11px; font-weight: 800; color: #999; margin-bottom: 30px;">
+            Trusted by professionals from
+        </p>
+        <div class="logo-cloud">
+            <i class="fa-brands fa-github"></i>
+            <i class="fa-brands fa-digital-ocean"></i>
+            <i class="fa-brands fa-aws"></i>
+            <i class="fa-brands fa-slack"></i>
+            <i class="fa-brands fa-discord"></i>
+            <i class="fa-brands fa-stripe"></i>
+        </div>
+    </div>
+</section>
+
+<section class="testimonials-section">
+    <div class="container">
+        <div class="text-center" style="margin-bottom: 60px;">
+            <div class="hero-badge">USER FEEDBACK</div>
+            <h2 style="font-weight: 800; font-size: 3rem;">Loved by thousands.</h2>
+            <p class="text-muted" style="font-size: 1.25rem;">Real stories from users who took back their privacy.</p>
+        </div>
+
+        <div class="testimonial-grid">
+            <div class="testimonial-card">
+                <i class="fa-solid fa-quote-right quote-icon"></i>
+                <div style="color: #f4b400; margin-bottom: 15px;">
+                    <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i>
+                </div>
+                <p style="font-style: italic; color: var(--text-muted);">"I was tired of seeing ads in my inbox for things I just talked about. Switching to Yoover was the best decision for my digital privacy. The setup on my iPhone took 2 minutes."</p>
+                <div class="user-meta">
+                    <div class="user-avatar">SC</div>
+                    <div>
+                        <h5 style="font-weight: 800; margin: 0;">Sarah Collins</h5>
+                        <p class="small text-muted" style="margin: 0;">Freelance Designer</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <i class="fa-solid fa-quote-right quote-icon"></i>
+                <div style="color: #f4b400; margin-bottom: 15px;">
+                    <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i>
+                </div>
+                <p style="font-style: italic; color: var(--text-muted);">"As a developer, I value the SMTP reliability. My emails actually get delivered now. No more blacklists or 'Promotions' folder hell."</p>
+                <div class="user-meta">
+                    <div class="user-avatar" style="background: #e6f4ea; color: var(--success);">MT</div>
+                    <div>
+                        <h5 style="font-weight: 800; margin: 0;">Marcus Thorne</h5>
+                        <p class="small text-muted" style="margin: 0;">Full Stack Dev</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <i class="fa-solid fa-quote-right quote-icon"></i>
+                <div style="color: #f4b400; margin-bottom: 15px;">
+                    <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i>
+                </div>
+                <p style="font-style: italic; color: var(--text-muted);">"The triple-layer encryption gives me peace of mind when handling client contracts. It's the most secure mail platform I've used."</p>
+                <div class="user-meta">
+                    <div class="user-avatar" style="background: #fff9e6; color: #f4b400;">AL</div>
+                    <div>
+                        <h5 style="font-weight: 800; margin: 0;">Amanda Lee</h5>
+                        <p class="small text-muted" style="margin: 0;">Legal Consultant</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section-padding" style="background: var(--primary); color: #fff;">
+    <div class="container text-center">
+        <div class="row">
+            <div class="col-md-3">
+                <h2 style="font-weight: 800; font-size: 3.5rem;">50K+</h2>
+                <p style="opacity: 0.8; font-weight: 600;">Active Inboxes</p>
+            </div>
+            <div class="col-md-3">
+                <h2 style="font-weight: 800; font-size: 3.5rem;">12M+</h2>
+                <p style="opacity: 0.8; font-weight: 600;">Emails Secured</p>
+            </div>
+            <div class="col-md-3">
+                <h2 style="font-weight: 800; font-size: 3.5rem;">100%</h2>
+                <p style="opacity: 0.8; font-weight: 600;">Ad-Free Forever</p>
+            </div>
+            <div class="col-md-3">
+                <h2 style="font-weight: 800; font-size: 3.5rem;">0</h2>
+                <p style="opacity: 0.8; font-weight: 600;">Data Breaches</p>
+            </div>
+        </div>
+    </div>
+</section>
+

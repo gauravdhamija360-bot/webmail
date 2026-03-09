@@ -97,180 +97,218 @@
 
     </div>
 
-    <footer class="yoover-footer-elite">
-    <div class="container-fluid">
-        <div class="row footer-grid">
-            
-            <div class="col-md-4 footer-section-brand">
-                <img src="/images/duck.png" alt="Yoover Logo" class="footer-logo-white">
-                <p class="brand-mission">
-                    Engineering a private future through decentralized architecture and zero-compromise encryption.
+    <footer class="mega-footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 brand-column">
+                <img src="/images/yoover-logo-white.svg" alt="Yoover" class="footer-logo">
+                <p class="brand-description">
+                    Engineering a private future through decentralized architecture and zero-compromise, triple-sided encryption. Your privacy is not a feature, it's a human right.
                 </p>
-                <div class="status-indicator">
+                <div class="status-indicator-footer">
                     <span class="status-dot"></span>
                     <span class="status-text">SYSTEMS OPERATIONAL: 100% UP-TIME</span>
                 </div>
-            </div>
-
-            <div class="col-md-2 col-sm-4 col-xs-6 footer-col">
-                <h4>PLATFORM</h4>
-                <a href="/">Home</a>
-                <a href="/purchase">Pricing</a>
-                <a href="/account/login">Log In</a>
-                {{#if allowJoin}}<a href="/account/create">Create Account</a>{{/if}}
-            </div>
-
-            <div class="col-md-2 col-sm-4 col-xs-6 footer-col">
-                <h4>RESOURCES</h4>
-                <a href="/help">Documentation</a>
-                <a href="/contact">Contact Support</a>
-                <a href="/help#setup">Setup Guides</a>
-                <a href="/help#faq">FAQ</a>
-            </div>
-
-            <div class="col-md-2 col-sm-4 col-xs-6 footer-col">
-                <h4>COMPLIANCE</h4>
-                <a href="/terms">Terms of Service</a>
-                <a href="/privacy">Privacy Policy</a>
-                <a href="/privacy#encryption">Encryption Specs</a>
-                <a href="/privacy#gdpr">GDPR Rights</a>
-            </div>
-
-            <div class="col-md-2 col-sm-4 col-xs-6 footer-col text-right-md">
-                <h4>SECURITY</h4>
-                <div class="secure-badge-box">
-                    <span class="glyphicon glyphicon-shield"></span>
-                    <div class="badge-text">SSL SECURED</div>
+                <div class="social-icons">
+                    <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
+                    <a href="#"><i class="fa-brands fa-linkedin"></i></a>
+                    <a href="#"><i class="fa-brands fa-github"></i></a>
                 </div>
-                <div class="secure-badge-box">
-                    <span class="glyphicon glyphicon-lock"></span>
-                    <div class="badge-text">AES-256</div>
+            </div>
+
+            <div class="col-md-2 col-sm-4 col-xs-6">
+                <h4>PRODUCT</h4>
+                <ul class="footer-links">
+                    <li><a href="/features">Features</a></li>
+                    <li><a href="/security">Security Shield</a></li>
+                    <li><a href="/purchase">Pricing Plans</a></li>
+                    <li><a href="/api">Developer API</a></li>
+                    <li><a href="/migration">Migration Tool</a></li>
+                </ul>
+            </div>
+
+            <div class="col-md-2 col-sm-4 col-xs-6">
+                <h4>SUPPORT</h4>
+                <ul class="footer-links">
+                    <li><a href="/help">Help Center</a></li>
+                    <li><a href="#setup-details">Setup Guide</a></li>
+                    <li><a href="/contact">Contact Support</a></li>
+                    <li><a href="/status">System Status</a></li>
+                    <li><a href="/help#faq">FAQ</a></li>
+                </ul>
+            </div>
+
+            <div class="col-md-4 col-sm-12">
+                <div class="newsletter-box">
+                    <h4>Stay Updated</h4>
+                    <p>Get privacy tips and platform updates delivered to your secure inbox.</p>
+                    <div class="newsletter-input-group">
+                        <input type="email" placeholder="email@example.com" aria-label="Email address">
+                        <button type="button">JOIN</button>
+                    </div>
+                </div>
+                <div class="mini-security-badges">
+                    <span><i class="fa-solid fa-shield-halved"></i> TLS 1.3</span>
+                    <span><i class="fa-solid fa-lock"></i> AES-256</span>
                 </div>
             </div>
         </div>
 
-        <div class="footer-bottom">
-            <div class="row">
-                <div class="col-sm-6 text-left-sm">
-                    <p class="copyright">
-                        &copy; 2026 <strong>{{serviceName}}</strong>. AUTHENTICATED VIA <span class="highlight">{{serviceDomain}}</span>
-                    </p>
-                </div>
-                <div class="col-sm-6 text-right-sm">
-                    <p class="motto">PRIVACY IS NOT A FEATURE, IT'S A HUMAN RIGHT.</p>
-                </div>
+        <hr class="footer-divider">
+
+        <div class="row footer-bottom">
+            <div class="col-md-6 col-sm-12">
+                <p class="copyright">
+                    &copy; 2026 <strong>{{serviceName}}</strong>. Authenticated via <span class="highlight">{{serviceDomain}}</span>
+                </p>
+            </div>
+            <div class="col-md-6 col-sm-12 text-right-md">
+                <ul class="list-inline legal-links">
+                    <li><a href="/privacy">Privacy Policy</a></li>
+                    <li><a href="/terms">Terms of Service</a></li>
+                    <li><a href="/cookies">Cookie Policy</a></li>
+                </ul>
             </div>
         </div>
     </div>
 </footer>
 
 <style>
-    /* 1. FOOTER BASE */
-    .yoover-footer-elite {
-        background-color: #000;
-        padding: 100px 5% 40px;
+    /* --- MEGA FOOTER STYLES --- */
+    .mega-footer {
+        background: #041E42; /* Deep Navy to match your elite theme */
         color: #ffffff;
-        border-top: 1px solid #111;
+        padding: 100px 0 40px;
         font-family: 'Inter', sans-serif;
     }
 
-    .footer-grid { margin-bottom: 60px; }
+    .brand-column { margin-bottom: 40px; }
 
-    /* 2. BRANDING SECTION */
-    .footer-logo-white { height: 40px; filter: brightness(0) invert(1); margin-bottom: 25px; }
-    .brand-mission { 
-        color: #666; 
-        font-size: 13px; 
-        line-height: 1.8; 
-        max-width: 300px; 
-        margin-bottom: 30px;
-        font-weight: 500;
+    .footer-logo {
+        height: 40px;
+        margin-bottom: 25px;
+        filter: brightness(0) invert(1);
     }
 
-    /* 3. STATUS INDICATOR */
-    .status-indicator {
+    .brand-description {
+        color: rgba(255, 255, 255, 0.6);
+        padding-right: 40px;
+        font-size: 14px;
+        line-height: 1.7;
+        margin-bottom: 25px;
+    }
+
+    /* Status Dot Animation */
+    .status-indicator-footer {
         display: inline-flex;
         align-items: center;
-        background: rgba(26, 115, 232, 0.1);
-        padding: 8px 15px;
-        border: 1px solid rgba(26, 115, 232, 0.2);
+        background: rgba(255, 255, 255, 0.05);
+        padding: 6px 12px;
+        border-radius: 4px;
+        margin-bottom: 20px;
     }
     .status-dot {
-        height: 6px; width: 6px;
-        background-color: #00ff88;
+        height: 7px; width: 7px;
+        background-color: #34A853;
         border-radius: 50%;
         margin-right: 10px;
-        box-shadow: 0 0 10px #00ff88;
+        box-shadow: 0 0 8px #34A853;
         animation: pulseStatus 2s infinite;
     }
+    .status-text {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        color: rgba(255,255,255,0.8);
+    }
+
     @keyframes pulseStatus {
         0% { opacity: 1; }
         50% { opacity: 0.4; }
         100% { opacity: 1; }
     }
-    .status-text { color: #1A73E8; font-size: 9px; font-weight: 900; letter-spacing: 1px; }
 
-    /* 4. NAVIGATION COLUMNS */
-    .footer-col h4 {
-        color: #fff;
-        font-size: 11px;
-        font-weight: 900;
-        letter-spacing: 2px;
-        margin-bottom: 25px;
-        text-transform: uppercase;
-    }
-    .footer-col a {
-        display: block;
-        color: #666;
-        font-size: 12px;
-        text-decoration: none !important;
-        margin-bottom: 12px;
-        font-weight: 600;
+    .social-icons a {
+        font-size: 18px;
+        margin-right: 20px;
+        color: rgba(255, 255, 255, 0.5);
         transition: 0.3s;
     }
-    .footer-col a:hover { color: #1A73E8; transform: translateX(5px); }
+    .social-icons a:hover { color: #1A73E8; transform: translateY(-3px); display: inline-block; }
 
-    /* 5. SECURITY BADGES */
-    .secure-badge-box {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        margin-bottom: 15px;
-        opacity: 0.5;
-    }
-    .secure-badge-box span { font-size: 18px; margin-right: 10px; color: #1A73E8; }
-    .badge-text { font-size: 9px; font-weight: 900; letter-spacing: 1px; }
-
-    /* 6. FOOTER BOTTOM */
-    .footer-bottom {
-        border-top: 1px solid #111;
-        padding-top: 40px;
-    }
-    .copyright, .motto {
-        font-size: 10px;
-        letter-spacing: 1.5px;
+    /* Links */
+    .mega-footer h4 {
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 2px;
         text-transform: uppercase;
-        color: #444;
-        margin: 0;
+        margin-bottom: 30px;
+        color: #fff;
     }
-    .copyright strong { color: #777; }
-    .highlight { color: #1A73E8; }
 
-    /* 7. RESPONSIVE ALIGNMENT */
-    @media (min-width: 992px) {
-        .text-right-md { text-align: right; }
-        .text-left-sm { text-align: left; }
+    .footer-links { list-style: none; padding: 0; }
+    .footer-links li { margin-bottom: 15px; }
+    .footer-links a {
+        color: rgba(255, 255, 255, 0.5);
+        text-decoration: none !important;
+        font-size: 14px;
+        transition: 0.3s;
     }
+    .footer-links a:hover { color: #fff; padding-left: 5px; }
+
+    /* Newsletter Box */
+    .newsletter-box {
+        background: rgba(255, 255, 255, 0.04);
+        padding: 30px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .newsletter-box p { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 20px; }
+    
+    .newsletter-input-group { display: flex; }
+    .newsletter-input-group input {
+        flex: 1;
+        padding: 12px 15px;
+        background: #fff;
+        border: none;
+        border-radius: 8px 0 0 8px;
+        outline: none;
+        color: #333;
+    }
+    .newsletter-input-group button {
+        background: #1A73E8;
+        color: #fff;
+        border: none;
+        padding: 0 20px;
+        border-radius: 0 8px 8px 0;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    .newsletter-input-group button:hover { background: #1557b0; }
+
+    .mini-security-badges { margin-top: 20px; display: flex; gap: 20px; }
+    .mini-security-badges span {
+        font-size: 10px;
+        font-weight: 700;
+        color: rgba(255,255,255,0.3);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .mini-security-badges i { color: #1A73E8; margin-right: 5px; }
+
+    /* Bottom Bar */
+    .footer-divider { border-color: rgba(255, 255, 255, 0.08); margin: 0px 0 30px; }
+    .copyright { font-size: 12px; color: rgba(255, 255, 255, 0.3); }
+    .highlight { color: #1A73E8; font-weight: 700; }
+    
+    .legal-links a { color: rgba(255, 255, 255, 0.3); font-size: 12px; margin-left: 20px; text-decoration: none; }
+    .legal-links a:hover { color: #fff; }
+
+    /* Responsive */
     @media (max-width: 991px) {
-        .footer-section-brand { margin-bottom: 50px; text-align: center; }
-        .brand-mission { margin: 0 auto 30px; }
-        .secure-badge-box { justify-content: center; }
-        .footer-col { margin-bottom: 30px; text-align: center; }
-        .text-right-sm { text-align: center; margin-top: 10px; }
+        .text-right-md { text-align: center; margin-top: 20px; }
+        .footer-bottom { text-align: center; }
+        .legal-links a { margin: 0 10px; }
     }
 </style>
-
-    {{> scripts}}
-</body>
-
-</html>
