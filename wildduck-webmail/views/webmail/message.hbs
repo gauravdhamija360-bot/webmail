@@ -1,0 +1,639 @@
+<input type="hidden" id="mailbox" value="{{mailbox.id}}" />
+<input type="hidden" id="message" value="{{message.id}}" />
+<input type="hidden" id="_csrf" value="{{csrfToken}}">
+
+<h2 class="sub-header" style="display: flex;">
+    <div style="flex-grow: 1">
+        <table class="limited">
+            <tr class="messagerow-{{message.mailbox}}-{{message.id}}">
+                <td class="message-subject-line">
+                    <a href="#" class="message-star {{#if message.flagged}}flagged{{else}}unflagged{{/if}}"
+                        data-mailbox="{{mailbox.id}}" data-message="{{message.id}}"><span
+                            class="glyphicon glyphicon-{{#if message.flagged}}star{{else}}star-empty{{/if}}"
+                            aria-hidden="true"></span></a>
+
+                    <span>{{message.subject}}</span>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div>
+        <div class="btn-group">
+            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+                <span class="glyphicon glyphicon-envelope" aria-hidden="true" style="margin-right: 6px;"></span> Details <span
+                    class="caret" style="margin-left: 3px;"></span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-right">
+                <li><a href="/webmail/{{mailbox.id}}/raw/{{message.id}}.eml"><span
+                            class="glyphicon glyphicon-download-alt" aria-hidden="true"></span> Original message</a>
+                </li>
+                {{#if message.attachments}}
+                <li role="separator" class="divider"></li>
+                {{#each message.attachments}}
+                <li><a href="/webmail/{{../mailbox.id}}/attachment/{{../message.id}}/{{id}}"
+                        download="{{filename}}"><span class="glyphicon glyphicon-paperclip" aria-hidden="true"></span>
+                        {{filename}} [{{sizeKb}}kB]</a></li>
+                {{/each}}
+                {{/if}}
+            </ul>
+        </div>
+    </div>
+</h2>
+
+<div class="toolbar-container">
+    <div class="toolbar-main">
+
+        <fieldset id="action-toolbar">
+            <div class="form-group">
+
+                <a href="/webmail/send?action=reply&amp;refMailbox={{mailbox.id}}&amp;refMessage={{message.id}}"
+                    class="btn btn-default btn-xs" style="margin-right: 12px;"><span class="glyphicon glyphicon-send" aria-hidden="true"></span>
+                    Reply</a>
+                <a href="/webmail/send?action=replyAll&amp;refMailbox={{mailbox.id}}&amp;refMessage={{message.id}}"
+                    class="btn btn-default btn-xs" style="margin-right: 12px;"><span class="glyphicon glyphicon-send" aria-hidden="true"></span>
+                    Reply to all</a>
+                <a href="/webmail/send?action=forward&amp;refMailbox={{mailbox.id}}&amp;refMessage={{message.id}}"
+                    class="btn btn-default btn-xs"><span class="glyphicon glyphicon-share" aria-hidden="true"></span>
+                    Forward</a>
+
+                <span style="display: inline-block; width: 10px;"></span>
+
+                <button class="btn btn-default btn-xs bulk-mark-unseen">Mark as Unseen</button>
+
+                <span style="display: inline-block; width: 10px;"></span>
+
+                <button class="btn btn-default btn-xs bulk-delete" data-toggle="modal" data-target="#deleteModal"><span
+                        class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete</button>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false">
+                        <span class="glyphicon glyphicon-inbox" aria-hidden="true"></span> Move <span
+                            class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        {{#each mailboxes}}
+                        {{#if canMoveTo}}
+                        <li><a href="#" class="bulk-move" data-mailbox="{{id}}" data-mailbox-path="{{path}}"
+                                data-toggle="modal" data-target="#moveModal">
+                                {{{prefix}}}
+                                {{#if icon}}
+                                <span class="glyphicon glyphicon-{{icon}}" aria-hidden="true"></span>
+                                {{else}}
+                                <span class="glyphicon glyphicon-triangle-right" aria-hidden="true"></span>
+                                {{/if}}
+                                {{formatted}}
+                                {{{suffix}}}</a></li>
+                        {{/if}}
+                        {{/each}}
+                    </ul>
+                </div>
+
+            </div>
+        </fieldset>
+    </div>
+
+    <div class="toolbar-search">
+        {{>searchfield}}
+    </div>
+
+</div>
+
+<div class="clearfix"></div>
+
+{{#if message.bimi}}
+<div class="bimi" style="background-image: url({{message.bimi.image}});">
+    {{#if message.bimi.certified}}
+    <img style="display: block; margin: 5px 5px 0 auto;" title="Certified VMC logo"
+        src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGFyaWEtaGlkZGVuPSJ0cnVlIiByb2xlPSJpbWciIHN0eWxlPSJ2ZXJ0aWNhbC1hbGlnbjogLTAuMTI1ZW07IiB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHByZXNlcnZlQXNwZWN0UmF0aW89InhNaWRZTWlkIG1lZXQiIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iIzE1OGNiYSIgZD0iTTQuMDM1IDE1LjQ3OUEzLjk3NiAzLjk3NiAwIDAgMCA0IDE2YzAgMi4zNzggMi4xMzggNC4yODQgNC41MjEgMy45NjRDOS4yMTQgMjEuMTk4IDEwLjUzNCAyMiAxMiAyMnMyLjc4Ni0uODAyIDMuNDc5LTIuMDM2QzE3Ljg1NyAyMC4yODQgMjAgMTguMzc4IDIwIDE2YzAtLjE3My0uMDEyLS4zNDctLjAzNS0uNTIxQzIxLjE5OCAxNC43ODYgMjIgMTMuNDY1IDIyIDEycy0uODAyLTIuNzg2LTIuMDM1LTMuNDc5QzE5Ljk4OCA4LjM0NyAyMCA4LjE3MyAyMCA4YzAtMi4zNzgtMi4xNDMtNC4yODgtNC41MjEtMy45NjRDMTQuNzg2IDIuODAyIDEzLjQ2NiAyIDEyIDJzLTIuNzg2LjgwMi0zLjQ3OSAyLjAzNkM2LjEzOCAzLjcxMiA0IDUuNjIyIDQgOGMwIC4xNzMuMDEyLjM0Ny4wMzUuNTIxQzIuODAyIDkuMjE0IDIgMTAuNTM1IDIgMTJzLjgwMiAyLjc4NiAyLjAzNSAzLjQ3OXptMS40NDItNS40MDNsMS4xMDItLjI5M2wtLjQzNC0xLjA1M0ExLjkzMiAxLjkzMiAwIDAgMSA2IDhjMC0xLjEwMy44OTctMiAyLTJjLjI0NyAwIC40OTkuMDUuNzMuMTQ1bDEuMDU0LjQzNGwuMjkzLTEuMTAyYTEuOTkgMS45OSAwIDAgMSAzLjg0NiAwbC4yOTMgMS4xMDJsMS4wNTQtLjQzNEMxNS41MDEgNi4wNSAxNS43NTMgNiAxNiA2YzEuMTAzIDAgMiAuODk3IDIgMmMwIC4yNDctLjA1LjUtLjE0NS43M2wtLjQzNCAxLjA1M2wxLjEwMi4yOTNhMS45OTMgMS45OTMgMCAwIDEgMCAzLjg0OGwtMS4xMDIuMjkzbC40MzQgMS4wNTNjLjA5NS4yMy4xNDUuNDgzLjE0NS43M2MwIDEuMTAzLS44OTcgMi0yIDJjLS4yNDcgMC0uNDk5LS4wNS0uNzMtLjE0NWwtMS4wNTQtLjQzNGwtLjI5MyAxLjEwMmExLjk5IDEuOTkgMCAwIDEtMy44NDYgMGwtLjI5My0xLjEwMmwtMS4wNTQuNDM0QTEuOTM1IDEuOTM1IDAgMCAxIDggMThjLTEuMTAzIDAtMi0uODk3LTItMmMwLS4yNDcuMDUtLjUuMTQ1LS43M2wuNDM0LTEuMDUzbC0xLjEwMi0uMjkzYTEuOTkzIDEuOTkzIDAgMCAxIDAtMy44NDh6Ii8+PHBhdGggZmlsbD0iIzE1OGNiYSIgZD0ibTE1Ljc0MiAxMC43MWwtMS40MDgtMS40MmwtMy4zMzEgMy4yOTlsLTEuMjk2LTEuMjk2bC0xLjQxNCAxLjQxNGwyLjcwNCAyLjcwNHoiLz48L3N2Zz4=">
+    {{/if}}
+</div>
+{{/if}}
+
+{{#each message.info}}
+<div>
+    <strong>{{key}}:</strong>
+    {{#if icon}}
+    <span class="glyphicon glyphicon-{{icon}}" aria-hidden="true"></span>
+    {{/if}}
+    <span {{#if isDate}} class="datestring" title="{{value}}" {{/if}}>
+        {{#if isHtml}}{{{value}}}{{else}}{{value}}{{/if}}
+    </span>
+
+    {{#if @first}}
+    {{#if ../message.securityInfo}}
+    <a id="extraDetails" tabindex="0" role="button" data-toggle="popover" data-trigger="focus"
+        title="Delivery details"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></a>
+    <div id="extraDetailsContent" style="display: none">
+        {{#each ../message.securityInfo}}
+        <div {{#if textClass}} class="{{textClass}}" {{/if}}>
+            <strong>{{key}}:</strong>
+            {{#if icon}}
+            <span class="glyphicon glyphicon-{{icon}}" aria-hidden="true"></span>
+            {{/if}}
+            <span {{#if isDate}} class="datestring" title="{{value}}" {{/if}}>
+                {{#if isHtml}}{{{value}}}{{else}}{{value}}{{/if}}
+            </span>
+        </div>
+        {{/each}}
+    </div>
+    {{/if}}
+    {{/if}}
+
+</div>
+{{/each}}
+{{#if expires}}
+<div class="text-muted">
+    <strong>Message expires:</strong>
+    <span class="datestring" title="{{expires}}">
+        {{expires}}
+    </span>
+</div>
+{{/if}}
+
+<div style="margin-bottom: 5px;"></div>
+
+{{#if message.encrypted}}
+<div id="encrypted-warning" class="alert alert-warning" role="alert">
+    <span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+    This message is encrypted and can not be displayed. Download the original message <a
+        href="/webmail/{{mailbox.id}}/raw/{{message.id}}.eml" download="{{message.id}}.eml" class="alert-link">from here
+    </a> to open it in an e-mail client that is able to read encrypted messages.
+    Alternatively you can install <a href="https://www.mailvelope.com/" class="alert-link">Mailvelope browser
+        extension</a> to allow decrypting and displaying messages by {{serviceName}}.
+</div>
+
+<div id="mailvelope-loading" class="alert alert-info" role="alert" style="display:none">
+    <span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+    Mailvelope detected. Trying to decrpyt encrypted message...
+</div>
+
+<div id="message-content" class="mailvelope"></div>
+
+<script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        if (typeof mailvelope !== 'undefined') {
+            mailvelopeLoaded();
+        } else {
+            window.addEventListener('mailvelope', mailvelopeLoaded, false);
+        }
+
+        var identifier = 'wildduck';
+
+        function getKeyring(callback) {
+            mailvelope.getKeyring(identifier).then(function (keyring) {
+                return callback(null, keyring);
+            }).catch(function (err) {
+                mailvelope.createKeyring(identifier).then(function (keyring) {
+                    return callback(null, keyring);
+                }).catch(function (err) {
+                    return callback(err);
+                });
+            });
+        }
+
+        function mailvelopeLoaded() {
+
+            document.getElementById('encrypted-warning').style.display = 'none';
+            document.getElementById('mailvelope-loading').style.display = 'block';
+
+            var selector = '#message-content';
+
+            getKeyring(function (err, keyring) {
+                if (err) {
+                    document.getElementById('encrypted-warning').style.display = 'block';
+                    document.getElementById('mailvelope-loading').style.display = 'none';
+                    alert('Failed to create keyring. ' + err.message);
+                    return;
+                }
+
+                fetch('/webmail/{{mailbox.id}}/raw/{{message.id}}.eml', {
+                    method: 'get',
+                    headers: {
+                        Accept: 'application/json, text/plain, */*',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                })
+                    .then(function (res) {
+                        return res.text();
+                    })
+                    .then(function (text) {
+                        mailvelope.createDisplayContainer(selector, text, keyring, { showExternalContent: true }).then(function () {
+                            //$(selector).addClass('mailvelope').find('.message-part, .part-notice').hide();
+                            //setTimeout(function() { $(window).resize(); }, 10);
+                            document.getElementById('mailvelope-loading').style.display = 'none';
+                        }).catch(function (err) {
+                            document.getElementById('encrypted-warning').style.display = 'block';
+                            document.getElementById('mailvelope-loading').style.display = 'none';
+                            console.error(err);
+                            alert('Message decryption failed: ' + err.message, 'error')
+                        });
+                    }).catch(function (err) {
+                        document.getElementById('encrypted-warning').style.display = 'block';
+                        document.getElementById('mailvelope-loading').style.display = 'none';
+                        console.error(err);
+                        alert('Message decryption failed: ' + err.message)
+                    });
+            });
+        }
+    });
+
+</script>
+
+
+{{else}}
+
+<div id="message-content" class="iframe-box"></div>
+
+{{#if message.attachments}}
+<div class="well">
+    {{#each message.attachments}}
+    <a class="btn btn-success btn-sm" href="/webmail/{{../mailbox.id}}/attachment/{{../message.id}}/{{id}}"
+        role="button" download="{{filename}}"><span class="glyphicon glyphicon-cloud-download"
+            aria-hidden="true"></span> {{filename}}</a>
+    {{/each}}
+</div>
+{{/if}}
+
+<p>
+    &nbsp;
+</p>
+
+
+<script type="text/javascript" src="/components/DOMPurify/dist/purify.min.js"></script>
+<script>
+    var message = {{{ messageJson }}};
+
+    document.addEventListener("DOMContentLoaded", function (event) {
+        if (message.html) {
+            var clean = DOMPurify.sanitize(message.html.join('\n'), {
+                ALLOW_UNKNOWN_PROTOCOLS: true,
+                WHOLE_DOCUMENT: true,
+                FORBID_TAGS: ['form']
+            });
+
+            clean = clean.replace(/head>/, 'head><link rel="stylesheet" href="/css/mail.css" /><base target="_parent"><script>function resizeIframe(obj) {obj.style.height = obj.contentWindow.document.body.scrollHeight + "px";}</' + 'script>');
+
+            var iframe = document.createElement('iframe');
+
+            document.getElementById('message-content').appendChild(iframe);
+            iframe.contentWindow.document.open();
+            iframe.contentWindow.document.write(clean);
+            iframe.contentWindow.document.close();
+            iframe.contentWindow.addEventListener('load', function () {
+                iframe.contentWindow.resizeIframe(iframe);
+            });
+            iframe.contentWindow.document.addEventListener('DOMContentLoaded', function () {
+                iframe.contentWindow.resizeIframe(iframe);
+            });
+        }
+    }, false);
+</script>
+
+{{/if}}
+
+
+<!-- Modal -->
+<div class="modal" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="deleteModalLabel">Delete message</h4>
+            </div>
+            <div class="modal-body">
+                {{#if isTrash}}
+                Are you sure you want to permanently delete this message?
+                {{else}}
+                Are you sure you want to move this message to Trash folder?
+                {{/if}}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">No, cancel</button>
+                <button type="button" class="btn btn-danger bulk-delete-confirm" data-loading-text="Deleting...">Yes,
+                    delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="moveModal" tabindex="-1" role="dialog" aria-labelledby="moveModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="moveModalLabel">Move message</h4>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to move this message to <span class="bulk-move-path">another folder</span>?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">No, cancel</button>
+                <button type="button" class="btn btn-primary bulk-move-confirm" data-loading-text="Moving...">Yes,
+                    move</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // star toggle
+    (function () {
+        var toggleStar = function (e, elm) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (!elm || elm.dataset.status === 'pending') {
+                return;
+            }
+
+            elm.dataset.status = 'pending';
+            var flagged = elm.classList.contains('flagged');
+
+            var done = function () {
+                elm.dataset.status = 'done';
+            }
+
+            fetch('/api/toggle/flagged', {
+                method: 'post',
+                headers: {
+                    Accept: 'application/json, text/plain, */*',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    _csrf: document.getElementById('_csrf').value,
+                    mailbox: elm.dataset.mailbox,
+                    message: elm.dataset.message,
+                    flagged: !flagged // toggle
+                })
+            })
+                .then(function (res) {
+                    return res.json();
+                })
+                .then(function (res) {
+                    if (res.error) {
+                        console.error(res.error);
+                        return done();
+                    }
+
+                    if (flagged) {
+                        elm.classList.remove('flagged');
+                        elm.classList.add('unflagged');
+                        elm.querySelector('.glyphicon').classList.remove('glyphicon-star');
+                        elm.querySelector('.glyphicon').classList.add('glyphicon-star-empty');
+                    } else {
+                        elm.classList.remove('unflagged');
+                        elm.classList.add('flagged');
+                        elm.querySelector('.glyphicon').classList.remove('glyphicon-star-empty');
+                        elm.querySelector('.glyphicon').classList.add('glyphicon-star');
+                    }
+
+                    done();
+                }).catch(function (err) {
+                    console.error(err);
+                    done();
+                });
+
+        };
+
+        var setupToggling = function (elm) {
+            elm.addEventListener('click', function (e) {
+                toggleStar(e, elm);
+            }, false);
+        }
+
+        var starElms = document.querySelectorAll('.message-star');
+        for (var i = 0, len = starElms.length; i < len; i++) {
+            setupToggling(starElms[i]);
+        }
+    })();
+
+    // checkboxes
+    document.addEventListener('DOMContentLoaded', function () {
+        var toolbarElm = document.querySelector('#action-toolbar');
+        var mailbox = document.getElementById('mailbox').value;
+        var message = document.getElementById('message').value;
+
+        var pendingSeen = false;
+        var toggleSeen = function (seen) {
+            if (pendingSeen) {
+                return false;
+            }
+
+            var done = function () {
+                pendingSeen = false;
+            }
+
+            fetch('/api/toggle/seen', {
+                method: 'post',
+                headers: {
+                    Accept: 'application/json, text/plain, */*',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    _csrf: document.getElementById('_csrf').value,
+                    mailbox: mailbox,
+                    message: message,
+                    seen: !!seen
+                })
+            })
+                .then(function (res) {
+                    return res.json();
+                })
+                .then(function (res) {
+                    if (res.error) {
+                        console.error(res.error);
+                        return done();
+                    }
+
+                    window.location.href = '/webmail/' + mailbox;
+                }).catch(function (err) {
+                    console.error(err);
+                    done();
+                });
+        }
+
+        var setUnseen = function () {
+            toggleSeen(false);
+        };
+
+        var setSeen = function () {
+            toggleSeen(true);
+        };
+
+        document.querySelector('.bulk-mark-unseen').addEventListener('click', setUnseen, false);
+        document.querySelector('.bulk-mark-unseen').addEventListener('touch', setUnseen, false);
+
+        var pendingDeleted = false;
+        var deleteMessage = function () {
+            if (pendingDeleted) {
+                return false;
+            }
+
+            pendingDeleted = true;
+            $('#deleteModal .bulk-delete-confirm').button('loading');
+
+            var done = function () {
+                pendingDeleted = false;
+                $('#deleteModal .bulk-delete-confirm').button('reset');
+                $('#deleteModal').modal('hide');
+            }
+
+            fetch('/api/delete', {
+                method: 'post',
+                headers: {
+                    Accept: 'application/json, text/plain, */*',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    _csrf: document.getElementById('_csrf').value,
+                    mailbox: mailbox,
+                    message: message
+                })
+            })
+                .then(function (res) {
+                    return res.json();
+                })
+                .then(function (res) {
+                    if (res.error) {
+                        console.error(res.error);
+                        return done();
+                    }
+
+                    window.location.href = '/webmail/' + mailbox;
+                }).catch(function (err) {
+                    console.error(err);
+                    done();
+                });
+        };
+
+        document.querySelector('.bulk-delete-confirm').addEventListener('click', deleteMessage, false);
+        document.querySelector('.bulk-delete-confirm').addEventListener('touch', deleteMessage, false);
+
+        var pendingMove = false;
+        var moveMessage = function (target) {
+            if (pendingMove) {
+                return false;
+            }
+
+            pendingMove = true;
+            $('#moveModal .bulk-move-confirm').button('loading');
+
+            var done = function () {
+                pendingMove = false;
+                $('#moveModal .bulk-move-confirm').button('reset');
+                $('#moveModal').modal('hide');
+            }
+
+            var targetMailbox = document.querySelector('.bulk-move-confirm').dataset.mailbox;
+
+            fetch('/api/move', {
+                method: 'post',
+                headers: {
+                    Accept: 'application/json, text/plain, */*',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    _csrf: document.getElementById('_csrf').value,
+                    mailbox: mailbox,
+                    message: message,
+                    target: targetMailbox
+                })
+            })
+                .then(function (res) {
+                    return res.json();
+                })
+                .then(function (res) {
+                    if (res.error) {
+                        console.error(res.error);
+                        return done();
+                    }
+
+                    window.location.href = '/webmail/' + targetMailbox;
+                }).catch(function (err) {
+                    console.error(err);
+                    done();
+                });
+        };
+
+        $('#moveModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget); // Button that triggered the modal
+            var mailbox = button.data('mailbox'); // Extract info from data-* attributes
+            var path = button.data('mailbox-path');
+            $('.bulk-move-path').text(path);
+            document.querySelector('.bulk-move-confirm').dataset.mailbox = mailbox;
+        });
+
+        document.querySelector('.bulk-move-confirm').addEventListener('click', moveMessage, false);
+        document.querySelector('.bulk-move-confirm').addEventListener('touch', moveMessage, false);
+
+        var stream = new EventSource('/api/events');
+        stream.onmessage = function (e) {
+            var data, row, star, redrawTimer;
+            try {
+                data = JSON.parse(e.data);
+            } catch (E) {
+                return;
+            }
+            switch (data.command) {
+                case 'FETCH': {
+                    row = document.querySelector('.messagerow-' + data.mailbox + '-' + data.uid);
+                    if (!row) {
+                        return;
+                    }
+                    if (data.flags) {
+                        star = row.querySelector('.message-star');
+
+                        if (data.flags.indexOf('\\Flagged') >= 0) {
+                            star.classList.remove('unflagged');
+                            star.classList.add('flagged');
+                            star.querySelector('.glyphicon').classList.remove('glyphicon-star-empty');
+                            star.querySelector('.glyphicon').classList.add('glyphicon-star');
+                        } else {
+                            star.classList.remove('flagged');
+                            star.classList.add('unflagged');
+                            star.querySelector('.glyphicon').classList.remove('glyphicon-star');
+                            star.querySelector('.glyphicon').classList.add('glyphicon-star-empty');
+                        }
+
+                    }
+                    break;
+                }
+                case 'COUNTERS': {
+                    if (data.mailbox) {
+                        if (FAVICON && data.mailbox === INBOX_ID) {
+                            FAVICON.badge(data.unseen);
+                        }
+                        [].slice.call(document.querySelectorAll('.unseen-counter-' + data.mailbox)).forEach(function (row) {
+                            if (data.unseen) {
+                                row.style.display = 'block';
+                                row.textContent = data.unseen;
+                            } else {
+                                row.style.display = 'none';
+                                row.textContent = 0;
+                            }
+                        });
+                    }
+                    break;
+                }
+            }
+        };
+
+        $('#extraDetails').popover({
+            content: document.getElementById('extraDetailsContent').innerHTML,
+            html: true
+        })
+    }, false);
+
+</script>

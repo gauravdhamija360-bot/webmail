@@ -1,0 +1,7 @@
+<h3>{{error.status}} Error</h3>
+
+<p class="lead">{{message}}</p>
+
+{{#if error.stack}}
+    <pre>{{error.stack}}</pre>
+{{/if}}

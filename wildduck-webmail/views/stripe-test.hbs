@@ -1,0 +1,127 @@
+<style>
+.test-container { padding: 80px 0; background: #f4f7f9; min-height: 100vh; }
+.test-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+    border: 1px solid #e1e8ed;
+}
+.status-badge {
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    background: #fff3cd;
+    color: #856404;
+    margin-bottom: 20px;
+    display: inline-block;
+}
+.form-control-test {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+</style>
+
+<div class="test-container">
+<div class="container">
+<div class="row">
+<div class="col-md-6 col-md-offset-3">
+
+<div class="test-card">
+
+<span class="status-badge">
+<i class="fa fa-flask"></i> STRIPE TEST MODE ACTIVE
+</span>
+
+<h2 style="font-weight:800;margin-bottom:10px;">
+Stripe Lab
+</h2>
+
+<p class="text-muted">
+Test the flow from <strong>Form → Stripe → Success Metadata</strong>.
+</p>
+
+<hr>
+
+<form action="/create-checkout-session" method="POST">
+
+<!-- CSRF TOKEN REQUIRED -->
+<input type="hidden" name="_csrf" value="{{csrfToken}}">
+
+<label>Simulated Username</label>
+<input 
+type="text"
+name="requestedUsername"
+class="form-control-test"
+value="{{testUsername}}"
+required
+>
+
+<label>Full Name</label>
+<input
+type="text"
+name="fullName"
+class="form-control-test"
+value="Test User"
+required
+>
+
+<label>Recovery Email</label>
+<input
+type="email"
+name="recoveryEmail"
+class="form-control-test"
+value="test@external.com"
+required
+>
+
+<label>Simulated Password</label>
+<input
+type="text"
+name="password"
+class="form-control-test"
+value="TestPass123!"
+required
+>
+
+<div style="background:#eef2f7;padding:15px;border-radius:10px;margin:20px 0;">
+<p style="margin:0;font-size:13px;">
+<strong>Amount:</strong> $15.00 USD
+</p>
+<p style="margin:0;font-size:13px;">
+<strong>Mode:</strong> One-time payment
+</p>
+</div>
+
+<button
+type="submit"
+class="btn-search"
+style="width:100%;background:#6772e5;color:white;font-weight:700;"
+>
+<i class="fa-brands fa-stripe"></i>
+LAUNCH STRIPE CHECKOUT
+</button>
+
+</form>
+
+<div style="margin-top:30px;border-top:1px solid #eee;padding-top:20px;">
+
+<h4 style="font-weight:700;">Debugging Tips:</h4>
+
+<ul style="font-size:13px;color:#666;padding-left:20px;">
+<li>Use card number <strong>4242 4242 4242 4242</strong> for success.</li>
+<li>Check your <strong>Stripe Dashboard → Payments → Metadata</strong>.</li>
+<li>Ensure <code>STRIPE_SECRET_KEY</code> starts with <code>sk_test_</code>.</li>
+</ul>
+
+</div>
+
+</div>
+</div>
+</div>
+</div>
+</div>

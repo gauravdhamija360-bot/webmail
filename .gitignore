@@ -1,0 +1,7 @@
+.env
+node_modules
+wildduck-data
+wildduck-webmail/.en.env
+.env.*
+node_modules/
+wildduck-data/

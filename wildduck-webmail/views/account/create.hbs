@@ -1,0 +1,253 @@
+<div class="liquid-viewport">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="glass-main-container fade-in">
+        <div class="glass-side-info">
+            <div class="brand-top">
+                <img src="/images/yoover-logo.svg" alt="Yoover" class="logo-glow">
+            </div>
+            <div class="hero-content">
+                <h1 class="glitch-text">NETWORK<br>ACCESS</h1>
+                <p class="hero-desc">Secure your unique identity within the @{{values.domain}} ecosystem. Encrypted. Autonomous. Sharp.</p>
+            </div>
+            <div class="status-box">
+                <div class="pulse-dot"></div>
+                <span class="status-label">SYSTEMS OPERATIONAL // AES-256 ACTIVE</span>
+            </div>
+        </div>
+
+        <div class="glass-side-form">
+            <div class="form-header">
+                <h2>Establish Identity</h2>
+                <div class="header-line"></div>
+            </div>
+
+            <form method="post" id="create-form" action="/account/create" class="glass-form">
+                <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                <input type="hidden" id="domain" name="domain" value="{{values.domain}}">
+
+                <div class="glass-input-group {{#if errors.name}}field-error{{/if}}">
+                    <div class="input-container">
+                        <span class="glyphicon glyphicon-tag icon-subtle"></span>
+                        <input type="text" name="name" id="name" placeholder="Full Name" value="{{values.name}}" required autofocus>
+                        <div class="input-glow-line"></div>
+                    </div>
+                    {{#if errors.name}}<span class="err-msg">{{errors.name}}</span>{{/if}}
+                </div>
+
+                <div class="glass-input-group {{#if errors.username}}field-error{{/if}}">
+                    <div class="input-container split-input">
+                        <span class="glyphicon glyphicon-user icon-subtle"></span>
+                        <input type="text" name="username" id="username" placeholder="Identity Address" value="{{values.username}}" pattern="^[A-Za-z0-9][A-Za-z\-\.0-9]*$" required>
+                        
+                        <div class="domain-picker-wrapper">
+                            <button type="button" class="domain-toggle" data-toggle="dropdown">
+                                @{{values.domain}} <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu sharp-drop">
+                                {{#each domains}}
+                                    <li><a href="#" class="change-domain-link" data-domain="{{this}}">{{this}}</a></li>
+                                {{/each}}
+                            </ul>
+                        </div>
+                        <div class="input-glow-line"></div>
+                    </div>
+                    {{#if errors.username}}
+                        <span class="err-msg">{{errors.username}}</span>
+                    {{else}}
+                        <span class="help-hint">Latin characters & numbers only.</span>
+                    {{/if}}
+                </div>
+
+                <div class="password-row">
+                    <div class="glass-input-group {{#if errors.password}}field-error{{/if}}">
+                        <div class="input-container">
+                            <input type="password" name="password" id="password" placeholder="Security Key" required>
+                            <div class="input-glow-line"></div>
+                        </div>
+                    </div>
+
+                    <div class="glass-input-group">
+                        <div class="input-container">
+                            <input type="password" name="password2" id="password2" placeholder="Repeat Key" required>
+                            <div class="input-glow-line"></div>
+                        </div>
+                    </div>
+                </div>
+                {{#if errors.password}}<span class="err-msg">{{errors.password}}</span>{{/if}}
+
+                <div class="terms-row">
+                    <label class="sharp-check">
+                        <input type="checkbox" name="remember" required>
+                        <span class="check-mark"></span>
+                        Accept <a href="/tos">Protocol Terms</a>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn-neon-action">
+                    <span>INITIALIZE ACCOUNT</span>
+                    <div class="btn-glow-overlay"></div>
+                </button>
+            </form>
+
+            <div class="glass-footer">
+                <p>Already identified? <a href="/account/login">Authenticate</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* 0. ABSOLUTE SHARP RESET */
+    * { border-radius: 0 !important; }
+
+    /* 1. LIQUID VIEWPORT BACKGROUND */
+    .liquid-viewport {
+        min-height: calc(100vh - 85px);
+        background: #050505;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        padding: 40px 20px;
+    }
+
+    .orb {
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        filter: blur(120px);
+        opacity: 0.15;
+        z-index: 0;
+    }
+    .orb-1 { background: #1A73E8; top: -200px; right: -100px; animation: float 10s infinite alternate; }
+    .orb-2 { background: #00ff88; bottom: -200px; left: -100px; animation: float 15s infinite alternate-reverse; }
+
+    /* 2. MAIN GLASS CONTAINER */
+    .glass-main-container {
+        width: 100%;
+        max-width: 1100px;
+        display: flex;
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        z-index: 1;
+        box-shadow: 0 50px 100px rgba(0,0,0,0.5);
+    }
+
+    /* 3. LEFT BRANDING PANEL */
+    .glass-side-info {
+        flex: 1;
+        padding: 60px;
+        background: rgba(255, 255, 255, 0.02);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .glitch-text { font-size: 64px; font-weight: 900; color: #fff; line-height: 0.85; letter-spacing: -4px; }
+    .hero-desc { color: #888; margin-top: 20px; font-size: 16px; line-height: 1.6; max-width: 320px; }
+    .status-box { display: flex; align-items: center; gap: 15px; color: #00ff88; font-family: monospace; font-size: 10px; letter-spacing: 2px; }
+    .pulse-dot { width: 8px; height: 8px; background: #00ff88; animation: pulse 2s infinite; }
+
+    /* 4. RIGHT FORM PANEL */
+    .glass-side-form { flex: 1.2; padding: 60px; background: transparent; }
+    .form-header h2 { color: #fff; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; font-size: 24px; margin: 0; }
+    .header-line { width: 40px; height: 4px; background: #1A73E8; margin-top: 10px; }
+
+    /* 5. ATTRACTIVE GLASS INPUTS */
+    .glass-input-group { margin-bottom: 25px; }
+    .input-container {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        height: 60px;
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        position: relative;
+        transition: 0.4s;
+    }
+    .input-container input {
+        background: transparent; border: none; color: #fff; width: 100%; height: 100%;
+        outline: none; font-weight: 600; font-size: 15px;
+    }
+    .icon-subtle { color: #555; margin-right: 15px; font-size: 16px; transition: 0.3s; }
+
+    /* ATTRACTIVE GLOW ON HOVER/FOCUS */
+    .input-container:hover { border-color: rgba(26, 115, 232, 0.5); background: rgba(255, 255, 255, 0.08); }
+    .input-container:focus-within {
+        border-color: #1A73E8;
+        background: rgba(26, 115, 232, 0.05);
+        box-shadow: 0 0 30px rgba(26, 115, 232, 0.2);
+    }
+    .input-container:focus-within .icon-subtle { color: #1A73E8; }
+    .input-glow-line {
+        position: absolute; bottom: -1px; left: 0; width: 0; height: 2px;
+        background: #1A73E8; transition: 0.5s ease;
+    }
+    .input-container:focus-within .input-glow-line { width: 100%; }
+
+    /* DOMAIN PICKER */
+    .domain-toggle { background: #222; border: none; color: #fff; padding: 5px 15px; font-weight: 900; font-size: 11px; margin-left: 10px; height: 36px; transition: 0.3s; }
+    .domain-toggle:hover { background: #1A73E8; }
+    .sharp-drop { background: #111; border: 1px solid #333; }
+    .sharp-drop li a { color: #fff; font-weight: 700; padding: 10px 20px; }
+    .sharp-drop li a:hover { background: #1A73E8; }
+
+    /* 6. NEON ACTION BUTTON */
+    .btn-neon-action {
+        width: 100%; height: 70px; background: transparent; border: 2px solid #1A73E8;
+        color: #fff; font-weight: 900; letter-spacing: 4px; cursor: pointer;
+        position: relative; overflow: hidden; transition: 0.4s; margin-top: 20px;
+    }
+    .btn-neon-action:hover {
+        background: #1A73E8;
+        box-shadow: 0 0 50px rgba(26, 115, 232, 0.5);
+        transform: scale(1.02);
+    }
+    .btn-glow-overlay {
+        position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        animation: slide 4s infinite;
+    }
+
+    /* UTILS */
+    .password-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .sharp-check { display: flex; align-items: center; color: #888; font-weight: 700; font-size: 13px; cursor: pointer; }
+    .sharp-check input { display: none; }
+    .check-mark { width: 16px; height: 16px; border: 2px solid #333; margin-right: 12px; transition: 0.3s; }
+    .sharp-check input:checked + .check-mark { background: #1A73E8; border-color: #1A73E8; }
+    .glass-footer { margin-top: 40px; text-align: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 30px; }
+    .glass-footer a { color: #1A73E8; font-weight: 900; text-decoration: none; }
+    .err-msg { color: #ff4d4d; font-size: 10px; font-weight: 800; text-transform: uppercase; display: block; margin-top: 5px; }
+
+    @keyframes float { from { transform: translate(0, 0); } to { transform: translate(50px, 50px); } }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+    @keyframes slide { from { left: -100%; } to { left: 100%; } }
+
+    @media (max-width: 900px) {
+        .glass-main-container { flex-direction: column; }
+        .glass-side-info { padding: 40px; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .glitch-text { font-size: 40px; }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var domainElement = document.getElementById('domain');
+    var updateDomain = function(e,elm){
+        e.preventDefault();
+        var domain = elm.dataset.domain;
+        if(domain){
+            domainElement.value = domain;
+            document.querySelector('.selected-domain').textContent = domain;
+        }
+    };
+    var domainLinks = document.querySelectorAll('.change-domain-link');
+    for(var i=0; i < domainLinks.length; i++){
+        domainLinks[i].addEventListener('click', function(e){updateDomain(e,this)}, false);
+    }
+}, false);
+</script>

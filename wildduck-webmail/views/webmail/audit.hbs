@@ -1,0 +1,209 @@
+<div class="yoover-webmail-container">
+    <header class="webmail-header-gradient">
+        <div class="header-flex">
+            <div class="mailbox-info" style="flex-grow: 1; overflow: hidden;">
+                <div class="icon-circle">
+                    <span class="glyphicon glyphicon-time" aria-hidden="true"></span>
+                </div>
+                <div class="subject-container">
+                    <p class="subject-label">MESSAGE TIMELINE</p>
+                    <h2 class="mailbox-name truncate">{{messageData.subject}}</h2>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <a href="/webmail/{{mailbox.id}}/message/{{messageData.id}}" class="btn btn-yoover-outline">
+                    <span class="glyphicon glyphicon-menu-left"></span> Back to Message
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="timeline-content-wrapper">
+        <div class="info-intro">
+            <span class="glyphicon glyphicon-info-sign"></span>
+            Below are the delivery events, forwarding triggers, and automated responses for this message.
+        </div>
+
+        {{#each events}}
+        <div class="timeline-card fade-in">
+            <div class="timeline-card-header">
+                <div class="action-badge">
+                    {{#if actionDescription}}
+                        <span class="label-yoover label-{{actionLabel}}">{{actionDescription}}</span>
+                    {{else}}
+                        <span class="label-yoover">{{action}}</span>
+                    {{/if}}
+                </div>
+                <div class="timestamp-yoover">
+                    <span class="glyphicon glyphicon-calendar"></span>
+                    <span class="datestring-fixed" title="{{time}}">{{time}}</span>
+                </div>
+            </div>
+
+            <div class="timeline-grid">
+                <div class="grid-item">
+                    <label>Event ID</label>
+                    <code>{{id}}{{#if seq}}.{{seq}}{{/if}}</code>
+                </div>
+
+                {{#if messageId}}
+                <div class="grid-item full-width">
+                    <label>Message-ID</label>
+                    <span class="technical-value">{{messageId}}</span>
+                </div>
+                {{/if}}
+
+                {{#if from}}
+                <div class="grid-item">
+                    <label>Sender (From)</label>
+                    <span class="address-value">{{from}}</span>
+                </div>
+                {{/if}}
+
+                {{#if to}}
+                <div class="grid-item">
+                    <label>Recipient (To)</label>
+                    <span class="address-value">{{to}}</span>
+                </div>
+                {{/if}}
+
+                {{#if origin}}
+                <div class="grid-item">
+                    <label>Sending Host</label>
+                    <span class="host-value">{{origin}}</span>
+                </div>
+                {{/if}}
+
+                {{#if mx}}
+                <div class="grid-item">
+                    <label>Destination MX</label>
+                    <span class="host-value">{{mx}} {{#if dst}}[{{dst}}]{{/if}}</span>
+                </div>
+                {{/if}}
+
+                {{#if targetList}}
+                <div class="grid-item full-width highlight-item">
+                    <label>{{#if toTitle}}{{toTitle}}{{else}}Forwarding Logic{{/if}}</label>
+                    <div class="target-list">
+                        {{#each targetList}}
+                            <div class="target-row">
+                                <strong>{{../id}}.{{seq}}:</strong> {{text}} 
+                                <code class="response-code">{{value}}</code>
+                            </div>
+                        {{/each}}
+                    </div>
+                </div>
+                {{/if}}
+
+                {{#if response}}
+                <div class="grid-item full-width">
+                    <label>Server Response</label>
+                    <code class="response-block">{{response}}</code>
+                </div>
+                {{/if}}
+
+                {{#if error}}
+                <div class="grid-item full-width">
+                    <label>Error Detail</label>
+                    <code class="response-block error">{{error}}</code>
+                </div>
+                {{/if}}
+            </div>
+        </div>
+        {{/each}}
+    </div>
+</div>
+
+<style>
+    /* REUSING YOOVER CORE THEME */
+    .yoover-webmail-container { background: #f8f9fa; min-height: 100vh; font-family: 'Segoe UI', Roboto, sans-serif; }
+    
+    .webmail-header-gradient {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        padding: 30px 5%;
+        border-bottom: 1px solid #e1e8ed;
+    }
+    .header-flex { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; }
+    .subject-label { margin: 0; font-size: 11px; font-weight: 800; color: #1A73E8; opacity: 0.8; letter-spacing: 1px; }
+    .mailbox-name.truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 600px; }
+
+    /* TIMELINE LAYOUT */
+    .timeline-content-wrapper { padding: 40px 5%; max-width: 1200px; margin: 0 auto; }
+    .info-intro { margin-bottom: 30px; color: #5f6368; font-weight: 600; font-size: 15px; }
+
+    .timeline-card { 
+        background: white; 
+        border: 1px solid #eee; 
+        border-radius: 12px; 
+        margin-bottom: 25px; 
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        overflow: hidden;
+    }
+
+    .timeline-card-header {
+        background: #fdfdfd;
+        padding: 15px 25px;
+        border-bottom: 1px solid #f5f5f5;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* LABELS & BADGES */
+    .label-yoover { padding: 6px 14px; border-radius: 50px; font-weight: 800; font-size: 12px; background: #e8f0fe; color: #1A73E8; }
+    .label-success { background: #e6f4ea; color: #1e8e3e; }
+    .label-danger { background: #fce8e6; color: #d93025; }
+    .label-warning { background: #fef7e0; color: #f9ab00; }
+
+    .timestamp-yoover { font-size: 12px; color: #80868b; font-weight: 600; }
+
+    /* GRID DATA */
+    .timeline-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 25px; }
+    .grid-item { display: flex; flex-direction: column; }
+    .grid-item.full-width { grid-column: span 2; }
+    
+    .grid-item label { font-size: 11px; font-weight: 800; color: #9aa0a6; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px; }
+    .grid-item code { background: #f1f3f4; border: none; color: #3c4043; padding: 4px 8px; border-radius: 4px; font-size: 13px; width: fit-content; }
+    .address-value { font-weight: 600; color: #202124; }
+    .technical-value { font-family: monospace; font-size: 12px; color: #5f6368; word-break: break-all; }
+
+    .response-block { 
+        background: #202124 !important; 
+        color: #81c995 !important; 
+        padding: 15px !important; 
+        border-radius: 8px !important; 
+        display: block !important; 
+        font-family: 'Consolas', monospace !important;
+        font-size: 13px !important;
+        margin-top: 5px;
+        white-space: pre-wrap;
+    }
+    .response-block.error { color: #f28b82 !important; }
+
+    .highlight-item { background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #1A73E8; }
+</style>
+
+<script>
+// Logic preserved from your input
+document.addEventListener('DOMContentLoaded', function() {
+    var stream = new EventSource('/api/events');
+    stream.onmessage = function(e) {
+        var data;
+        try {
+            data = JSON.parse(e.data);
+        } catch (E) {
+            return;
+        }
+        if (data.command === 'COUNTERS' && data.mailbox) {
+            if(typeof FAVICON !== 'undefined' && data.mailbox === INBOX_ID){
+                FAVICON.badge(data.unseen);
+            }
+            [].slice.call(document.querySelectorAll('.unseen-counter-' + data.mailbox)).forEach(function(row){
+                row.style.display = data.unseen ? 'block' : 'none';
+                row.textContent = data.unseen || 0;
+            });
+        }
+    };
+});
+</script>

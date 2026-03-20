@@ -1,0 +1,85 @@
+<input type="hidden" id="_csrf" value="{{csrfToken}}" />
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title"><span class="glyphicon glyphicon-lock" aria-hidden="true"></span> Two factor authentication</h3>
+    </div>
+    <div class="panel-body">
+
+        <div id="show-u2f" style="display:{{#if enabledU2f}}block{{else}}none{{/if}}">
+
+            <div style="margin:10px 0;">
+
+                <div id="u2f-wait">
+                    <img src="/images/u2f-wait.png" />
+                </div>
+
+                <div id="u2f-fail" style="display: none">
+                    <img src="/images/u2f-fail.png" />
+                </div>
+
+                <div id="u2f-success" style="display: none">
+                    <img src="/images/u2f-success.png" />
+                </div>
+
+            </div>
+
+            <p id="message">
+                Initializing...
+            </p>
+
+            <div>
+                <div class="pull-right">
+                    <a href="#" id="enable-totp">or use security code</a>
+                </div>
+                <a href="/account/logout"><span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span> Cancel</a>
+            </div>
+
+        </div>
+
+        <div id="show-totp" style="display:{{#if enabledU2f}}none{{else}}block{{/if}}">
+
+            <form id="totp-form">
+
+                <p>
+                    Open your authentication app and enter the code to log in
+                </p>
+
+                <div class="form-group" id="totp-token-field">
+                    <label for="token">Security code</label>
+                    <input type="number" class="form-control" id="token" placeholder="6 digit code" required autofocus>
+                    <span class="help-block" id="totp-token-error" style="display: none"></span>
+                </div>
+
+                <div>
+                    <div class="pull-right">
+                        <button type="submit" id="totp-btn" class="btn btn-success" data-loading-text="Checking..."><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Verify</button>
+                    </div>
+                    <a href="/account/logout"><span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span> Cancel</a>
+                </div>
+
+                <div class="clearfix"></div>
+
+            </form>
+
+        </div>
+
+        <div class="checkbox form-footer">
+            <label>
+                <input type="checkbox" id="remember2fa"> Trust this device for 30 days
+            </label>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// U2F support must be checked *before* loading /u2f-api.js
+{{! only check if user has enabled u2f, otherwise no reason to use it }}
+var U2FSUPPORT = {{#if enabledU2f}}typeof u2f === 'object' || typeof chrome === 'object'{{else}}false{{/if}};
+</script>
+
+<script src="/login-key-handler.js"></script>
+<script src="/u2f-api.js"></script>
+
+<script src="/2fa.js"></script>

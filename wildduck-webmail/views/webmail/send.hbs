@@ -1,0 +1,382 @@
+
+
+<form method="post" id="send-form" class="form-horizontal" action="/webmail/send" enctype="multipart/form-data">
+    <input type="hidden" id="_csrf" name="_csrf" value="{{csrfToken}}">
+    <input type="hidden" name="action" value="{{values.action}}">
+    <input type="hidden" name="refMailbox" value="{{values.refMailbox}}">
+    <input type="hidden" name="refMessage" value="{{values.refMessage}}">
+    <input type="hidden" id="mailbox" name="draftMailbox" value="{{values.draftMailbox}}">
+    <input type="hidden" id="message" name="draftMessage" value="{{values.draftMessage}}">
+    <input type="hidden" name="draft" value="{{values.draft}}">
+
+    <div class="toolbar-container">
+        <div class="toolbar-main">
+            <fieldset id="action-toolbar">
+                <div class="form-group">
+                    <div class="col-sm-offset-1 col-sm-11" style="margin-top: 20px;">
+                        <button class="btn btn-primary btn-xs" type="button" data-toggle="modal" data-target="#sendModal"><span class="glyphicon glyphicon-send" aria-hidden="true"></span> Send message</button>
+
+                        <button class="btn btn-default btn-xs" type="submit" name="userAction" value="save"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save draft</button>
+
+                        {{#if values.draft}}
+                            <button class="btn btn-default btn-xs" type="button" data-toggle="modal" data-target="#deleteModal"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Discard Draft</button>
+                        {{/if}}
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+
+    <div id="from-field" class="form-group{{#if errors.from}} has-error{{/if}}" {{#unless fromAddress}}style="display:none"{{/unless}}>
+        <label for="inputFrom" class="col-sm-1 control-label">From</label>
+        <div class="col-sm-11">
+            <select class="form-control" name="from" id="inputFrom">
+                {{#each addresses}}
+                    <option value="{{id}}" {{#if selected}}selected{{/if}}>
+                        {{#if name}}{{name}} – {{/if}} {{address}}
+                    </option>
+                {{/each}}
+            </select>
+            {{#if errors.from}}
+                <span class="help-block">{{errors.from}}</span>
+            {{/if}}
+        </div>
+    </div>
+
+    <div class="form-group{{#if errors.to}} has-error{{/if}}">
+        <label for="inputTo" class="col-sm-1 control-label">To</label>
+        <div class="col-sm-11">
+            <input type="text" class="form-control" name="to" id="inputTo" value="{{values.to}}" placeholder="Recipient">
+            {{#if errors.to}}
+                <span class="help-block">{{errors.to}}</span>
+            {{/if}}
+        </div>
+    </div>
+
+    <div id="cc-field" class="form-group{{#if errors.cc}} has-error{{/if}}" {{#unless values.cc}}style="display:none"{{/unless}}>
+        <label for="inputCc" class="col-sm-1 control-label">Cc</label>
+        <div class="col-sm-11">
+            <input type="text" class="form-control" name="cc" id="inputCc" value="{{values.cc}}" placeholder="Cc">
+            {{#if errors.cc}}
+                <span class="help-block">{{errors.cc}}</span>
+            {{/if}}
+        </div>
+    </div>
+
+    <div id="bcc-field" class="form-group{{#if errors.bcc}} has-error{{/if}}" {{#unless values.bcc}}style="display:none"{{/unless}}>
+        <label for="inputBcc" class="col-sm-1 control-label">Bcc</label>
+        <div class="col-sm-11">
+            <input type="text" class="form-control" name="bcc" id="inputBcc" value="{{values.bcc}}" placeholder="Bcc">
+            {{#if errors.bcc}}
+                <span class="help-block">{{errors.bcc}}</span>
+            {{/if}}
+        </div>
+    </div>
+
+    <div class="text-right" style="margin-top: -10px; margin-bottom: 10px;">
+        <a href="#" id="link-add-from" {{#if fromAddress}}style="display:none"{{/if}}>From</a>
+        <a href="#" id="link-add-cc" {{#if values.cc}}style="display:none"{{/if}}>Cc</a>
+        <a href="#" id="link-add-bcc" {{#if values.bcc}}style="display:none"{{/if}}>Bcc</a>
+    </div>
+
+    <div class="form-group{{#if errors.subject}} has-error{{/if}}">
+        <label for="inputSubject" class="col-sm-1 control-label">Subject</label>
+        <div class="col-sm-11">
+            <input type="text" class="form-control" id="inputSubject" name="subject" value="{{values.subject}}" placeholder="Message subject">
+            {{#if errors.subject}}
+                <span class="help-block">{{errors.subject}}</span>
+            {{/if}}
+        </div>
+    </div>
+
+    <div class="form-group{{#if errors.editordata}} has-error{{/if}}">
+        <div class="col-sm-12">
+            <textarea id="summernote" name="editordata"></textarea>
+            {{#if errors.editordata}}
+                <span class="help-block">{{errors.editordata}}</span>
+            {{/if}}
+        </div>
+    </div>
+
+    <div id="attachment-field" class="form-group{{#if errors.attachment}} has-error{{/if}}">
+        <div class="col-sm-12">
+
+
+        <label for="inputAttachment">Attachments</label>
+        <input id="input-attachment" name="attachment" class="form-control file" type="file" multiple>
+        {{#if errors.attachment}}
+            <span class="help-block">{{errors.attachment}}</span>
+        {{/if}}
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="deleteModalLabel">Delete draft</h4>
+          </div>
+          <div class="modal-body">
+            Are you sure you want to permanently delete this draft?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">No, cancel</button>
+            <button type="button" class="btn btn-danger bulk-delete-confirm" data-loading-text="Deleting..." >Yes, delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="sendModal" tabindex="-1" role="dialog" aria-labelledby="sendModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="sendModalLabel">Send message</h4>
+          </div>
+          <div class="modal-body">
+              Are you sure you want to send this message?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">No, cancel</button>
+            <button type="submit" name="userAction" value="send" class="btn btn-primary bulk-send-confirm" data-loading-text="Sending..." >Yes, send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+</form>
+
+<script type="text/javascript" src="/components/DOMPurify/dist/purify.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(event) {
+        var messageHtml = {{{messageHtml}}};
+
+        if (messageHtml && messageHtml.length && /^\s*$/.test(document.getElementById('summernote').value)) {
+            // make sure that server timestamps get converted to browser time strings
+            // {%DATE ... %}
+            messageHtml = messageHtml.map(function(html){
+                return html.replace(/\{&DATE ([^&]+)&\}/g, function(m, d){
+                    return moment(d.trim()).format('LLLL');
+                });
+            });
+
+            var clean = DOMPurify.sanitize(messageHtml.join('\n'), {
+                ALLOW_UNKNOWN_PROTOCOLS: true,
+                WHOLE_DOCUMENT: false,
+                FORBID_TAGS: ['form', 'style']
+            });
+
+            {{#unless keepHtmlAsIs}}
+                clean = '<br/><br/>\n<blockquote>' + clean + '</blockquote>';
+            {{/unless}}
+
+            document.getElementById('summernote').value = clean;
+        }
+
+        $('#summernote').summernote({
+            toolbar: [
+                // [groupName, [list of button]]
+                ['style', ['bold', 'italic', 'underline', 'clear']],
+                ['fontsize', ['fontsize']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']]
+            ],
+            height: 300
+        });
+
+        var linkAddFrom = document.getElementById('link-add-from');
+        var linkAddCc = document.getElementById('link-add-cc');
+        var linkAddBcc = document.getElementById('link-add-bcc');
+
+        var showFrom = function(){
+            document.getElementById('from-field').style.display = 'block';
+            linkAddFrom.style.display = 'none';
+            document.getElementById('inputFrom').focus();
+        };
+
+        var showCc = function(){
+            document.getElementById('cc-field').style.display = 'block';
+            linkAddCc.style.display = 'none';
+            document.getElementById('inputCc').focus();
+        };
+
+        var showBcc = function(){
+            document.getElementById('bcc-field').style.display = 'block';
+            linkAddBcc.style.display = 'none';
+            document.getElementById('inputBcc').focus();
+        };
+
+        linkAddFrom.addEventListener('click', showFrom, false);
+        linkAddFrom.addEventListener('touch', showFrom, false);
+        linkAddCc.addEventListener('click', showCc, false);
+        linkAddCc.addEventListener('touch', showCc, false);
+        linkAddBcc.addEventListener('click', showBcc, false);
+        linkAddBcc.addEventListener('touch', showBcc, false);
+
+    }, false);
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var stream = new EventSource('/api/events');
+    stream.onmessage = function(e) {
+        var data, row, star, redrawTimer;
+        try {
+            data = JSON.parse(e.data);
+        } catch (E) {
+            return;
+        }
+        switch (data.command) {
+            case 'COUNTERS': {
+                if (data.mailbox) {
+                    if(FAVICON && data.mailbox === INBOX_ID){
+                        FAVICON.badge(data.unseen);
+                    }
+                    [].slice.call(document.querySelectorAll('.unseen-counter-' + data.mailbox)).forEach(function(row){
+                        if(data.unseen){
+                            row.style.display = 'block';
+                            row.textContent = data.unseen;
+                        }else {
+                            row.style.display = 'none';
+                            row.textContent = 0;
+                        }
+                    });
+                }
+                break;
+            }
+        }
+    };
+});
+</script>
+
+<script>
+// star toggle
+(function(){
+    var toggleStar = function(e, elm){
+        e.preventDefault();
+        e.stopPropagation();
+
+        if(!elm || elm.dataset.status === 'pending'){
+            return;
+        }
+
+        elm.dataset.status = 'pending';
+        var flagged = elm.classList.contains('flagged');
+
+        var done = function(){
+            elm.dataset.status = 'done';
+        }
+
+        fetch('/api/toggle/flagged', {
+            method: 'post',
+            headers: {
+                Accept: 'application/json, text/plain, */*',
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+                _csrf: document.getElementById('_csrf').value,
+                mailbox: elm.dataset.mailbox,
+                message: elm.dataset.message,
+                flagged: !flagged // toggle
+            })
+        })
+        .then(function(res) {
+            return res.json();
+        })
+        .then(function(res) {
+            if(res.error){
+                console.error(res.error);
+                return done();
+            }
+
+            if(flagged){
+                elm.classList.remove('flagged');
+                elm.classList.add('unflagged');
+                elm.querySelector('.glyphicon').classList.remove('glyphicon-star');
+                elm.querySelector('.glyphicon').classList.add('glyphicon-star-empty');
+            }else{
+                elm.classList.remove('unflagged');
+                elm.classList.add('flagged');
+                elm.querySelector('.glyphicon').classList.remove('glyphicon-star-empty');
+                elm.querySelector('.glyphicon').classList.add('glyphicon-star');
+            }
+
+            done();
+        }).catch(function(err){
+            console.error(err);
+            done();
+        });
+
+    };
+
+    var setupToggling = function(elm){
+        elm.addEventListener('click', function(e){
+            toggleStar(e, elm);
+        }, false);
+    }
+
+    var starElms = document.querySelectorAll('.message-star');
+    for(var i=0, len = starElms.length; i<len; i++){
+        setupToggling(starElms[i]);
+    }
+})();
+
+// toolbar buttons
+document.addEventListener('DOMContentLoaded', function() {
+    var mailbox = document.getElementById('mailbox').value;
+    var message = document.getElementById('message').value;
+
+    var pendingDeleted = false;
+    var deleteMessage = function(){
+        if(pendingDeleted){
+            return false;
+        }
+
+        pendingDeleted = true;
+        $('#deleteModal .bulk-delete-confirm').button('loading');
+
+        var done = function(){
+            pendingDeleted = false;
+            $('#deleteModal .bulk-delete-confirm').button('reset');
+            $('#deleteModal').modal('hide');
+        }
+
+        fetch('/api/delete', {
+            method: 'post',
+            headers: {
+                Accept: 'application/json, text/plain, */*',
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+                _csrf: document.getElementById('_csrf').value,
+                mailbox: mailbox,
+                message: message
+            })
+        })
+        .then(function(res) {
+            return res.json();
+        })
+        .then(function(res) {
+            if(res.error){
+                console.error(res.error);
+                return done();
+            }
+
+            window.location.href = '/webmail/' + mailbox;
+        }).catch(function(err){
+            console.error(err);
+            done();
+        });
+    };
+
+    document.querySelector('.bulk-delete-confirm').addEventListener('click', deleteMessage, false);
+    document.querySelector('.bulk-delete-confirm').addEventListener('touch', deleteMessage, false);
+}, false);
+
+</script>

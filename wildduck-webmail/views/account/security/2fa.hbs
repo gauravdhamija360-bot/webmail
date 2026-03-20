@@ -1,0 +1,131 @@
+<div class="row">
+    <div class="col-md-12">
+        <h1><span class="glyphicon glyphicon-lock" aria-hidden="true"></span> Security</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+            {{> securitymenu}}
+        </ul>
+
+        <div class="tab-content">
+            <div role="tabpanel" class="tab-pane active" id="overview">
+
+                <p>&nbsp;</p>
+
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Two factor authentication</h3>
+                    </div>
+                    <div class="panel-body">
+                        <p>
+                            If two-factor authentication is enabled then you will be required to enter a code from an authenticator app when logging in.
+                            TOTP compatible authenticator app like Google Authenticator is needed to use two-factor authentication.
+                        </p>
+
+                        <p>
+                            <a href='https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1' style="display:inline-block;overflow:hidden;background:url(/images/en_badge_web_generic.png) no-repeat;width:135px;height:40px;background-size:contain;background-position: center;" target="_blank"></a>
+
+                            <a href="https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8" style="display:inline-block;overflow:hidden;background:url(//linkmaker.itunes.apple.com/assets/shared/badges/en-us/appstore-lrg.svg) no-repeat;width:135px;height:40px;background-size:contain;" target="_blank"></a>
+                        </p>
+
+                        <p>
+                            External applications can not access IMAP, POP3 ja SMTP using the account password if two-factor authentication is enabled. <a href="/account/security/asps">Application specific passwords</a> must be generated instead for these applications.
+                        </p>
+                    </div>
+
+                    <table class="table table-responsive">
+                        <tr>
+                            <td>
+                                {{#if enabled2fa}}
+                                    Two factor authentication is <span class="label label-success"><span class="glyphicon glyphicon-qrcode" aria-hidden="true"></span> Enabled</span>
+                                {{else}}
+                                    Two factor authentication is <span class="label label-default"><span class="glyphicon glyphicon-qrcode" aria-hidden="true"></span> Disabled</span>
+                                {{/if}}
+                            </td>
+                            <td class="text-right">
+                                {{#if enabled2fa}}
+                                    <button type="button" class="btn btn-danger btn-xs" data-toggle="modal" data-target="#deleteModal"><span class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span> Disable</button>
+                                {{else}}
+                                    <form method="post" id="enable-2fa" action="/account/security/2fa/enable-totp">
+                                        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                                        <button type="submit" class="btn btn-success btn-xs"><span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span> Enable</button>
+                                    </form>
+                                {{/if}}
+                            </td>
+                        </tr>
+
+                        {{#if enabled2fa}}
+                        <tr>
+                            <td>
+                                {{#if enabledU2f}}
+                                    U2F security key is <span class="label label-success"><span class="glyphicon glyphicon-flash" aria-hidden="true"></span> Enabled</span>
+                                {{else}}
+                                    U2F security key is <span class="label label-default"><span class="glyphicon glyphicon-flash" aria-hidden="true"></span> Disabled</span>
+                                {{/if}}
+                            </td>
+                            <td class="text-right">
+                                {{#if enabledU2f}}
+                                    <button type="button" class="btn btn-danger btn-xs" data-toggle="modal" data-target="#revokeModal"><span class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span> Disable</button>
+                                {{else}}
+                                    <form method="post" id="enable-u2f" action="/account/security/2fa/enable-u2f">
+                                        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                                        <button type="submit" class="btn btn-success btn-xs"><span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span> Enable</button>
+                                    </form>
+                                {{/if}}
+                            </td>
+                        </tr>
+                        {{/if}}
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="deleteModalLabel">Disable 2FA</h4>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to disable two factor authentication?
+      </div>
+      <div class="modal-footer">
+        <form method="post" action="/account/security/2fa/disable-totp">
+            <input type="hidden" name="_csrf" value="{{csrfToken}}">
+            <button type="button" class="btn btn-default" data-dismiss="modal">No, cancel</button>
+            <button type="submit" class="btn btn-danger bulk-delete-confirm">Yes, disable</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="revokeModal" tabindex="-1" role="dialog" aria-labelledby="revokeModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="revokeModalLabel">Revoke key</h4>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to revoke U2F security key?
+      </div>
+      <div class="modal-footer">
+        <form method="post" action="/account/security/2fa/disable-u2f">
+            <input type="hidden" name="_csrf" value="{{csrfToken}}">
+            <button type="button" class="btn btn-default" data-dismiss="modal">No, cancel</button>
+            <button type="submit" class="btn btn-danger bulk-delete-confirm">Yes, revoke</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

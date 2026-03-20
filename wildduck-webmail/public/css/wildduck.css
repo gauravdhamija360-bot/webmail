@@ -1,0 +1,415 @@
+/* Sticky footer styles
+-------------------------------------------------- */
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    /* Margin bottom by footer height */
+    margin-bottom: 60px;
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    /* Set the fixed height of the footer here */
+    height: 60px;
+    background-color: #f5f5f5;
+}
+
+/*
+.navbar-default, .panel-default>.panel-heading, .footer {
+    background: url('/images/seigaiha.png')
+}
+*/
+
+.footer .text-muted {
+    margin: 20px 0;
+}
+
+input.lowercase {
+    text-transform: lowercase;
+}
+
+[v-cloak] {
+    display: none;
+}
+
+/*
+ * Global add-ons
+ */
+
+.sub-header {
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+/*
+ * Top navigation
+ * Hide default border to remove 1px line.
+ */
+.navbar-fixed-top {
+    border: 0;
+}
+
+/*
+ * Sidebar
+ */
+
+/* Hide for mobile, show later */
+.sidebar {
+    width: 250px;
+    padding: 20px;
+    background-color: #f5f5f5;
+    border-right: 1px solid #eee;
+}
+
+/* Sidebar navigation */
+.nav-sidebar {
+    margin-right: -21px;
+    /* 20px padding + 1px border */
+    margin-bottom: 0px;
+    margin-left: -20px;
+}
+
+.nav-sidebar>li>a {
+    padding: 3px 20px;
+}
+
+.nav-sidebar>.active>a,
+.nav-sidebar>.active>a:hover,
+.nav-sidebar>.active>a:focus {
+    color: #fff;
+    background-color: #428bca;
+}
+
+/*
+ * Main content
+ */
+
+.main {
+    padding-right: 40px;
+    padding-left: 40px;
+}
+
+.main .page-header {
+    margin-top: 0;
+}
+
+/*
+ * Placeholder dashboard ideas
+ */
+
+.placeholders {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.placeholders h4 {
+    margin-bottom: 0;
+}
+
+.placeholder {
+    margin-bottom: 20px;
+}
+
+.placeholder img {
+    display: inline-block;
+    border-radius: 50%;
+}
+
+.iframe-box {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.iframe-box iframe {
+    margin: 0;
+    /* padding: 0; */
+    border: none;
+    width: 100%;
+    height: 100%;
+    background: white;
+}
+
+.form-footer {
+    margin-top: 10px;
+    padding-top: 5px;
+    border-top: 1px solid #ddd;
+}
+
+.webmail-container {
+    display: flex;
+    margin-top: -20px;
+}
+
+.sidebar {
+    width: 250px;
+}
+
+.sidebar-logo a {
+    display: block;
+    margin-left: -20px;
+    margin-right: -21px;
+}
+
+.sidebar-logo a {
+    text-decoration: none;
+}
+
+.sidebar-logo img {
+    border: 0px;
+    display: block;
+    margin: 0px auto;
+}
+
+.webmail-main {
+    flex-grow: 1;
+    padding: 0 40px 0 20px;
+}
+
+.messagelist {
+    table-layout: fixed;
+    width: 100%;
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+.messagerow {
+    width: 100%;
+}
+
+.messagerow td {
+    border-bottom: 1px #e5e5e5 solid;
+    background-color: #f5f5f5;
+}
+
+tr.messagerow:hover td {
+    background-color: #e7e7e7;
+}
+
+.messagerow-link {
+    display: block;
+    text-decoration: none;
+    color: #333;
+    border: 0;
+    line-height: 3rem;
+}
+
+.messagerow-link:hover {
+    text-decoration: none;
+}
+
+.messagerow-spacer-col {
+    width: 10px;
+}
+
+.messagerow-checkbox-col {
+    width: 20px;
+}
+
+.messagerow-star-col {
+    width: 20px;
+}
+
+.messagerow-from-col {
+    width: 200px;
+}
+
+.messagerow-date-col {
+    width: 75px;
+}
+
+.messagerow-info-col {
+    width: 40px;
+}
+
+.messagerow-subject-col {}
+
+.messagerow-spacer {
+    empty-cells: show;
+}
+
+.messagerow-star,
+.messagerow-checkbox {
+    line-height: 3rem;
+}
+
+.messagerow-star a {
+    text-align: center;
+}
+
+.messagerow-date a {
+    text-align: right;
+}
+
+.messagerow-info a {
+    text-align: right;
+}
+
+.messagerow-subject,
+.messagerow-from {}
+
+.messagerow-subject a,
+.messagerow-date a,
+.messagerow-from a {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-decoration: none !important;
+}
+
+a.message-star.flagged {
+    color: #048ba8;
+}
+
+a.message-star.unflagged {
+    color: #a5a5a5;
+}
+
+tr.message-seen td a {
+    font-weight: normal;
+}
+
+tr.message-unseen td a {
+    font-weight: bold;
+}
+
+.bulk-move-path {
+    font-weight: bold;
+}
+
+table.limited {
+    table-layout: fixed;
+    width: 100%;
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+.message-subject-line {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.note-editable blockquote {
+    padding: 7px 10px;
+    margin: 0 0 10px;
+    font-size: inherit;
+    border-left: 2px solid #eeeeee;
+}
+
+.toolbar-container {
+    display: flex;
+    flex-wrap: wrap-reverse;
+    margin-bottom: 10px;
+}
+
+.toolbar-main {
+    flex-grow: 1;
+}
+
+.toolbar-search {
+    flex-grow: 1;
+}
+
+.toolbar-search form {
+    width: 100%;
+}
+
+@media screen and (max-width: 767px) {
+    .webmail-container {
+        flex-direction: column-reverse;
+    }
+
+    .sidebar {
+        width: inherit;
+    }
+
+    .messagerow-spacer-col {
+        display: none;
+    }
+
+    .messagerow-spacer {
+        display: none;
+    }
+
+    .messagerow-checkbox-col {
+        width: 20px;
+    }
+
+    .messagerow-star-col {
+        width: 20px;
+    }
+
+    .messagerow-from-col {
+        width: 100px;
+    }
+
+    .messagerow-date-col {
+        width: 75px;
+    }
+
+    .messagerow-info-col {
+        display: none;
+    }
+
+    .messagerow-info {
+        display: none;
+    }
+
+    .toolbar-main .btn {
+        margin-bottom: 10px;
+        margin-right: 5px;
+    }
+}
+
+tr.identity-main td {
+    font-weight: bold;
+}
+
+.navbar-nav img.profile-image {
+    display: inline-block;
+    border: 0;
+}
+
+.alert {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    display: inline-block;
+    margin: 0px auto;
+}
+
+.flash-messages {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    margin: 0px auto;
+    width: 100%;
+    z-index: 999;
+    margin-top: -5px;
+}
+
+.grecaptcha-badge {
+    z-index: 999;
+}
+
+#message-content.mailvelope {
+    height: 500px;
+}
+
+.bimi {
+    float: right;
+    height: 64px;
+    width: 64px;
+    background-size: cover;
+    text-decoration: none;
+    color: white;
+    margin: 0px;
+    border-radius: 24px;
+    border: 1px solid #158cba;
+    background-color: #fafafa;
+}

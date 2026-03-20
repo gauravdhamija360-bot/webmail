@@ -1,0 +1,138 @@
+<fieldset class="yoover-fieldset">
+    <div class="yoover-settings-card">
+        <div class="card-header-mono">
+            <span class="glyphicon glyphicon-list-alt"></span>
+            <h3>Mailbox Configuration</h3>
+        </div>
+        
+        <div class="card-body-yoover">
+            {{#if isInbox}}
+                <div class="form-group yoover-form-group locked">
+                    <label for="name" class="yoover-label">Mailbox Name</label>
+                    <div class="input-wrapper-yoover disabled-bg">
+                        <span class="glyphicon glyphicon-lock input-icon-yoover"></span>
+                        <input type="text" class="form-control yoover-input-lg" name="name" id="name" 
+                               value="{{values.name}}" disabled>
+                    </div>
+                    <span class="help-block-yoover"><span class="glyphicon glyphicon-info-sign"></span> The INBOX folder is a system root and cannot be modified.</span>
+                </div>
+
+            {{else}}
+                <div class="form-group yoover-form-group {{#if errors.parent}}has-error-yoover{{/if}}">
+                    <label for="parent" class="yoover-label">Mailbox Parent</label>
+                    <div class="input-wrapper-yoover">
+                        <span class="glyphicon glyphicon-level-up input-icon-yoover"></span>
+                        <select class="form-control yoover-input-lg select-yoover" name="parent" id="parent">
+                            <option value="">[No parent / Root]</option>
+                            {{#each parents}}
+                                <option value="{{path}}" {{#if isParent}} selected {{/if}} >
+                                    {{name}}
+                                </option>
+                            {{/each}}
+                        </select>
+                    </div>
+                    {{#if errors.parent}}
+                        <span class="error-text-yoover">{{errors.parent}}</span>
+                    {{/if}}
+                </div>
+
+                <div class="form-group yoover-form-group {{#if errors.name}}has-error-yoover{{/if}}">
+                    <label for="name" class="yoover-label">Display Name</label>
+                    <div class="input-wrapper-yoover">
+                        <span class="glyphicon glyphicon-pencil input-icon-yoover"></span>
+                        <input type="text" class="form-control yoover-input-lg" name="name" id="name" 
+                               placeholder="eg. &quot;Important Stuff&quot;" value="{{values.name}}" required>
+                    </div>
+                    {{#if errors.name}}
+                        <span class="error-text-yoover">{{errors.name}}</span>
+                    {{/if}}
+                    <p class="help-block-yoover">Enter a descriptive name for this folder.</p>
+                </div>
+
+            {{/if}}
+        </div>
+    </div>
+</fieldset>
+
+<style>
+    /* RESET & FONT */
+    .yoover-fieldset { border: none; padding: 0; margin: 0; }
+    
+    /* CARD STYLING - MATCHES YOUR PRICING PANELS */
+    .yoover-settings-card {
+        background: #ffffff;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .card-header-mono {
+        padding-bottom: 20px;
+        border-bottom: 1px solid #f0f0f0;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .card-header-mono h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 800;
+        color: #1A73E8;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .card-header-mono span { color: #1A73E8; font-size: 18px; }
+
+    /* FORM GROUPS */
+    .yoover-form-group { margin-bottom: 30px; }
+    
+    .yoover-label {
+        display: block;
+        font-weight: 700;
+        font-size: 13px;
+        color: #5f6368;
+        margin-bottom: 8px;
+    }
+
+    .input-wrapper-yoover {
+        position: relative;
+        display: flex;
+        align-items: center;
+        background: #fff;
+        border: 2px solid #e1e8ed;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .input-wrapper-yoover:focus-within {
+        border-color: #1A73E8;
+        box-shadow: 0 5px 15px rgba(26,115,232,0.1);
+    }
+
+    .input-icon-yoover { padding-left: 15px; color: #999; font-size: 16px; }
+
+    .yoover-input-lg {
+        border: none !important;
+        box-shadow: none !important;
+        height: 55px !important;
+        padding-left: 12px !important;
+        font-size: 16px !important;
+        font-weight: 600 !important;
+        color: #3c4043;
+        background: transparent !important;
+        width: 100%;
+    }
+
+    .disabled-bg { background: #f8f9fa; border-color: #eeeeee; }
+
+    /* ERROR STATES */
+    .has-error-yoover .input-wrapper-yoover { border-color: #d93025; background: #fff8f7; }
+    .error-text-yoover { color: #d93025; font-size: 12px; font-weight: 700; margin-top: 5px; display: block; }
+
+    .help-block-yoover { font-size: 12px; color: #80868b; margin-top: 8px; }
+
+    /* SELECT ARROW CUSTOMIZATION */
+    .select-yoover { appearance: none; cursor: pointer; }
+</style>
