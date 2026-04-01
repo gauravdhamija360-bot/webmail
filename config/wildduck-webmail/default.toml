@@ -4,7 +4,7 @@ favicon = "/app/public/images/yoover-logo.svg"
 
 [service]
     # email domain for new users
-    domain="local.test"
+    domain="app.yoover.com"
     # default quotas for new users
     quota=1024
     recipients=2000
@@ -14,7 +14,7 @@ favicon = "/app/public/images/yoover-logo.svg"
     allowJoin=true
     enableSpecial=false # if true the allow creating addresses with special usernames
     # allowed domains for new addresses
-    domains=["local.test"]
+    domains=["app.yoover.com", "local.test", "localhost","yoover.com"]
 
     generalNotification="" # static notification to show on top of the page
 
@@ -38,7 +38,7 @@ favicon = "/app/public/images/yoover-logo.svg"
 [www]
     host=false
     port=3000
-    proxy=false
+    proxy=true
     postsize="5MB"
     log="dev"
     secret="kfUp3bnprIUwnBbzszeH6rlsKT98X1"
@@ -69,14 +69,14 @@ favicon = "/app/public/images/yoover-logo.svg"
 [setup]
     # these values are shown in the configuration help page
     [setup.imap]
-        hostname="local.test"
+        hostname="mail.yoover.com"
         secure=true
         port=993
     [setup.pop3]
-        hostname="local.test"
+        hostname="mail.yoover.com"
         secure=true
         port=995
     [setup.smtp]
-        hostname="local.test"
+        hostname="mail.yoover.com"
         secure=true
         port=465

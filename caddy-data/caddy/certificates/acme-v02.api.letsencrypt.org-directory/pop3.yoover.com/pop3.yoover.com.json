@@ -1,0 +1,19 @@
+{
+	"sans": [
+		"pop3.yoover.com"
+	],
+	"issuer_data": {
+		"url": "https://acme-v02.api.letsencrypt.org/acme/cert/052fea474866a256074a8a8735fdb4ba806f",
+		"ca": "https://acme-v02.api.letsencrypt.org/directory",
+		"account": "https://acme-v02.api.letsencrypt.org/acme/acct/3172565401",
+		"renewal_info": {
+			"suggestedWindow": {
+				"start": "2026-05-21T22:33:01Z",
+				"end": "2026-05-23T17:43:51Z"
+			},
+			"_uniqueIdentifier": "jw0TovYuftFQbDMYOF1ZjiNykco.BS_qR0hmolYHSoqHNf20uoBv",
+			"_retryAfter": "2026-04-02T00:53:50.507843168Z",
+			"_selectedTime": "2026-05-22T21:20:31Z"
+		}
+	}
+}

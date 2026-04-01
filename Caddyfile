@@ -1,0 +1,7 @@
+:80 {
+    reverse_proxy wildduck-webmail:3000
+}
+
+yoover.com, app.yoover.com, dev.yoover.com, mobile.yoover.com, development.yoover.com, mail.yoover.com, smtp.yoover.com, imap.yoover.com, pop3.yoover.com, email.yoover.com {
+    reverse_proxy wildduck-webmail:3000
+}
