@@ -1,0 +1,92 @@
+<div class="container mt-5">
+    <h2>Secure Signup: {{requestedUsername}}@{{serviceDomain}}</h2>
+    <p class="text-muted">Payment processed via Authorize.net Sandbox</p>
+
+    <form id="paymentForm" method="POST" action="/execute-authorize-payment">
+        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+        <input type="hidden" name="requestedUsername" value="{{requestedUsername}}">
+        <input type="hidden" name="dataValue" id="dataValue">
+        <input type="hidden" name="dataDescriptor" id="dataDescriptor">
+
+        <div class="mb-3">
+            <label>Full Name</label>
+            <input type="text" name="fullName" class="form-control" required placeholder="John Doe">
+        </div>
+
+        <div class="row">
+            <div class="col-md-8 mb-3">
+                <label>Card Number</label>
+                <input type="text" id="cardNumber" class="form-control" placeholder="4007000000027">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label>CVV</label>
+                <input type="text" id="cardCode" class="form-control" placeholder="123">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label>Expiry Month (MM)</label>
+                <input type="text" id="expMonth" class="form-control" placeholder="12">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label>Expiry Year (YYYY)</label>
+                <input type="text" id="expYear" class="form-control" placeholder="2027">
+            </div>
+        </div>
+
+        <button type="button" id="payButton" class="btn btn-primary w-100" onclick="sendPaymentDataToAnet()">
+            Pay $15.00 & Create Account
+        </button>
+    </form>
+</div>
+
+<script type="text/javascript" src="https://jstest.authorize.net/v1/Accept.js" charset="utf-8"></script>
+
+<script type="text/javascript">
+    function sendPaymentDataToAnet() {
+        const btn = document.getElementById("payButton");
+        btn.disabled = true;
+        btn.innerHTML = "Authenticating...";
+
+        // Ensure these variable names match exactly what you pass in res.render
+        var authData = {
+            clientKey: "{{authorizeClientKey}}",
+            apiLoginID: "{{authorizeApiLoginID}}"
+        };
+
+        var cardData = {
+            cardNumber: document.getElementById("cardNumber").value,
+            month: document.getElementById("expMonth").value,
+            year: document.getElementById("expYear").value,
+            cardCode: document.getElementById("cardCode").value
+        };
+
+        var secureData = {
+            authData: authData,
+            cardData: cardData
+        };
+
+        // DEBUG: Check console to see if keys are actually rendering
+        console.log("Client Key Check:", authData.clientKey ? "OK" : "MISSING");
+        console.log("Login ID Check:", authData.apiLoginID ? "OK" : "MISSING");
+
+        Accept.dispatchData(secureData, responseHandler);
+    }
+
+    function responseHandler(response) {
+        const btn = document.getElementById("payButton");
+        
+        if (response.messages.resultCode === "Error") {
+            console.error("Full Error Response:", response);
+            let errorMsg = response.messages.message.map(m => m.text).join("\n");
+            alert("Payment Failed: " + errorMsg);
+            btn.disabled = false;
+            btn.innerHTML = "Pay $15.00 & Create Account";
+        } else {
+            document.getElementById("dataDescriptor").value = response.opaqueData.dataDescriptor;
+            document.getElementById("dataValue").value = response.opaqueData.dataValue;
+            document.getElementById("paymentForm").submit();
+        }
+    }
+</script>

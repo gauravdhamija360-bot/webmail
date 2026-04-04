@@ -1,11 +1,15 @@
 'use strict';
 
-const config = require('wild-config');
 const express = require('express');
+const router = new express.Router();
+const config = require('wild-config');
 const fetch = require('node-fetch');
 
-const router = new express.Router();
-
+// --- UPDATE THESE TWO LINES ---
+const authorizenet = require('authorizenet');
+const SDK = authorizenet.APIContracts;
+const SDKController = authorizenet.APIControllers;
+// ------------------------------
 /* ------------------------------
    SAFE STRIPE INITIALIZATION
 --------------------------------*/
@@ -257,6 +261,115 @@ router.get('/api/check-username', async (req, res) => {
 
     }
 
+});
+
+
+
+// Authorize.net Purchase Page
+router.get('/purchase-authorize', (req, res) => {
+    res.render('authorize-signup', {
+        authorizeApiLoginID: process.env.AUTHORIZE_API_LOGIN_ID, // Use the correct Login ID
+        authorizeClientKey: process.env.AUTHORIZE_CLIENT_KEY,
+        requestedUsername: req.query.username || 'tester',
+        csrfToken: req.csrfToken(),
+        serviceDomain: config.serviceDomain
+    });
+});
+
+
+
+router.post('/execute-authorize-payment', async (req, res) => {
+    const { dataDescriptor, dataValue, requestedUsername, fullName, recoveryEmail } = req.body;
+
+    try {
+        // 1. Setup Authorize.net Authentication
+        const merchantAuthenticationType = new SDK.MerchantAuthenticationType();
+        merchantAuthenticationType.setName(process.env.AUTHORIZE_API_LOGIN_ID);
+        merchantAuthenticationType.setTransactionKey(process.env.AUTHORIZE_TRANSACTION_KEY);
+
+        const opaqueData = new SDK.OpaqueDataType();
+        opaqueData.setDataDescriptor(dataDescriptor);
+        opaqueData.setDataValue(dataValue);
+
+        const paymentType = new SDK.PaymentType();
+        paymentType.setOpaqueData(opaqueData);
+
+        const transactionRequestType = new SDK.TransactionRequestType();
+        transactionRequestType.setTransactionType(SDK.TransactionTypeEnum.AUTHCAPTURETRANSACTION);
+        transactionRequestType.setPayment(paymentType);
+        transactionRequestType.setAmount(15.00); 
+
+        const createRequest = new SDK.CreateTransactionRequest();
+        createRequest.setMerchantAuthentication(merchantAuthenticationType);
+        createRequest.setTransactionRequest(transactionRequestType);
+
+        const ctrl = new SDKController.CreateTransactionController(createRequest.getJSON());
+        
+        // Ensure this matches your testing environment
+        ctrl.setEnvironment('https://apitest.authorize.net/xml/v1/request.api');
+
+        ctrl.execute(async () => {
+            const apiResponse = ctrl.getResponse();
+            
+            if (!apiResponse) {
+                return res.status(500).send('No response from payment gateway.');
+            }
+
+            const response = new SDK.CreateTransactionResponse(apiResponse);
+            const resultMsg = response.getMessages();
+
+            // Safety check for message object
+            if (resultMsg && resultMsg.getResultCode() === SDK.MessageTypeEnum.OK) {
+                const tResponse = response.getTransactionResponse();
+                
+                // ResponseCode '1' is the ONLY "Success" code in Authorize.net
+                if (tResponse && tResponse.getResponseCode() === '1') {
+                    
+                    try {
+                        // --- WILDDUCK ACCOUNT CREATION ---
+                        const wdResponse = await fetch(`${config.api.url}/user`, {
+                            method: 'POST',
+                            headers: {
+                                'X-Access-Token': config.api.token,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                username: requestedUsername,
+                                name: fullName,
+                                recoveryEmail: recoveryEmail,
+                                password: 'ChangeMe123!', 
+                                address: `${requestedUsername}@${config.serviceDomain}`
+                            })
+                        });
+
+                        if (wdResponse.ok) {
+                            return res.redirect(`/success?gateway=authorize&user=${encodeURIComponent(requestedUsername)}`);
+                        } else {
+                            const errorData = await wdResponse.json();
+                            console.error('WildDuck Creation Error:', errorData);
+                            return res.status(500).send('Payment successful, but mailbox creation failed.');
+                        }
+                    } catch (err) {
+                        console.error('WildDuck API Connection Error:', err);
+                        return res.status(500).send('Account creation timed out.');
+                    }
+
+                } else {
+                    // Handle Card Declines (e.g., Code 2 or 3)
+                    const errorText = tResponse.getErrors() ? tResponse.getErrors().getError()[0].getErrorText() : 'Transaction Declined';
+                    return res.status(400).send(`Payment Declined: ${errorText}`);
+                }
+            } else {
+                // Communication Error (Invalid Keys / Expired Token)
+                const errText = resultMsg ? resultMsg.getMessage()[0].getText() : 'Unknown Gateway Error';
+                console.error('Authorize.net Error:', errText);
+                return res.status(500).send(`Payment Failed: ${errText}`);
+            }
+        });
+    } catch (globalErr) {
+        console.error('Authorize.net SDK Crash:', globalErr);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
 module.exports = router;
