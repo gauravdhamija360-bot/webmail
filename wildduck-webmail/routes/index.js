@@ -102,6 +102,8 @@ const buildAuthorizeMerchantCustomerId = username => {
 const buildAuthorizeSubscriptionName = (username, planName) =>
     `${username}@${getServiceDomain()} ${planName}`.slice(0, 50);
 
+const pendingSubscriptionRecovery = new Set();
+
 const createSubscriptionWithRetry = async subscriptionPayload => {
     let lastError;
 
@@ -111,16 +113,11 @@ const createSubscriptionWithRetry = async subscriptionPayload => {
                 await sleep(1500 * attempt);
             }
 
-            await ensurePaymentProfileReady({
-                customerProfileId: subscriptionPayload.customerProfileId,
-                customerPaymentProfileId: subscriptionPayload.customerPaymentProfileId
-            });
-
             return await authorizeNet.createSubscription(subscriptionPayload);
         } catch (err) {
             lastError = err;
 
-            if (!/record cannot be found/i.test((err && err.message) || '')) {
+            if (!/record cannot be found|customer profile id or customer payment profile id not found/i.test((err && err.message) || '')) {
                 throw err;
             }
         }
@@ -152,29 +149,7 @@ const createProfileTransactionWithRetry = async transactionPayload => {
 };
 
 const isRetryableSubscriptionSetupError = err =>
-    /record cannot be found|sandbox has not finished attaching the payment profile/i.test((err && err.message) || '');
-
-const ensurePaymentProfileReady = async ({ customerProfileId, customerPaymentProfileId }) => {
-    for (let attempt = 0; attempt < 8; attempt++) {
-        if (attempt > 0) {
-            await sleep(1200 * attempt);
-        }
-
-        const profile = await authorizeNet.getCustomerProfile(customerProfileId);
-        const paymentProfiles = (profile && profile.getPaymentProfiles && profile.getPaymentProfiles()) || [];
-        const paymentProfileList = [].concat(paymentProfiles || []).filter(Boolean);
-        const match = paymentProfileList.find(item => {
-            const paymentProfileId = item.getCustomerPaymentProfileId && item.getCustomerPaymentProfileId();
-            return paymentProfileId === customerPaymentProfileId;
-        });
-
-        if (match) {
-            return true;
-        }
-    }
-
-    throw new Error('Authorize.Net sandbox has not finished attaching the payment profile yet. Please try again in a moment.');
-};
+    /record cannot be found|customer profile id or customer payment profile id not found/i.test((err && err.message) || '');
 
 const normalizeMaskedPaymentProfiles = profile => {
     const paymentProfiles = (profile && profile.getPaymentProfiles && profile.getPaymentProfiles()) || [];
@@ -205,6 +180,111 @@ const normalizeMaskedPaymentProfiles = profile => {
     });
 };
 
+const recoverPendingSubscriptionForAccount = async emailAddress => {
+    if (!emailAddress || pendingSubscriptionRecovery.has(emailAddress)) {
+        return null;
+    }
+
+    pendingSubscriptionRecovery.add(emailAddress);
+
+    try {
+        const billingAccount = await billingStore.getAccountByEmail(emailAddress);
+
+        if (
+            !billingAccount ||
+            !billingAccount.plan ||
+            !billingAccount.authorizeNet ||
+            !billingAccount.authorizeNet.customerProfileId ||
+            !billingAccount.authorizeNet.customerPaymentProfileId ||
+            billingAccount.authorizeNet.subscriptionId
+        ) {
+            return null;
+        }
+
+        const plan = getPlan(billingAccount.plan.code || billingAccount.plan);
+        const expectedName = buildAuthorizeSubscriptionName(billingAccount.username, plan.name);
+        const baseDate =
+            (billingAccount.subscription && billingAccount.subscription.startedAt) || billingAccount.createdAt || new Date();
+        const nextBillingAt = addBillingCycle(baseDate, plan);
+        const gatewayProfile = await authorizeNet.getCustomerProfile(billingAccount.authorizeNet.customerProfileId);
+        const paymentMethods = normalizeMaskedPaymentProfiles(gatewayProfile);
+
+        let subscription = await authorizeNet.findSubscriptionByCustomerProfile({
+            customerProfileId: billingAccount.authorizeNet.customerProfileId,
+            customerPaymentProfileId: billingAccount.authorizeNet.customerPaymentProfileId,
+            expectedAmount: plan.price,
+            expectedName
+        });
+
+        if (!subscription) {
+            subscription = await createSubscriptionWithRetry({
+                name: expectedName,
+                amount: plan.price,
+                customerProfileId: billingAccount.authorizeNet.customerProfileId,
+                customerPaymentProfileId: billingAccount.authorizeNet.customerPaymentProfileId,
+                intervalLength: plan.intervalLength,
+                intervalUnit: plan.intervalUnit,
+                startDate: nextBillingAt.toISOString().slice(0, 10),
+                totalOccurrences: 9999
+            });
+        }
+
+        if (!subscription || !subscription.subscriptionId) {
+            return null;
+        }
+
+        return billingStore.upsertAccount(
+            Object.assign({}, billingAccount, {
+                status: billingAccount.wildduckUserId ? 'active' : billingAccount.status,
+                authorizeNet: Object.assign({}, billingAccount.authorizeNet, {
+                    subscriptionId: subscription.subscriptionId
+                }),
+                paymentMethods,
+                subscription: Object.assign({}, billingAccount.subscription, {
+                    id: subscription.subscriptionId,
+                    status: subscription.status || 'active',
+                    startedAt: (billingAccount.subscription && billingAccount.subscription.startedAt) || billingAccount.createdAt || new Date(),
+                    nextBillingAt,
+                    currentPeriodEndsAt: nextBillingAt,
+                    canceledAt: null
+                }),
+                meta: Object.assign({}, billingAccount.meta, {
+                    subscriptionSetupNote: ''
+                })
+            })
+        );
+    } catch (err) {
+        const billingAccount = await billingStore.getAccountByEmail(emailAddress);
+
+        if (billingAccount) {
+            await billingStore.upsertAccount(
+                Object.assign({}, billingAccount, {
+                    meta: Object.assign({}, billingAccount.meta, {
+                        subscriptionSetupNote: err.message || 'Subscription activation is still syncing with Authorize.Net.'
+                    })
+                })
+            );
+        }
+
+        console.warn('Authorize background subscription recovery failed:', err.message || err);
+        return null;
+    } finally {
+        pendingSubscriptionRecovery.delete(emailAddress);
+    }
+};
+
+const schedulePendingSubscriptionRecovery = (emailAddress, delayMs) => {
+    if (!emailAddress) {
+        return;
+    }
+
+    setTimeout(() => {
+        recoverPendingSubscriptionForAccount(emailAddress).catch(err => {
+            console.warn('Authorize scheduled subscription recovery failed:', err.message || err);
+        });
+    }, delayMs);
+};
+
 const renderCheckout = (req, res, values, options) =>
     res.render('authorize-signup', {
         title: 'Complete Your Registration',
@@ -218,6 +298,21 @@ const renderCheckout = (req, res, values, options) =>
         csrfToken: req.csrfToken(),
         serviceDomain: getServiceDomain()
     });
+
+const redirectCheckout = (req, res, values, options) => {
+    req.session.checkoutFormState = {
+        values: Object.assign({}, values, {
+            password: '',
+            password2: ''
+        }),
+        errors: (options && options.errors) || {}
+    };
+
+    const username = values && values.requestedUsername ? String(values.requestedUsername).trim().toLowerCase() : '';
+    const plan = values && values.selectedPlan ? values.selectedPlan : 'monthly';
+
+    return res.redirect(`/purchase?username=${encodeURIComponent(username)}&plan=${encodeURIComponent(plan)}`);
+};
 
 const createWildDuckAccount = (req, accountData) =>
     new Promise((resolve, reject) => {
@@ -283,27 +378,40 @@ router.get('/', (req, res) => {
 router.get('/purchase', (req, res) => {
     const requestedUsername = (req.query.username || '').trim().toLowerCase();
     const selectedPlan = req.query.plan === 'yearly' ? 'yearly' : 'monthly';
+    const checkoutFormState = req.session.checkoutFormState;
+    delete req.session.checkoutFormState;
 
     return renderCheckout(
         req,
         res,
+        Object.assign(
+            {
+                requestedUsername,
+                fullName: '',
+                recoveryEmail: '',
+                billingEmail: '',
+                password: '',
+                password2: '',
+                selectedPlan,
+                company: '',
+                addressLine1: '',
+                addressLine2: '',
+                city: '',
+                state: '',
+                zip: '',
+                country: 'US'
+            },
+            checkoutFormState && checkoutFormState.values ? checkoutFormState.values : {},
+            {
+                requestedUsername,
+                selectedPlan,
+                password: '',
+                password2: ''
+            }
+        ),
         {
-            requestedUsername,
-            fullName: '',
-            recoveryEmail: '',
-            billingEmail: '',
-            password: '',
-            password2: '',
-            selectedPlan,
-            company: '',
-            addressLine1: '',
-            addressLine2: '',
-            city: '',
-            state: '',
-            zip: '',
-            country: 'US'
-        },
-        {}
+            errors: (checkoutFormState && checkoutFormState.errors) || {}
+        }
     );
 });
 
@@ -320,6 +428,15 @@ router.get('/success', async (req, res) => {
 
         if (!billingAccount) {
             return res.redirect('/');
+        }
+
+        if (
+            billingAccount.authorizeNet &&
+            billingAccount.authorizeNet.customerProfileId &&
+            billingAccount.authorizeNet.customerPaymentProfileId &&
+            !billingAccount.authorizeNet.subscriptionId
+        ) {
+            schedulePendingSubscriptionRecovery(billingAccount.emailAddress, 5000);
         }
 
         return res.render('success', {
@@ -578,13 +695,13 @@ router.post('/execute-authorize-payment', async (req, res) => {
             result.error.details.forEach(detail => {
                 errors[detail.path] = detail.message;
             });
-            return renderCheckout(req, res, formValues, { errors });
+            return redirectCheckout(req, res, formValues, { errors });
         }
 
         const values = result.value;
         const validationError = validateRequestedUsername(values.requestedUsername);
         if (validationError) {
-            return renderCheckout(req, res, values, {
+            return redirectCheckout(req, res, values, {
                 errors: {
                     requestedUsername: validationError
                 }
@@ -613,7 +730,7 @@ router.post('/execute-authorize-payment', async (req, res) => {
         });
 
         if (!usernameAvailable) {
-            return renderCheckout(req, res, values, {
+            return redirectCheckout(req, res, values, {
                 errors: {
                     requestedUsername: 'That username is no longer available. Please choose another one.'
                 }
@@ -622,7 +739,7 @@ router.post('/execute-authorize-payment', async (req, res) => {
 
         const existingAccount = await billingStore.getAccountByEmail(`${values.requestedUsername}@${getServiceDomain()}`);
         if (existingAccount && existingAccount.status !== 'canceled') {
-            return renderCheckout(req, res, values, {
+            return redirectCheckout(req, res, values, {
                 errors: {
                     requestedUsername: 'A billing profile already exists for this address.'
                 }
@@ -678,11 +795,6 @@ router.post('/execute-authorize-payment', async (req, res) => {
         let subscriptionSetupNote = '';
 
         try {
-            await ensurePaymentProfileReady({
-                customerProfileId: profileIds.customerProfileId,
-                customerPaymentProfileId: profileIds.customerPaymentProfileId
-            });
-
             subscription = await createSubscriptionWithRetry({
                 name: buildAuthorizeSubscriptionName(values.requestedUsername, plan.name),
                 amount: plan.price,
@@ -734,6 +846,11 @@ router.post('/execute-authorize-payment', async (req, res) => {
             }
         });
 
+        if (!subscription) {
+            schedulePendingSubscriptionRecovery(billingAccount.emailAddress, 30000);
+            schedulePendingSubscriptionRecovery(billingAccount.emailAddress, 120000);
+        }
+
         await billingStore.recordPayment({
             accountId: billingAccount._id,
             emailAddress: billingAccount.emailAddress,
@@ -771,7 +888,7 @@ router.post('/execute-authorize-payment', async (req, res) => {
     } catch (err) {
         console.error('Authorize Checkout Error:', err);
         req.flash('danger', err.message || 'Unable to complete your payment right now.');
-        return renderCheckout(
+        return redirectCheckout(
             req,
             res,
             {

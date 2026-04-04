@@ -31,6 +31,10 @@
             <input type="hidden" name="dataValue" id="dataValue">
             <input type="hidden" name="dataDescriptor" id="dataDescriptor">
 
+            {{#if errors.general}}
+            <div class="checkout-alert checkout-alert-danger">{{errors.general}}</div>
+            {{/if}}
+
             <div class="wizard-step is-active" data-step="1">
                 <div class="step-head">
                     <label class="eyebrow">Step 1</label>
@@ -79,31 +83,31 @@
                 <div class="row">
                     <div class="col-sm-12 form-group">
                         <label>Full Name</label>
-                        <input type="text" class="form-control" name="fullName" value="{{values.fullName}}" required>
+                        <input type="text" class="form-control {{#if errors.fullName}}field-error{{/if}}" name="fullName" value="{{values.fullName}}" minlength="2" maxlength="120" required>
                         {{#if errors.fullName}}<span class="err-msg">{{errors.fullName}}</span>{{/if}}
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-sm-6 form-group">
                         <label>Recovery Email</label>
-                        <input type="email" class="form-control" name="recoveryEmail" value="{{values.recoveryEmail}}" required>
+                        <input type="email" class="form-control {{#if errors.recoveryEmail}}field-error{{/if}}" name="recoveryEmail" value="{{values.recoveryEmail}}" maxlength="190" required>
                         {{#if errors.recoveryEmail}}<span class="err-msg">{{errors.recoveryEmail}}</span>{{/if}}
                     </div>
                     <div class="col-sm-6 form-group">
                         <label>Billing Email</label>
-                        <input type="email" class="form-control" name="billingEmail" value="{{values.billingEmail}}" required>
+                        <input type="email" class="form-control {{#if errors.billingEmail}}field-error{{/if}}" name="billingEmail" value="{{values.billingEmail}}" maxlength="190" required>
                         {{#if errors.billingEmail}}<span class="err-msg">{{errors.billingEmail}}</span>{{/if}}
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-sm-6 form-group">
                         <label>Password</label>
-                        <input type="password" class="form-control" name="password" required>
+                        <input type="password" class="form-control {{#if errors.password}}field-error{{/if}}" name="password" minlength="8" maxlength="256" required>
                         {{#if errors.password}}<span class="err-msg">{{errors.password}}</span>{{/if}}
                     </div>
                     <div class="col-sm-6 form-group">
                         <label>Confirm Password</label>
-                        <input type="password" class="form-control" name="password2" required>
+                        <input type="password" class="form-control {{#if errors.password2}}field-error{{/if}}" name="password2" minlength="8" maxlength="256" required>
                         {{#if errors.password2}}<span class="err-msg">{{errors.password2}}</span>{{/if}}
                     </div>
                 </div>
@@ -119,59 +123,61 @@
                 <div class="row">
                     <div class="col-sm-12 form-group">
                         <label>Company</label>
-                        <input type="text" class="form-control" name="company" value="{{values.company}}">
+                        <input type="text" class="form-control" name="company" value="{{values.company}}" maxlength="120">
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-sm-8 form-group">
                         <label>Address Line 1</label>
-                        <input type="text" class="form-control" name="addressLine1" value="{{values.addressLine1}}" required>
+                        <input type="text" class="form-control {{#if errors.addressLine1}}field-error{{/if}}" name="addressLine1" value="{{values.addressLine1}}" minlength="3" maxlength="120" required>
                         {{#if errors.addressLine1}}<span class="err-msg">{{errors.addressLine1}}</span>{{/if}}
                     </div>
                     <div class="col-sm-4 form-group">
                         <label>Address Line 2</label>
-                        <input type="text" class="form-control" name="addressLine2" value="{{values.addressLine2}}">
+                        <input type="text" class="form-control" name="addressLine2" value="{{values.addressLine2}}" maxlength="120">
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-sm-4 form-group">
                         <label>City</label>
-                        <input type="text" class="form-control" name="city" value="{{values.city}}" required>
+                        <input type="text" class="form-control" name="city" value="{{values.city}}" minlength="2" maxlength="80" required>
                     </div>
                     <div class="col-sm-4 form-group">
                         <label>State</label>
-                        <input type="text" class="form-control" name="state" value="{{values.state}}" required>
+                        <input type="text" class="form-control" name="state" value="{{values.state}}" minlength="2" maxlength="80" required>
                     </div>
                     <div class="col-sm-4 form-group">
                         <label>ZIP</label>
-                        <input type="text" class="form-control" name="zip" value="{{values.zip}}" required>
+                        <input type="text" class="form-control" name="zip" value="{{values.zip}}" minlength="3" maxlength="20" required>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-sm-4 form-group">
                         <label>Country</label>
-                        <input type="text" class="form-control" name="country" value="{{values.country}}" maxlength="2" required>
+                        <input type="text" class="form-control {{#if errors.country}}field-error{{/if}}" name="country" value="{{values.country}}" maxlength="2" minlength="2" pattern="[A-Za-z]{2}" required>
                         {{#if errors.country}}<span class="err-msg">{{errors.country}}</span>{{/if}}
                     </div>
                     <div class="col-sm-8 form-group">
                         <label>Card Number</label>
-                        <input type="text" id="cardNumber" class="form-control" placeholder="4007000000027" autocomplete="cc-number">
+                        <input type="text" id="cardNumber" class="form-control" placeholder="4007000000027" autocomplete="cc-number" inputmode="numeric">
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-sm-4 form-group">
                         <label>Expiry Month</label>
-                        <input type="text" id="expMonth" class="form-control" placeholder="MM" autocomplete="cc-exp-month">
+                        <input type="text" id="expMonth" class="form-control" placeholder="MM" autocomplete="cc-exp-month" inputmode="numeric">
                     </div>
                     <div class="col-sm-4 form-group">
                         <label>Expiry Year</label>
-                        <input type="text" id="expYear" class="form-control" placeholder="YYYY" autocomplete="cc-exp-year">
+                        <input type="text" id="expYear" class="form-control" placeholder="YYYY" autocomplete="cc-exp-year" inputmode="numeric">
                     </div>
                     <div class="col-sm-4 form-group">
                         <label>CVV</label>
-                        <input type="text" id="cardCode" class="form-control" placeholder="123" autocomplete="cc-csc">
+                        <input type="text" id="cardCode" class="form-control" placeholder="123" autocomplete="cc-csc" inputmode="numeric">
                     </div>
                 </div>
+
+                <div id="paymentFieldError" class="checkout-alert checkout-alert-danger hidden"></div>
             </div>
 
             <div class="wizard-footer">
@@ -203,11 +209,35 @@
         var sidebarUsername = document.getElementById('sidebarUsername');
         var recheckUsernameBtn = document.getElementById('recheckUsernameBtn');
         var usernameCheckResult = document.getElementById('usernameCheckResult');
+        var paymentFieldError = document.getElementById('paymentFieldError');
         var usernamePattern = /^[a-z0-9][a-z0-9.-]*$/i;
+        var serverErrors = {
+            requestedUsername: '{{#if errors.requestedUsername}}{{errors.requestedUsername}}{{/if}}',
+            selectedPlan: '{{#if errors.selectedPlan}}{{errors.selectedPlan}}{{/if}}',
+            fullName: '{{#if errors.fullName}}{{errors.fullName}}{{/if}}',
+            recoveryEmail: '{{#if errors.recoveryEmail}}{{errors.recoveryEmail}}{{/if}}',
+            billingEmail: '{{#if errors.billingEmail}}{{errors.billingEmail}}{{/if}}',
+            password: '{{#if errors.password}}{{errors.password}}{{/if}}',
+            password2: '{{#if errors.password2}}{{errors.password2}}{{/if}}',
+            addressLine1: '{{#if errors.addressLine1}}{{errors.addressLine1}}{{/if}}',
+            country: '{{#if errors.country}}{{errors.country}}{{/if}}'
+        };
         var usernameStatus = {
             value: usernameInput.value.trim().toLowerCase(),
             available: false
         };
+
+        function getInitialStepFromErrors() {
+            if (serverErrors.password || serverErrors.password2 || serverErrors.fullName || serverErrors.recoveryEmail || serverErrors.billingEmail) {
+                return 2;
+            }
+
+            if (serverErrors.addressLine1 || serverErrors.country) {
+                return 3;
+            }
+
+            return 1;
+        }
 
         function normalizeUsername(value) {
             return value.replace(/[^a-z0-9.-]/gi, '').toLowerCase();
@@ -223,6 +253,119 @@
         function setUsernameMessage(message, type) {
             usernameCheckResult.className = 'username-check-result ' + (type || '');
             usernameCheckResult.textContent = message || '';
+        }
+
+        function setPaymentFieldError(message) {
+            if (!paymentFieldError) {
+                return;
+            }
+
+            paymentFieldError.textContent = message || '';
+            paymentFieldError.classList.toggle('hidden', !message);
+        }
+
+        function sanitizeNumericInput(input, maxLength) {
+            if (!input) {
+                return '';
+            }
+
+            var digits = String(input.value || '').replace(/\D/g, '');
+            if (maxLength) {
+                digits = digits.slice(0, maxLength);
+            }
+            input.value = digits;
+            return digits;
+        }
+
+        function validateStepTwo() {
+            var fullNameInput = form.querySelector('input[name="fullName"]');
+            var recoveryEmailInput = form.querySelector('input[name="recoveryEmail"]');
+            var billingEmailInput = form.querySelector('input[name="billingEmail"]');
+            var passwordInput = form.querySelector('input[name="password"]');
+            var password2Input = form.querySelector('input[name="password2"]');
+
+            if (fullNameInput && fullNameInput.value.trim().length < 2) {
+                fullNameInput.setCustomValidity('Enter your full name.');
+                fullNameInput.reportValidity();
+                return false;
+            }
+            fullNameInput.setCustomValidity('');
+
+            if (recoveryEmailInput && billingEmailInput) {
+                if (recoveryEmailInput.value.trim().toLowerCase() === billingEmailInput.value.trim().toLowerCase()) {
+                    billingEmailInput.setCustomValidity('Billing email must be different from recovery email.');
+                    billingEmailInput.reportValidity();
+                    return false;
+                }
+                billingEmailInput.setCustomValidity('');
+            }
+
+            if (passwordInput && passwordInput.value.length < 8) {
+                passwordInput.setCustomValidity('Password must be at least 8 characters.');
+                passwordInput.reportValidity();
+                return false;
+            }
+            passwordInput.setCustomValidity('');
+
+            if (password2Input && passwordInput && password2Input.value !== passwordInput.value) {
+                password2Input.setCustomValidity('Confirm password must match your password.');
+                password2Input.reportValidity();
+                return false;
+            }
+            if (password2Input) {
+                password2Input.setCustomValidity('');
+            }
+
+            return true;
+        }
+
+        function validateStepThree() {
+            var countryInput = form.querySelector('input[name="country"]');
+            var cardNumber = sanitizeNumericInput(document.getElementById('cardNumber'), 19);
+            var expMonth = sanitizeNumericInput(document.getElementById('expMonth'), 2);
+            var expYear = sanitizeNumericInput(document.getElementById('expYear'), 4);
+            var cardCode = sanitizeNumericInput(document.getElementById('cardCode'), 4);
+            var month = Number(expMonth);
+            var year = Number(expYear);
+            var now = new Date();
+
+            setPaymentFieldError('');
+
+            if (countryInput) {
+                countryInput.value = String(countryInput.value || '').replace(/[^a-z]/gi, '').toUpperCase().slice(0, 2);
+            }
+
+            if (!cardNumber || cardNumber.length < 13) {
+                setPaymentFieldError('Enter a valid card number.');
+                document.getElementById('cardNumber').focus();
+                return false;
+            }
+
+            if (!expMonth || month < 1 || month > 12) {
+                setPaymentFieldError('Enter a valid expiry month.');
+                document.getElementById('expMonth').focus();
+                return false;
+            }
+
+            if (!expYear || expYear.length !== 4 || year < now.getFullYear()) {
+                setPaymentFieldError('Enter a valid expiry year.');
+                document.getElementById('expYear').focus();
+                return false;
+            }
+
+            if (year === now.getFullYear() && month < now.getMonth() + 1) {
+                setPaymentFieldError('Card expiry date must be in the future.');
+                document.getElementById('expMonth').focus();
+                return false;
+            }
+
+            if (!cardCode || cardCode.length < 3) {
+                setPaymentFieldError('Enter a valid security code.');
+                document.getElementById('cardCode').focus();
+                return false;
+            }
+
+            return true;
         }
 
         async function checkUsernameAvailability() {
@@ -326,6 +469,14 @@
                 }
             }
 
+            if (currentStep === 2) {
+                return validateStepTwo();
+            }
+
+            if (currentStep === 3) {
+                return validateStepThree();
+            }
+
             return true;
         }
 
@@ -416,21 +567,78 @@
 
         recheckUsernameBtn.addEventListener('click', checkUsernameAvailability);
 
+        ['cardNumber', 'expMonth', 'expYear', 'cardCode'].forEach(function (id) {
+            var input = document.getElementById(id);
+            if (!input) {
+                return;
+            }
+
+            input.addEventListener('input', function () {
+                if (id === 'cardNumber') {
+                    sanitizeNumericInput(input, 19);
+                } else if (id === 'expMonth') {
+                    sanitizeNumericInput(input, 2);
+                } else if (id === 'expYear') {
+                    sanitizeNumericInput(input, 4);
+                } else {
+                    sanitizeNumericInput(input, 4);
+                }
+                setPaymentFieldError('');
+            });
+        });
+
+        ['password', 'password2', 'billingEmail', 'recoveryEmail'].forEach(function (name) {
+            var input = form.querySelector('input[name="' + name + '"]');
+            if (!input) {
+                return;
+            }
+
+            input.addEventListener('input', function () {
+                input.setCustomValidity('');
+            });
+        });
+
         updateUsernameViews(usernameStatus.value);
+
+        if (serverErrors.requestedUsername) {
+            setUsernameMessage(serverErrors.requestedUsername, 'error');
+        }
+
         var initiallySelectedPlan = document.querySelector('.plan-card input[type="radio"]:checked');
         if (initiallySelectedPlan) {
             syncPlanSelection(initiallySelectedPlan.value);
         }
-        showStep(currentStep);
+        showStep(getInitialStepFromErrors());
     }());
 </script>
 
 <style>
+    .checkout-alert {
+        margin-bottom: 18px;
+        padding: 14px 16px;
+        border-radius: 16px;
+        font-weight: 600;
+        line-height: 1.5;
+    }
+
+    .checkout-alert-danger {
+        background: #fff1f1;
+        color: #9b1c1c;
+        border: 1px solid rgba(220, 38, 38, 0.18);
+        box-shadow: 0 10px 28px rgba(185, 28, 28, 0.08);
+    }
+
     .checkout-shell {
         min-height: calc(100vh - 85px);
         display: grid;
         grid-template-columns: 420px minmax(0, 1fr);
         background: linear-gradient(180deg, #edf4fb 0%, #ffffff 100%);
+    }
+
+    .field-error {
+        border-color: #dc4c64 !important;
+        box-shadow: 0 0 0 4px rgba(220, 76, 100, 0.12) !important;
+        background: #fff8f9;
     }
 
     .checkout-aside {

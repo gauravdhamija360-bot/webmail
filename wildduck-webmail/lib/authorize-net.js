@@ -112,6 +112,11 @@ const getPaymentProfileIdFromProfile = profile => {
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
+const toNumber = value => {
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? numeric : null;
+};
+
 const parseDirectResponse = directResponse => {
     if (!directResponse || typeof directResponse !== 'string') {
         return null;
@@ -473,6 +478,125 @@ const getSubscriptionStatus = async subscriptionId => {
     return response.getStatus();
 };
 
+const listSubscriptions = async ({
+    searchType = SDK.ARBGetSubscriptionListSearchTypeEnum.SUBSCRIPTIONACTIVE,
+    page = 1,
+    limit = 100,
+    orderBy = SDK.ARBGetSubscriptionListOrderFieldEnum.CREATETIMESTAMPUTC,
+    orderDescending = true
+} = {}) => {
+    const request = new SDK.ARBGetSubscriptionListRequest();
+    request.setMerchantAuthentication(createMerchantAuthentication());
+    request.setSearchType(searchType);
+    request.setSorting(
+        new SDK.ARBGetSubscriptionListSorting({
+            orderBy,
+            orderDescending: Boolean(orderDescending)
+        })
+    );
+    request.setPaging(
+        new SDK.Paging({
+            limit,
+            offset: page
+        })
+    );
+
+    const rawResponse = await execute(SDKController.ARBGetSubscriptionListController, request);
+    const response = new SDK.ARBGetSubscriptionListResponse(rawResponse);
+    const messages = response.getMessages();
+
+    if (!(messages && messages.getResultCode && messages.getResultCode() === SDK.MessageTypeEnum.OK)) {
+        throw createGatewayError(response);
+    }
+
+    const detailsWrapper = response.getSubscriptionDetails && response.getSubscriptionDetails();
+    const detailList = (detailsWrapper && detailsWrapper.getSubscriptionDetail && detailsWrapper.getSubscriptionDetail()) || [];
+
+    return [].concat(detailList || []).map(detail => ({
+        subscriptionId: detail.getId && detail.getId(),
+        name: detail.getName && detail.getName(),
+        status: detail.getStatus && detail.getStatus(),
+        createTimeStampUTC: detail.getCreateTimeStampUTC && detail.getCreateTimeStampUTC(),
+        amount: toNumber(detail.getAmount && detail.getAmount()),
+        customerProfileId: detail.getCustomerProfileId && detail.getCustomerProfileId(),
+        customerPaymentProfileId: detail.getCustomerPaymentProfileId && detail.getCustomerPaymentProfileId()
+    }));
+};
+
+const findSubscriptionByCustomerProfile = async ({
+    customerProfileId,
+    customerPaymentProfileId,
+    expectedAmount,
+    expectedName
+}) => {
+    if (!customerProfileId) {
+        return null;
+    }
+
+    const searchTypes = [
+        SDK.ARBGetSubscriptionListSearchTypeEnum.SUBSCRIPTIONACTIVE,
+        SDK.ARBGetSubscriptionListSearchTypeEnum.SUBSCRIPTIONINACTIVE
+    ];
+    const normalizedExpectedName = (expectedName || '').trim().toLowerCase();
+    const normalizedExpectedAmount = toNumber(expectedAmount);
+    const candidates = [];
+
+    for (const searchType of searchTypes) {
+        const subscriptions = await listSubscriptions({ searchType });
+        subscriptions.forEach(subscription => {
+            if (subscription.customerProfileId !== customerProfileId) {
+                return;
+            }
+
+            if (
+                customerPaymentProfileId &&
+                subscription.customerPaymentProfileId &&
+                subscription.customerPaymentProfileId !== customerPaymentProfileId
+            ) {
+                return;
+            }
+
+            candidates.push(subscription);
+        });
+    }
+
+    if (!candidates.length) {
+        return null;
+    }
+
+    const rankedCandidates = candidates
+        .map(candidate => {
+            let score = 0;
+
+            if (customerPaymentProfileId && candidate.customerPaymentProfileId === customerPaymentProfileId) {
+                score += 5;
+            }
+
+            if (normalizedExpectedAmount !== null && candidate.amount === normalizedExpectedAmount) {
+                score += 3;
+            }
+
+            if (normalizedExpectedName && (candidate.name || '').trim().toLowerCase() === normalizedExpectedName) {
+                score += 4;
+            }
+
+            if (candidate.status === SDK.ARBSubscriptionStatusEnum.ACTIVE) {
+                score += 2;
+            }
+
+            return Object.assign({}, candidate, { score });
+        })
+        .sort((left, right) => {
+            if (right.score !== left.score) {
+                return right.score - left.score;
+            }
+
+            return String(right.createTimeStampUTC || '').localeCompare(String(left.createTimeStampUTC || ''));
+        });
+
+    return rankedCandidates[0] || null;
+};
+
 const updateSubscriptionPaymentProfile = async ({ subscriptionId, customerProfileId, customerPaymentProfileId }) => {
     const request = new SDK.ARBUpdateSubscriptionRequest();
     request.setMerchantAuthentication(createMerchantAuthentication());
@@ -541,6 +665,8 @@ module.exports = {
     cancelSubscription,
     deleteCustomerPaymentProfile,
     getCustomerProfile,
+    findSubscriptionByCustomerProfile,
+    listSubscriptions,
     getSubscription,
     getSubscriptionStatus,
     updateSubscriptionPaymentProfile

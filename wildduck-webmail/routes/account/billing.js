@@ -104,6 +104,14 @@ const getDerivedNextBillingAt = billingAccount => {
     return addBillingCycle(startedAt, billingAccount.plan);
 };
 
+const getAuthorizeSubscriptionName = billingAccount => {
+    if (!billingAccount || !billingAccount.plan) {
+        return '';
+    }
+
+    return `${billingAccount.username}@${getServiceDomain()} ${billingAccount.plan.name}`.slice(0, 50);
+};
+
 const renderBilling = async (req, res, billingAccount, options) => {
     const payments = billingAccount ? await billingStore.listPayments(billingAccount._id) : [];
     const derivedNextBillingAt = getDerivedNextBillingAt(billingAccount);
@@ -170,16 +178,40 @@ router.get('/', passport.checkLogin, async (req, res) => {
             const gatewayProfile = await authorizeNet.getCustomerProfile(billingAccount.authorizeNet.customerProfileId);
             const paymentMethods = normalizeMaskedPaymentProfiles(gatewayProfile);
             let subscriptionStatus = billingAccount.subscription && billingAccount.subscription.status;
+            let authorizeState = Object.assign({}, billingAccount.authorizeNet);
+            let subscriptionState = Object.assign({}, billingAccount.subscription || {});
 
-            if (billingAccount.authorizeNet.subscriptionId) {
-                subscriptionStatus = await authorizeNet.getSubscriptionStatus(billingAccount.authorizeNet.subscriptionId);
+            if (!authorizeState.subscriptionId && billingAccount.plan) {
+                const recoveredSubscription = await authorizeNet.findSubscriptionByCustomerProfile({
+                    customerProfileId: authorizeState.customerProfileId,
+                    customerPaymentProfileId: authorizeState.customerPaymentProfileId,
+                    expectedAmount: billingAccount.plan.price,
+                    expectedName: getAuthorizeSubscriptionName(billingAccount)
+                });
+
+                if (recoveredSubscription && recoveredSubscription.subscriptionId) {
+                    const nextBillingAt = getDerivedNextBillingAt(billingAccount);
+                    authorizeState.subscriptionId = recoveredSubscription.subscriptionId;
+                    subscriptionStatus = recoveredSubscription.status || subscriptionStatus;
+                    subscriptionState = Object.assign({}, subscriptionState, {
+                        id: recoveredSubscription.subscriptionId,
+                        status: subscriptionStatus,
+                        nextBillingAt: subscriptionState.nextBillingAt || nextBillingAt,
+                        currentPeriodEndsAt: subscriptionState.currentPeriodEndsAt || nextBillingAt
+                    });
+                }
+            }
+
+            if (authorizeState.subscriptionId) {
+                subscriptionStatus = await authorizeNet.getSubscriptionStatus(authorizeState.subscriptionId);
+                subscriptionState = Object.assign({}, subscriptionState, {
+                    status: subscriptionStatus
+                });
             }
 
             billingAccount = await billingStore.setSubscriptionStatus(billingAccount._id, subscriptionStatus, {
-                authorizeNet: billingAccount.authorizeNet,
-                subscription: Object.assign({}, billingAccount.subscription, {
-                    status: subscriptionStatus
-                }),
+                authorizeNet: authorizeState,
+                subscription: subscriptionState,
                 paymentMethods
             });
         } catch (err) {
@@ -201,13 +233,6 @@ router.post('/sync', passport.checkLogin, async (req, res) => {
     try {
         const gatewayProfile = await authorizeNet.getCustomerProfile(billingAccount.authorizeNet.customerProfileId);
         const paymentMethods = normalizeMaskedPaymentProfiles(gatewayProfile);
-        const activePaymentProfile = paymentMethods.find(
-            method => method.customerPaymentProfileId === billingAccount.authorizeNet.customerPaymentProfileId
-        );
-
-        if (!activePaymentProfile) {
-            throw new Error('Saved payment profile is not available in Authorize.Net yet. Please try again shortly.');
-        }
 
         let authorizeState = Object.assign({}, billingAccount.authorizeNet);
         let subscriptionState = Object.assign({}, billingAccount.subscription || {});
@@ -218,27 +243,51 @@ router.post('/sync', passport.checkLogin, async (req, res) => {
             const plan = getPlan(billingAccount.plan && billingAccount.plan.code);
             const baseDate = subscriptionState.startedAt || billingAccount.createdAt || new Date();
             const nextBillingAt = addBillingCycle(baseDate, plan);
-            const subscription = await authorizeNet.createSubscription({
-                name: `${billingAccount.username}@${getServiceDomain()} ${plan.name}`.slice(0, 50),
-                amount: plan.price,
+            const recoveredSubscription = await authorizeNet.findSubscriptionByCustomerProfile({
                 customerProfileId: billingAccount.authorizeNet.customerProfileId,
                 customerPaymentProfileId: billingAccount.authorizeNet.customerPaymentProfileId,
-                intervalLength: plan.intervalLength,
-                intervalUnit: plan.intervalUnit,
-                startDate: nextBillingAt.toISOString().slice(0, 10),
-                totalOccurrences: 9999
+                expectedAmount: plan.price,
+                expectedName: getAuthorizeSubscriptionName(billingAccount)
             });
 
-            authorizeState.subscriptionId = subscription.subscriptionId;
-            subscriptionState = Object.assign({}, subscriptionState, {
-                id: subscription.subscriptionId,
-                status: 'active',
-                startedAt: subscriptionState.startedAt || billingAccount.createdAt || new Date(),
-                nextBillingAt,
-                currentPeriodEndsAt: nextBillingAt,
-                canceledAt: null
-            });
-            status = billingAccount.wildduckUserId ? 'active' : billingAccount.status;
+            if (recoveredSubscription && recoveredSubscription.subscriptionId) {
+                authorizeState.subscriptionId = recoveredSubscription.subscriptionId;
+                subscriptionState = Object.assign({}, subscriptionState, {
+                    id: recoveredSubscription.subscriptionId,
+                    status: recoveredSubscription.status || 'active',
+                    startedAt: subscriptionState.startedAt || billingAccount.createdAt || new Date(),
+                    nextBillingAt,
+                    currentPeriodEndsAt: nextBillingAt,
+                    canceledAt: recoveredSubscription.status === 'canceled' ? subscriptionState.canceledAt || new Date() : null
+                });
+                note = `Recovered existing Authorize.Net subscription ${recoveredSubscription.subscriptionId}.`;
+                status =
+                    recoveredSubscription.status === 'active' && billingAccount.wildduckUserId
+                        ? 'active'
+                        : billingAccount.status;
+            } else {
+                const subscription = await authorizeNet.createSubscription({
+                    name: getAuthorizeSubscriptionName(billingAccount),
+                    amount: plan.price,
+                    customerProfileId: billingAccount.authorizeNet.customerProfileId,
+                    customerPaymentProfileId: billingAccount.authorizeNet.customerPaymentProfileId,
+                    intervalLength: plan.intervalLength,
+                    intervalUnit: plan.intervalUnit,
+                    startDate: nextBillingAt.toISOString().slice(0, 10),
+                    totalOccurrences: 9999
+                });
+
+                authorizeState.subscriptionId = subscription.subscriptionId;
+                subscriptionState = Object.assign({}, subscriptionState, {
+                    id: subscription.subscriptionId,
+                    status: 'active',
+                    startedAt: subscriptionState.startedAt || billingAccount.createdAt || new Date(),
+                    nextBillingAt,
+                    currentPeriodEndsAt: nextBillingAt,
+                    canceledAt: null
+                });
+                status = billingAccount.wildduckUserId ? 'active' : billingAccount.status;
+            }
         } else {
             const subscriptionStatus = await authorizeNet.getSubscriptionStatus(billingAccount.authorizeNet.subscriptionId);
             subscriptionState = Object.assign({}, subscriptionState, {
