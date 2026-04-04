@@ -1,137 +1,99 @@
-<div class="yoover-centered-container">
-    <div class="yoover-view-header">
-        <div class="header-icon-bg warning-bg">
-            <span class="glyphicon glyphicon-time"></span>
-        </div>
-        <div class="header-text">
-            <h1>Restore Deleted Messages</h1>
-            <p class="text-muted">Recover emails removed from your account within the last 25 days.</p>
-        </div>
-    </div>
-
-    <div class="yoover-tabs-wrapper">
-        <ul class="nav nav-tabs yoover-nav-tabs" role="tablist">
-            {{> accountmenu}}
-        </ul>
-    </div>
-
-    <div class="restore-info-box mb-30">
-        <div class="info-icon">
-            <span class="glyphicon glyphicon-info-sign"></span>
-        </div>
-        <div class="info-content">
-            <p><strong>Retention Policy:</strong> You can restore messages deleted in the last 25 days. Items deleted within the last hour may still be indexing.</p>
-            <p class="mb-0"><strong>Processing Time:</strong> Recovery tasks can take a few minutes or several hours depending on volume. Please avoid creating duplicate tasks.</p>
-        </div>
-    </div>
-
-    <div class="settings-section-card glass-card">
-        <div class="section-header">
-            <h3 class="section-title">Initiate Recovery Task</h3>
-        </div>
-        
-        <div class="section-body">
-            <form method="post" action="/account/restore" id="restoreForm">
-                <input type="hidden" name="_csrf" value="{{csrfToken}}">
-                <input type="hidden" id="start" name="start" value="{{#if values.start}}{{values.start}}{{/if}}" />
-                <input type="hidden" id="end" name="end" value="{{#if values.end}}{{values.end}}{{/if}}" />
-
-                <div class="form-group-yoover">
-                    <label for="daterange" class="yoover-label">Select Time Range</label>
-                    <div class="daterange-picker-wrapper">
-                        <span class="glyphicon glyphicon-calendar calendar-icon"></span>
-                        <input type="text" id="daterange" class="form-control-yoover" placeholder="Select start and end time" readonly>
+<div class="account-shell">
+    <div class="account-wrap">
+        <div class="account-page-head">
+            <section class="account-page-hero">
+                <span class="account-page-kicker">
+                    <i class="glyphicon glyphicon-repeat"></i>
+                    Restore Messages
+                </span>
+                <h1 class="account-page-title">Recover recently deleted email without leaving your account workspace.</h1>
+                <p class="account-page-copy">
+                    Yoover can restore messages that were removed within the supported recovery window. Choose the exact time range you want to recover and submit one clean task so the mailbox can be rebuilt without duplication.
+                </p>
+                <div class="account-page-meta">
+                    <div class="account-meta-chip">
+                        <i class="glyphicon glyphicon-time"></i>
+                        Recovery window: 25 days
                     </div>
-                    <p class="help-text-yoover">Only messages deleted within this specific window will be injected back into your inbox.</p>
+                    <div class="account-meta-chip">
+                        <i class="glyphicon glyphicon-tasks"></i>
+                        One recovery task at a time is best
+                    </div>
+                </div>
+            </section>
+
+            <aside class="account-page-side">
+                <h3>Before you restore</h3>
+                <ul class="account-side-list">
+                    <li>
+                        <i class="glyphicon glyphicon-info-sign"></i>
+                        <span>Very recent deletions can still be indexing, so they may not appear instantly.</span>
+                    </li>
+                    <li>
+                        <i class="glyphicon glyphicon-hourglass"></i>
+                        <span>Larger restore ranges can take longer depending on mailbox size and server workload.</span>
+                    </li>
+                    <li>
+                        <i class="glyphicon glyphicon-ok-circle"></i>
+                        <span>Choose one accurate range instead of starting multiple overlapping restores.</span>
+                    </li>
+                </ul>
+            </aside>
+        </div>
+
+        <div class="account-tabs-card">
+            <ul class="nav nav-tabs account-tabs" role="tablist">
+                {{> accountmenu}}
+            </ul>
+        </div>
+
+        <div class="account-content">
+            <div class="account-info-banner warning">
+                <i class="glyphicon glyphicon-warning-sign"></i>
+                <p><strong>Retention policy:</strong> Messages deleted within the last 25 days can be restored. Recovery work may complete in minutes or take several hours depending on the volume involved, so avoid creating duplicate tasks.</p>
+            </div>
+
+            <div class="account-card">
+                <div class="account-section-head">
+                    <div>
+                        <h3>Start A Recovery Task</h3>
+                        <p>Select the exact deletion window you want us to search and inject back into your mailbox.</p>
+                    </div>
                 </div>
 
-                <div class="form-footer-actions centered-actions">
-                    <button type="submit" class="btn btn-yoover-success-lg">
-                        <span class="glyphicon glyphicon-refresh"></span> Start Restoring
-                    </button>
-                </div>
-            </form>
+                <form method="post" action="/account/restore" id="restoreForm">
+                    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                    <input type="hidden" id="start" name="start" value="{{#if values.start}}{{values.start}}{{/if}}">
+                    <input type="hidden" id="end" name="end" value="{{#if values.end}}{{values.end}}{{/if}}">
+
+                    <div class="account-form-grid">
+                        <div class="account-field full">
+                            <label for="daterange">Select Time Range</label>
+                            <div style="position: relative;">
+                                <span class="glyphicon glyphicon-calendar" style="position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #1d63d8; z-index: 1;"></span>
+                                <input type="text" id="daterange" class="account-input" readonly placeholder="Select start and end time" style="padding-left: 48px; cursor: pointer;">
+                            </div>
+                            <p class="account-help">Only messages deleted inside this window will be restored. Use the narrowest accurate range for best results.</p>
+                        </div>
+                    </div>
+
+                    <div class="account-actions" style="justify-content: center; margin-top: 8px;">
+                        <button type="submit" class="account-btn primary">
+                            <i class="glyphicon glyphicon-refresh"></i>
+                            Start Restoring
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>
-
-<style>
-    /* CENTERED CONTAINER */
-    .yoover-centered-container {
-        max-width: 800px;
-        margin: 40px auto;
-        padding: 0 20px;
-        animation: fadeIn 0.5s ease-out;
-    }
-
-    /* HEADER & WARNING ICON */
-    .warning-bg { background: #fff7e6 !important; color: #ffa940 !important; }
-    
-    /* INFO BOX: BLUE ALERT STYLE */
-    .restore-info-box { 
-        display: flex; 
-        gap: 18px; 
-        background: #f4f8ff; 
-        border: 1px solid #d0e3ff;
-        border-left: 5px solid #1A73E8; 
-        padding: 24px; 
-        border-radius: 16px; 
-        margin-bottom: 35px;
-    }
-    .info-icon { font-size: 22px; color: #1A73E8; margin-top: 2px; }
-    .info-content p { font-size: 14px; color: #444; line-height: 1.6; margin-bottom: 12px; }
-
-    /* CARD STYLE */
-    .glass-card {
-        background: #ffffff;
-        border: 1px solid #e1e8ed;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
-    }
-    .section-header { padding: 22px 30px; border-bottom: 1px solid #f1f3f4; background: #fafbfc; }
-    .section-title { margin: 0; font-size: 14px; font-weight: 800; color: #202124; text-transform: uppercase; letter-spacing: 1px; }
-
-    /* DATEPICKER INPUT */
-    .daterange-picker-wrapper { position: relative; max-width: 100%; margin-top: 10px; }
-    .calendar-icon { 
-        position: absolute; 
-        left: 16px; 
-        top: 50%; 
-        transform: translateY(-50%); 
-        color: #1A73E8; 
-        z-index: 5;
-    }
-    .form-control-yoover[readonly] { 
-        background-color: #fff; 
-        cursor: pointer; 
-        padding-left: 45px; 
-        height: 54px;
-        font-weight: 600;
-        border: 2px solid #dadce0;
-        transition: 0.3s;
-    }
-    .form-control-yoover[readonly]:hover { border-color: #1A73E8; }
-
-    /* ACTION BUTTON */
-    .centered-actions { display: flex; justify-content: center; margin-top: 40px; }
-    .btn-yoover-success-lg { 
-        background: #34A853; color: white; border: none; border-radius: 14px; padding: 18px 45px; 
-        font-weight: 800; text-transform: uppercase; letter-spacing: 1px; 
-        box-shadow: 0 8px 20px rgba(52,168,83,0.2);
-        transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    .btn-yoover-success-lg:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(52,168,83,0.3); }
-
-    .help-text-yoover { font-size: 12px; color: #80868b; margin-top: 10px; font-style: italic; }
-
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-</style>
 
 <script>
     const startValue = (document.getElementById('start').value || '').trim();
     const endValue = (document.getElementById('end').value || '').trim();
 
-    document.addEventListener("DOMContentLoaded", function (event) {
+    document.addEventListener("DOMContentLoaded", function () {
         const rangeOptions = {
             "showDropdowns": true,
             "showISOWeekNumbers": true,
@@ -152,10 +114,15 @@
                 "firstDay": 1
             },
             "alwaysShowCalendars": true
+        };
+
+        if (startValue) {
+            rangeOptions.startDate = moment(Number(startValue));
         }
 
-        if (startValue) { rangeOptions.startDate = moment(Number(startValue)); }
-        if (endValue) { rangeOptions.endDate = moment(Number(endValue)); }
+        if (endValue) {
+            rangeOptions.endDate = moment(Number(endValue));
+        }
 
         $('#daterange').daterangepicker(rangeOptions, function (start, end) {
             document.getElementById('start').value = start.valueOf();

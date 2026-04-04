@@ -282,10 +282,7 @@ router.get('/', (req, res) => {
 // Purchase Page
 router.get('/purchase', (req, res) => {
     const requestedUsername = (req.query.username || '').trim().toLowerCase();
-
-    if (!requestedUsername) {
-        return res.redirect('/');
-    }
+    const selectedPlan = req.query.plan === 'yearly' ? 'yearly' : 'monthly';
 
     return renderCheckout(
         req,
@@ -297,7 +294,7 @@ router.get('/purchase', (req, res) => {
             billingEmail: '',
             password: '',
             password2: '',
-            selectedPlan: req.query.plan === 'yearly' ? 'yearly' : 'monthly',
+            selectedPlan,
             company: '',
             addressLine1: '',
             addressLine2: '',
@@ -499,6 +496,7 @@ router.get('/help', (req, res) => {
 router.get('/check-username', async (req, res) => {
     const username = (req.query.username || '').trim().toLowerCase();
     const validationError = validateRequestedUsername(username);
+    const emailAddress = `${username}@${getServiceDomain()}`;
 
     if (validationError) {
         return res.status(400).json({
@@ -507,9 +505,15 @@ router.get('/check-username', async (req, res) => {
     }
 
     try {
+        const existingBillingAccount = await billingStore.getAccountByEmail(emailAddress);
+
+        if (existingBillingAccount && existingBillingAccount.status !== 'canceled') {
+            return res.json({ available: false });
+        }
+
         return apiClient.users.resolve(
             {
-                username: `${username}@${getServiceDomain()}`,
+                username: emailAddress,
                 ip: req.ip,
                 sess: req.session.id
             },
@@ -539,7 +543,14 @@ router.get('/check-username', async (req, res) => {
 
 
 router.get('/purchase-authorize', (req, res) => {
-    return res.redirect(`/purchase?username=${encodeURIComponent((req.query.username || '').trim().toLowerCase())}`);
+    const username = (req.query.username || '').trim().toLowerCase();
+    const plan = req.query.plan === 'yearly' ? 'yearly' : 'monthly';
+
+    if (!username) {
+        return res.redirect(`/purchase?plan=${encodeURIComponent(plan)}`);
+    }
+
+    return res.redirect(`/purchase?username=${encodeURIComponent(username)}&plan=${encodeURIComponent(plan)}`);
 });
 
 router.post('/execute-authorize-payment', async (req, res) => {

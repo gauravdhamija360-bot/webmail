@@ -26,11 +26,15 @@
                 {{#unless user}}
 
                 <li class="nav-link-hover {{#if isHome}}active{{/if}}">
-                    <a href="/">HOME</a>
+                    <a href="/#top">HOME</a>
                 </li>
 
                 <li class="nav-link-hover {{#if activePurchase}}active{{/if}}">
-                    <a href="/pricing">PRICING</a>
+                    <a href="/#plans">PLANS</a>
+                </li>
+
+                <li class="nav-link-hover">
+                    <a href="/#setup-details">SETUP</a>
                 </li>
 
                 <li class="nav-link-hover {{#if activeHelp}}active{{/if}}">
@@ -41,14 +45,6 @@
 
                 <li class="nav-link-hover {{#if activeContact}}active{{/if}}">
                     <a href="/contact">CONTACT</a>
-                </li>
-
-                <li class="nav-link-hover {{#if activeTerms}}active{{/if}}">
-                    <a href="/terms">TERMS</a>
-                </li>
-
-                <li class="nav-link-hover {{#if activePrivacy}}active{{/if}}">
-                    <a href="/privacy">PRIVACY</a>
                 </li>
 
 
@@ -123,20 +119,12 @@
                 {{#if allowJoin}}
 
                 <li class="cta-section">
-        <a href="/purchase-authorize"
-           class="btn-ultra-sharp authorize-btn">
-            SIGNUP (AUTH.NET)
-            <span class="btn-shimmer"></span>
-        </a>
-    </li>
-
-    <li class="cta-section" style="padding-left: 10px;">
-        <a href="/purchase-email-subscription"
-           class="btn-ultra-sharp stripe-btn">
-            GET @{{serviceDomain}}
-            <span class="btn-shimmer"></span>
-        </a>
-    </li>
+                    <a href="/purchase"
+                       class="btn-ultra-sharp primary-cta">
+                        CREATE YOOVER ACCOUNT
+                        <span class="btn-shimmer"></span>
+                    </a>
+                </li>
 
                 {{/if}}
 
@@ -158,7 +146,7 @@
         display: flex !important;
         align-items: center;
         justify-content: space-between;
-        min-height: 85px;
+        min-height: 80px;
         padding: 0 5% !important;
     }
 
@@ -178,25 +166,65 @@
 
     /* THEME & BRANDING */
     .yoover-navbar-full {
-        background: rgba(255, 255, 255, 0.85) !important;
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border-bottom: 1px solid rgba(0,0,0,0.05) !important;
+        background: rgba(255, 255, 255, 0.9) !important;
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border-bottom: 1px solid rgba(11, 34, 64, 0.08) !important;
         z-index: 9999;
         border-radius: 0 !important;
+        box-shadow: 0 10px 32px rgba(11, 34, 64, 0.05);
     }
 
-    .yoover-brand-animate { height: 85px; display: flex; align-items: center; padding: 0 !important; }
-    .nav-logo { height: 35px; width: auto; }
-    .nav-brand-text { font-weight: 900; color: #1A73E8; font-size: 26px; letter-spacing: -2px; text-transform: uppercase; margin-left: 12px; }
+    .yoover-brand-animate {
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 0 !important;
+    }
+    .nav-logo {
+        height: 38px;
+        width: 38px;
+        display: block;
+        flex: 0 0 auto;
+    }
+    .nav-brand-text {
+        display: inline-block;
+        font-family: 'Manrope', 'Inter', sans-serif;
+        font-size: 24px;
+        font-weight: 800;
+        letter-spacing: -0.06em;
+        line-height: 1;
+        background: linear-gradient(135deg, #0f315d 0%, #1d63d8 55%, #46c5ff 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        text-transform: none;
+        position: relative;
+        top: -1px;
+        text-shadow: 0 10px 24px rgba(29, 99, 216, 0.12);
+    }
+    .nav-brand-text::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -7px;
+        height: 2px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, rgba(29, 99, 216, 0.12), rgba(70, 197, 255, 0.9), rgba(29, 99, 216, 0.12));
+        transform-origin: center;
+        animation: yooverBrandGlow 4.2s ease-in-out infinite;
+    }
 
     /* LINKS & HOVER */
     .nav-link-hover a {
         font-weight: 800 !important;
-        font-size: 12px !important;
-        letter-spacing: 1.5px;
-        color: #111 !important;
-        padding: 10px 15px !important;
+        font-size: 11px !important;
+        letter-spacing: 0.16em;
+        color: #17304e !important;
+        padding: 10px 14px !important;
         background: transparent !important;
         position: relative;
     }
@@ -214,63 +242,70 @@
     }
 
     /* CTA BUTTON & MOBILE */
-    .cta-section { padding-left: 15px; }
+    .flex-nav-list > li {
+        display: flex;
+        align-items: center;
+    }
+
+    .cta-section { padding-left: 18px; }
     .btn-ultra-sharp {
-        background: #1A73E8;
+        background: linear-gradient(135deg, #144fae 0%, #1d63d8 100%);
         color: #fff !important;
-        padding: 12px 22px !important;
+        padding: 13px 22px !important;
         font-weight: 900;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 0.12em;
         font-size: 11px;
-        border-radius: 0 !important;
+        border-radius: 999px !important;
         position: relative;
         overflow: hidden;
         border: none;
+        box-shadow: 0 16px 30px rgba(29, 99, 216, 0.18);
+        transition: all 0.25s ease;
+    }
+
+    .btn-ultra-sharp:hover,
+    .btn-ultra-sharp:focus {
+        color: #fff !important;
+        transform: translateY(-1px);
+        box-shadow: 0 20px 34px rgba(29, 99, 216, 0.24);
     }
 
     @media (max-width: 767px) {
         .nav-flex-container { display: block !important; }
-        .navbar-header { height: 85px; display: flex; align-items: center; justify-content: space-between; }
+        .navbar-header { height: 80px; display: flex; align-items: center; justify-content: space-between; }
         .navbar-collapse { background: white; border-top: 1px solid #eee; }
+        .nav-brand-text {
+            font-size: 21px;
+        }
     }
 
     /* UTILITIES */
     .btn-shimmer { position: absolute; top: 0; left: -150%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); animation: shimmer 4s infinite; }
     @keyframes shimmer { 0% { left: -150%; } 30% { left: 150%; } 100% { left: 150%; } }
+    @keyframes yooverBrandGlow {
+        0% { opacity: 0.45; transform: scaleX(0.82); }
+        50% { opacity: 1; transform: scaleX(1); }
+        100% { opacity: 0.45; transform: scaleX(0.82); }
+    }
     #scroll-progress { position: absolute; bottom: 0; left: 0; height: 3px; background: #1A73E8; width: 0%; transition: width 0.1s; }
     .avatar-box { border: 2px solid #1A73E8; padding: 2px; display: flex; align-items: center; margin-right: 10px; }
     .avatar-sharp { border-radius: 0 !important; width: 24px; height: 24px; }
 
-    /* Specific button colors to differentiate the gateways */
-.authorize-btn {
-    background: #2c3e50 !important; /* Dark Slate for Authorize */
-    border: 1px solid #2c3e50 !important;
-}
-
-.stripe-btn {
-    background: #1A73E8 !important; /* Blue for Stripe */
-}
-
-.authorize-btn:hover {
-    background: #1a252f !important;
-    transform: translateY(-1px);
-}
-
-/* Ensure CTA sections don't stack awkwardly on smaller desktops */
 @media (min-width: 768px) and (max-width: 1200px) {
-    .nav-brand-text { display: none; } /* Hide 'Yoover' text to save space for buttons */
     .flex-nav-list { gap: 5px; }
+    .nav-brand-text { font-size: 22px; }
 }
 
 /* Mobile stacking */
 @media (max-width: 767px) {
     .cta-section { 
-        padding: 10px 15px !important; 
+        padding: 10px 15px 18px !important; 
         width: 100%;
     }
     .btn-ultra-sharp {
-        display: block;
+        display: inline-flex;
+        justify-content: center;
         text-align: center;
         width: 100%;
     }

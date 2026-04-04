@@ -1,73 +1,99 @@
-<div class="split-viewport">
-    
-    <div class="split-brand-side">
-        <div class="brand-overlay"></div>
-        <div class="brand-content fade-in">
-            <img src="/images/yoover-logo-white.svg" alt="Yoover" class="brand-logo-white">
-            <div class="brand-text-box">
-                <h2 class="hero-text">The Private <br><span class="text-blue">Standard.</span></h2>
-                <p class="hero-subtext">Advanced encryption. Zero tracking. Your identity, reclaimed.</p>
-            </div>
-            <div class="security-ticker">
-                <span class="glyphicon glyphicon-shield"></span>
-                <span class="ticker-label">NODE STATUS: ENCRYPTED // PORT: 443</span>
-            </div>
-        </div>
-    </div>
+<div class="login-shell">
+    <div class="login-layout">
+        <section class="login-brand-panel">
+            <div class="login-brand-backdrop"></div>
+            <div class="login-brand-content">
+                <img src="/images/yoover-logo-white.svg" alt="Yoover" class="login-brand-logo">
 
-    <div class="split-form-side">
-        <div class="form-container fade-in-up">
-            <div class="mobile-logo-only">
-                <img src="/images/yoover-logo.svg" alt="Yoover">
-            </div>
+                <div class="login-brand-copy">
+                    <span class="login-eyebrow">Secure Account Access</span>
+                    <h1>Welcome back to your Yoover mailbox.</h1>
+                    <p>
+                        Sign in to manage your inbox, account security, billing, and identities from one place. Clean workflow, private infrastructure, and access that feels professional from the first click.
+                    </p>
+                </div>
 
-            <h1 class="form-title">Welcome Back</h1>
-            <p class="form-subtitle">Authenticate to access your secure vault.</p>
-
-            <form method="post" action="/account/login" class="yoover-modern-form">
-                <input type="hidden" name="_csrf" value="{{csrfToken}}">
-                <input type="hidden" name="_2faToken" id="_2faToken" value="">
-
-                <div class="input-field-glow {{#if errors.username}}field-error{{/if}}">
-                    <div class="glow-container">
-                        <input type="text" name="username" id="username" value="{{values.username}}" required autofocus placeholder=" ">
-                        <label for="username">Username / Identity</label>
-                        <div class="glow-border"></div>
-                        <span class="input-icon glyphicon glyphicon-user"></span>
+                <div class="login-brand-grid">
+                    <div class="login-brand-stat">
+                        <strong>Private by design</strong>
+                        <span>Focused email experience without ad-driven clutter.</span>
                     </div>
-                    {{#if errors.username}}<span class="err-msg">{{errors.username}}</span>{{/if}}
-                </div>
-
-                <div class="input-field-glow {{#if errors.password}}field-error{{/if}}">
-                    <div class="glow-container">
-                        <input type="password" name="password" id="password" required placeholder=" ">
-                        <label for="password">Security Key</label>
-                        <div class="glow-border"></div>
-                        <span class="input-icon glyphicon glyphicon-lock"></span>
+                    <div class="login-brand-stat">
+                        <strong>Works across devices</strong>
+                        <span>Webmail, desktop clients, and mobile apps stay aligned.</span>
                     </div>
-                    {{#if errors.password}}<span class="err-msg">{{errors.password}}</span>{{/if}}
+                    <div class="login-brand-stat">
+                        <strong>Security controls</strong>
+                        <span>2FA, app passwords, and account visibility when you need it.</span>
+                    </div>
+                    <div class="login-brand-stat">
+                        <strong>Billing in account</strong>
+                        <span>Plans, sync status, payment methods, and renewal context.</span>
+                    </div>
                 </div>
 
-                <div class="form-options">
-                    <label class="custom-checkbox">
-                        <input type="checkbox" name="remember">
-                        <span class="cb-box"></span>
-                        Keep me logged in
-                    </label>
-                    <a href="/account/reset" class="link-minimal">Forgot Key?</a>
+                <div class="login-brand-status">
+                    <i class="glyphicon glyphicon-lock"></i>
+                    <span>Secure session entry for {{serviceDomain}}</span>
                 </div>
-
-                <button type="submit" class="btn-elite-action">
-                    <span>ACCESS ACCOUNT</span>
-                    <i class="glyphicon glyphicon-menu-right"></i>
-                </button>
-            </form>
-
-            <div class="form-footer">
-                <span>New here?</span>
-                <a href="/account/create">Register Identity</a>
             </div>
-        </div>
+        </section>
+
+        <section class="login-form-panel">
+            <div class="login-form-wrap">
+                <div class="login-mobile-logo">
+                    <img src="/images/yoover-logo.svg" alt="Yoover">
+                </div>
+
+                <div class="login-form-head">
+                    <span class="login-form-chip">Account Login</span>
+                    <h2>Sign in to your account</h2>
+                    <p>Use your mailbox identity and password to continue. If two-factor authentication is enabled, your device key helper will prepare the token automatically.</p>
+                </div>
+
+                <form method="post" action="/account/login" class="login-form-card">
+                    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                    <input type="hidden" name="_2faToken" id="_2faToken" value="">
+
+                    <div class="login-field {{#if errors.username}}field-error{{/if}}">
+                        <label for="username">Email Address or Username</label>
+                        <div class="login-input-wrap">
+                            <span class="login-input-icon glyphicon glyphicon-user"></span>
+                            <input type="text" name="username" id="username" value="{{values.username}}" required autofocus placeholder="name@{{serviceDomain}}">
+                        </div>
+                        {{#if errors.username}}<span class="err-msg">{{errors.username}}</span>{{/if}}
+                    </div>
+
+                    <div class="login-field {{#if errors.password}}field-error{{/if}}">
+                        <label for="password">Password</label>
+                        <div class="login-input-wrap">
+                            <span class="login-input-icon glyphicon glyphicon-lock"></span>
+                            <input type="password" name="password" id="password" required placeholder="Enter your password">
+                        </div>
+                        {{#if errors.password}}<span class="err-msg">{{errors.password}}</span>{{/if}}
+                    </div>
+
+                    <div class="login-meta-row">
+                        <label class="login-checkbox">
+                            <input type="checkbox" name="remember">
+                            <span class="login-checkbox-box"></span>
+                            Keep me signed in
+                        </label>
+                        <a href="/account/reset" class="login-link">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="login-submit">
+                        <span>Access Account</span>
+                        <i class="glyphicon glyphicon-menu-right"></i>
+                    </button>
+                </form>
+
+                <div class="login-footnote">
+                    <span>Need a new mailbox?</span>
+                    <a href="/purchase">Create your Yoover account</a>
+                </div>
+            </div>
+        </section>
     </div>
 </div>
 
@@ -81,167 +107,389 @@ loginKeyHandler.setup(
 </script>
 
 <style>
-    /* 0. GLOBAL RESET FOR INPUTS (Kill all round corners) */
-    input, .form-control, .glow-container, .glow-border, .btn, .cb-box, .btn-elite-action {
-        border-radius: 0px !important;
-        -webkit-border-radius: 0px !important;
-        -moz-border-radius: 0px !important;
+    .login-shell {
+        min-height: calc(100vh - 80px);
+        background:
+            radial-gradient(circle at 10% 10%, rgba(76, 152, 255, 0.08), transparent 22%),
+            linear-gradient(180deg, #f8fbff 0%, #ffffff 44%);
     }
 
-    /* 1. CORE LAYOUT */
-    .split-viewport {
-        display: flex;
-        min-height: calc(100vh - 85px);
-        background: #fff;
+    .login-layout {
+        display: grid;
+        grid-template-columns: minmax(420px, 1.05fr) minmax(360px, 0.95fr);
+        min-height: calc(100vh - 80px);
     }
 
-    /* 2. LEFT BRAND SIDE */
-    .split-brand-side {
-        flex: 1.2;
-        background: #000;
+    .login-brand-panel {
         position: relative;
+        overflow: hidden;
+        background: linear-gradient(180deg, #081a32 0%, #0d274c 60%, #143a67 100%);
+        color: #fff;
+        padding: 54px;
         display: flex;
         align-items: center;
-        padding: 80px;
-        overflow: hidden;
     }
-    .brand-overlay {
+
+    .login-brand-backdrop {
         position: absolute;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: linear-gradient(45deg, #000 30%, transparent 100%);
-        z-index: 1;
+        inset: 0;
+        background:
+            radial-gradient(circle at 15% 22%, rgba(87, 192, 255, 0.18), transparent 24%),
+            radial-gradient(circle at 86% 78%, rgba(87, 192, 255, 0.14), transparent 28%);
+        pointer-events: none;
     }
-    .brand-content { position: relative; z-index: 2; width: 100%; }
-    .brand-logo-white { height: 60px; margin-bottom: 60px; }
-    .hero-text { font-size: 72px; font-weight: 900; color: #fff; line-height: 0.9; letter-spacing: -4px; margin-bottom: 20px; text-transform: uppercase; }
-    .text-blue { color: #1A73E8; }
-    .hero-subtext { color: #888; font-size: 18px; max-width: 400px; line-height: 1.6; }
-    
-    .security-ticker {
-        margin-top: 100px;
-        background: rgba(255,255,255,0.05);
-        padding: 12px 20px;
+
+    .login-brand-content {
+        position: relative;
+        z-index: 1;
+        max-width: 620px;
+    }
+
+    .login-brand-logo {
+        width: 64px;
+        height: 64px;
+        display: block;
+        margin-bottom: 34px;
+    }
+
+    .login-eyebrow {
         display: inline-flex;
         align-items: center;
-        border: 1px solid rgba(255,255,255,0.1);
+        gap: 10px;
+        padding: 10px 16px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        color: #8cdfff;
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
     }
-    .security-ticker span { color: #00ff88; font-size: 10px; font-weight: 900; letter-spacing: 2px; }
-    .security-ticker .glyphicon { margin-right: 12px; }
 
-    /* 3. RIGHT FORM SIDE */
-    .split-form-side {
-        flex: 1;
+    .login-brand-copy h1 {
+        margin: 20px 0 18px;
+        font-size: clamp(2.8rem, 4.6vw, 4.8rem);
+        line-height: 0.98;
+        letter-spacing: -0.06em;
+        font-weight: 800;
+        color: #f7fbff;
+        text-shadow: 0 12px 32px rgba(2, 12, 28, 0.28);
+    }
+
+    .login-brand-copy p {
+        margin: 0;
+        max-width: 560px;
+        color: rgba(255, 255, 255, 0.76);
+        line-height: 1.8;
+        font-size: 1.08rem;
+    }
+
+    .login-brand-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 34px;
+    }
+
+    .login-brand-stat {
+        border-radius: 20px;
+        padding: 18px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .login-brand-stat strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 1rem;
+    }
+
+    .login-brand-stat span {
+        display: block;
+        color: rgba(255, 255, 255, 0.72);
+        line-height: 1.65;
+        font-size: 0.95rem;
+    }
+
+    .login-brand-status {
+        margin-top: 28px;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        color: #97e8ff;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-weight: 800;
+    }
+
+    .login-form-panel {
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 60px;
+        padding: 56px 42px;
         background: #fff;
     }
-    .form-container { width: 100%; max-width: 480px; }
-    .form-title { font-size: 32px; font-weight: 900; letter-spacing: -1px; margin-bottom: 8px; }
-    .form-subtitle { color: #666; font-size: 16px; margin-bottom: 40px; }
 
-    /* 4. SHARP GLOW INPUTS */
-    .input-field-glow { margin-bottom: 30px; position: relative; }
-    
-    .glow-container {
+    .login-form-wrap {
+        width: 100%;
+        max-width: 500px;
+    }
+
+    .login-mobile-logo {
+        display: none;
+        margin-bottom: 24px;
+    }
+
+    .login-mobile-logo img {
+        width: 48px;
+        height: 48px;
+        display: block;
+    }
+
+    .login-form-head {
+        margin-bottom: 26px;
+    }
+
+    .login-form-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 9px 14px;
+        border-radius: 999px;
+        background: rgba(29, 99, 216, 0.08);
+        color: #1d63d8;
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+    }
+
+    .login-form-head h2 {
+        margin: 18px 0 10px;
+        font-size: 2.25rem;
+        line-height: 1.05;
+        letter-spacing: -0.04em;
+        font-weight: 800;
+        color: #132238;
+    }
+
+    .login-form-head p {
+        margin: 0;
+        color: #627286;
+        line-height: 1.75;
+        font-size: 1rem;
+    }
+
+    .login-form-card {
+        background: #fff;
+        border: 1px solid rgba(13, 42, 77, 0.08);
+        border-radius: 28px;
+        padding: 28px;
+        box-shadow: 0 14px 38px rgba(14, 42, 77, 0.06);
+    }
+
+    .login-field {
+        margin-bottom: 22px;
+    }
+
+    .login-field label {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #7d8b9c;
+        font-weight: 800;
+    }
+
+    .login-input-wrap {
         position: relative;
-        background: #fdfdfd;
-        border: 2px solid #f0f0f0;
-        transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
-        height: 65px;
-        border-radius: 0px !important; /* Force Sharp */
     }
 
-    /* ATTRACIVE HOVER STATE (Before Focus) */
-    .glow-container:hover {
-        border-color: #ccc;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+    .login-input-icon {
+        position: absolute;
+        left: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #92a0b2;
+        font-size: 15px;
+        transition: color 0.2s ease;
     }
 
-    .glow-container label {
-        position: absolute; left: 45px; top: 20px; color: #999;
-        font-size: 14px; font-weight: 700; text-transform: uppercase;
-        letter-spacing: 1px; pointer-events: none; transition: 0.3s ease;
+    .login-input-wrap input {
+        width: 100%;
+        min-height: 58px;
+        border: 1px solid rgba(13, 42, 77, 0.1);
+        border-radius: 18px !important;
+        background: #fbfdff;
+        padding: 0 18px 0 48px;
+        color: #132238;
+        font-size: 15px;
+        font-weight: 700;
+        outline: none;
+        box-shadow: none;
+        transition: all 0.22s ease;
     }
 
-    .glow-container input {
-        width: 100%; height: 100%; border: none; background: transparent;
-        padding: 25px 20px 10px 45px; font-size: 16px; font-weight: 800;
-        color: #000; outline: none;
-        border-radius: 0px !important;
-    }
-
-    .glow-container input:focus + label,
-    .glow-container input:not(:placeholder-shown) + label {
-        top: 10px; left: 45px; font-size: 10px; color: #1A73E8;
-    }
-
-    .input-icon { position: absolute; left: 15px; top: 23px; color: #ccc; font-size: 16px; transition: 0.3s; }
-    
-    /* THE ACTUAL GLOWING BORDER */
-    .glow-border {
-        position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px;
-        border: 2px solid #1A73E8; opacity: 0; transition: 0.3s;
-        pointer-events: none;
-        border-radius: 0px !important;
-    }
-    
-    /* ATTRACTIVE ACTIVE STATE (Focus) */
-    .glow-container:focus-within {
-        border-color: #1A73E8;
+    .login-input-wrap input:focus {
+        border-color: rgba(29, 99, 216, 0.28);
         background: #fff;
-        box-shadow: 0 0 20px rgba(26, 115, 232, 0.15); /* Soft outer glow */
-        transform: translateY(-2px);
-    }
-    .glow-container:focus-within .glow-border { 
-        opacity: 1; 
-    }
-    .glow-container:focus-within .input-icon { color: #1A73E8; }
-
-    /* 5. BUTTON & OPTIONS */
-    .form-options { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
-    .custom-checkbox { display: flex; align-items: center; cursor: pointer; font-size: 14px; font-weight: 600; color: #444; }
-    .custom-checkbox input { display: none; }
-    .cb-box { width: 18px; height: 18px; border: 2px solid #eee; margin-right: 12px; transition: 0.3s; }
-    .custom-checkbox input:checked + .cb-box { background: #1A73E8; border-color: #1A73E8; }
-    .link-minimal { color: #111; font-weight: 800; font-size: 12px; text-transform: uppercase; text-decoration: none; }
-
-    .btn-elite-action {
-        width: 100%; padding: 22px; background: #000; color: #fff; border: none;
-        font-weight: 900; letter-spacing: 2px; display: flex; justify-content: space-between; align-items: center;
-        transition: all 0.3s ease; cursor: pointer;
-        border-radius: 0px !important;
-    }
-    
-    .btn-elite-action:hover {
-        background: #1A73E8;
-        transform: translateY(-5px);
-        box-shadow: 0 20px 40px rgba(26, 115, 232, 0.3); /* Intense Attractive Glow */
+        box-shadow: 0 0 0 5px rgba(29, 99, 216, 0.08);
     }
 
-    .form-footer { margin-top: 30px; text-align: center; font-size: 14px; color: #888; }
-    .form-footer a { color: #1A73E8; font-weight: 800; text-decoration: none; margin-left: 5px; }
-
-    /* 6. RESPONSIVE */
-    @media (max-width: 1024px) {
-        .split-brand-side { display: none; }
-        .split-form-side { flex: 1; padding: 40px; }
-        .mobile-logo-only { display: block; margin-bottom: 40px; }
-        .mobile-logo-only img { height: 40px; }
+    .login-input-wrap input:focus + .login-input-icon,
+    .login-input-wrap:focus-within .login-input-icon {
+        color: #1d63d8;
     }
 
-    /* ANIMATIONS */
-    .fade-in { animation: opac 1s ease-in; }
-    .fade-in-up { animation: fup 0.8s ease-out; }
-    @keyframes opac { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes fup { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-    
-    /* Error State Glow */
-    .field-error .glow-container { border-color: #d93025 !important; }
-    .field-error .glow-border {
-        border-color: #d93025 !important;
-        box-shadow: 0 0 20px rgba(217, 48, 37, 0.25);
+    .login-meta-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 18px;
+        margin-bottom: 24px;
     }
-    .err-msg { color: #d93025; font-size: 11px; font-weight: 800; text-transform: uppercase; margin-top: 8px; display: block; }
+
+    .login-checkbox {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        color: #4d5d71;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .login-checkbox input {
+        display: none;
+    }
+
+    .login-checkbox-box {
+        width: 18px;
+        height: 18px;
+        border-radius: 6px;
+        border: 2px solid rgba(13, 42, 77, 0.14);
+        background: #fff;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+
+    .login-checkbox input:checked + .login-checkbox-box {
+        background: #1d63d8;
+        border-color: #1d63d8;
+    }
+
+    .login-checkbox input:checked + .login-checkbox-box::after {
+        content: "";
+        position: absolute;
+        left: 4px;
+        top: 1px;
+        width: 5px;
+        height: 10px;
+        border: solid #fff;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+    }
+
+    .login-link {
+        color: #1d63d8;
+        font-size: 13px;
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .login-submit {
+        width: 100%;
+        min-height: 56px;
+        border: none;
+        border-radius: 999px !important;
+        background: linear-gradient(135deg, #144fae 0%, #1d63d8 100%);
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 24px;
+        font-size: 13px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-weight: 900;
+        box-shadow: 0 18px 34px rgba(29, 99, 216, 0.18);
+        transition: all 0.25s ease;
+    }
+
+    .login-submit:hover,
+    .login-submit:focus {
+        color: #fff;
+        background: linear-gradient(135deg, #0f459a 0%, #1b5fcf 100%);
+        transform: translateY(-1px);
+    }
+
+    .login-footnote {
+        margin-top: 24px;
+        text-align: center;
+        color: #718092;
+        font-size: 14px;
+    }
+
+    .login-footnote a {
+        color: #1d63d8;
+        font-weight: 800;
+        text-decoration: none;
+        margin-left: 5px;
+    }
+
+    .err-msg {
+        display: block;
+        margin-top: 8px;
+        color: #c83b34;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .field-error .login-input-wrap input {
+        border-color: rgba(200, 59, 52, 0.28);
+        box-shadow: 0 0 0 4px rgba(200, 59, 52, 0.08);
+    }
+
+    @media (max-width: 1199px) {
+        .login-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .login-brand-panel {
+            min-height: 420px;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .login-shell,
+        .login-layout {
+            min-height: auto;
+        }
+
+        .login-brand-panel {
+            display: none;
+        }
+
+        .login-form-panel {
+            padding: 122px 20px 60px;
+        }
+
+        .login-form-card {
+            padding: 22px;
+            border-radius: 24px;
+        }
+
+        .login-mobile-logo {
+            display: block;
+        }
+
+        .login-meta-row {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
 </style>

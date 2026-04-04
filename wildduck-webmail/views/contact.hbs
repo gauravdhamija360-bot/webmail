@@ -1,84 +1,518 @@
-<section style="background: linear-gradient(135deg, #1A73E8 0%, #0D47A1 100%); padding: 100px 10%; color: white; margin-top: 0;">
-    <h1 style="font-weight: 900; font-size: 56px; margin: 0; letter-spacing: -2px; text-transform: uppercase;">Get in Touch</h1>
-    <p style="font-size: 22px; opacity: 0.9; margin-top: 15px; max-width: 600px;">Have questions about your @{{serviceDomain}} account? Our support team is ready to assist you 24/7.</p>
-</section>
+<style>
+    :root {
+        --contact-ink: #132238;
+        --contact-muted: #627286;
+        --contact-blue: #1d63d8;
+        --contact-blue-deep: #0d47a1;
+        --contact-surface: #ffffff;
+        --contact-cloud: #f5f9ff;
+        --contact-border: rgba(13, 42, 77, 0.08);
+        --contact-success: #1f9d62;
+        --contact-shadow: 0 20px 60px rgba(14, 42, 77, 0.08);
+        --contact-shadow-soft: 0 12px 34px rgba(14, 42, 77, 0.06);
+    }
 
-<div class="container-fluid" style="padding: 100px 10%; background: #ffffff;">
-    <div class="row" style="margin: 0;">
-        
-        <div class="col-md-7" style="padding-right: 60px;">
-            <h3 style="font-weight: 900; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 1px; color: #333;">Send us a Message</h3>
-            
-            <form action="/contact" method="POST">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group" style="margin-bottom: 25px;">
-                            <label style="text-transform: uppercase; font-size: 11px; font-weight: 700; color: #999; letter-spacing: 1px;">Full Name</label>
-                            <input type="text" name="name" class="form-control" placeholder="Gaurav Dhamija" style="border-radius: 0; border: 2px solid #eee; box-shadow: none; height: 55px; font-size: 16px;" required>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group" style="margin-bottom: 25px;">
-                            <label style="text-transform: uppercase; font-size: 11px; font-weight: 700; color: #999; letter-spacing: 1px;">Email Address</label>
-                            <input type="email" name="email" class="form-control" placeholder="name@example.com" style="border-radius: 0; border: 2px solid #eee; box-shadow: none; height: 55px; font-size: 16px;" required>
-                        </div>
-                    </div>
+    .contact-shell {
+        padding: 128px 0 96px;
+        background:
+            radial-gradient(circle at 14% 10%, rgba(76, 152, 255, 0.12), transparent 24%),
+            linear-gradient(180deg, #f8fbff 0%, #ffffff 44%);
+        color: var(--contact-ink);
+    }
+
+    .contact-hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(300px, 0.95fr);
+        gap: 28px;
+        align-items: stretch;
+        margin-bottom: 34px;
+    }
+
+    .contact-hero-card,
+    .contact-side-card,
+    .contact-form-card,
+    .contact-channel-card,
+    .contact-notes-card {
+        background: var(--contact-surface);
+        border: 1px solid var(--contact-border);
+        border-radius: 30px;
+        box-shadow: var(--contact-shadow-soft);
+    }
+
+    .contact-hero-card,
+    .contact-form-card,
+    .contact-channel-card,
+    .contact-notes-card {
+        padding: 34px;
+    }
+
+    .contact-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        border-radius: 999px;
+        background: rgba(29, 99, 216, 0.08);
+        color: var(--contact-blue);
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+    }
+
+    .contact-title {
+        margin: 20px 0 16px;
+        font-size: clamp(2.4rem, 4vw, 3.9rem);
+        line-height: 1.03;
+        letter-spacing: -0.05em;
+        font-weight: 800;
+    }
+
+    .contact-copy {
+        font-size: 1.1rem;
+        line-height: 1.75;
+        color: var(--contact-muted);
+        max-width: 760px;
+    }
+
+    .contact-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin-top: 28px;
+    }
+
+    .contact-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-height: 52px;
+        padding: 0 22px;
+        border-radius: 999px;
+        font-weight: 800;
+        text-decoration: none !important;
+        transition: all 0.25s ease;
+    }
+
+    .contact-btn.primary {
+        background: linear-gradient(135deg, var(--contact-blue) 0%, #2c7df0 100%);
+        color: #fff;
+        box-shadow: 0 16px 34px rgba(29, 99, 216, 0.2);
+    }
+
+    .contact-btn.primary:hover {
+        color: #fff;
+        background: linear-gradient(135deg, #1459c4 0%, var(--contact-blue) 100%);
+        transform: translateY(-1px);
+    }
+
+    .contact-btn.secondary {
+        background: #f3f8fd;
+        color: var(--contact-ink);
+        border: 1px solid var(--contact-border);
+    }
+
+    .contact-btn.secondary:hover {
+        color: var(--contact-blue);
+        border-color: rgba(29, 99, 216, 0.18);
+        transform: translateY(-1px);
+    }
+
+    .contact-side-card {
+        padding: 28px;
+        background: linear-gradient(180deg, #081a32 0%, #0d274c 100%);
+        color: #fff;
+        box-shadow: 0 24px 60px rgba(7, 26, 51, 0.18);
+    }
+
+    .contact-side-card h3 {
+        margin: 0 0 16px;
+        font-size: 1.45rem;
+        font-weight: 800;
+    }
+
+    .contact-side-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .contact-side-list li {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        padding: 14px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 600;
+    }
+
+    .contact-side-list li:last-child {
+        border-bottom: none;
+    }
+
+    .contact-side-list i {
+        color: #97e8ff;
+        margin-top: 4px;
+    }
+
+    .contact-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(320px, 0.88fr);
+        gap: 24px;
+    }
+
+    .contact-form-card h2,
+    .contact-channel-card h2,
+    .contact-notes-card h2 {
+        margin: 0 0 12px;
+        font-size: 1.55rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+    }
+
+    .contact-intro {
+        margin: 0 0 24px;
+        color: var(--contact-muted);
+        line-height: 1.75;
+    }
+
+    .contact-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .contact-field {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .contact-field.full {
+        grid-column: 1 / -1;
+    }
+
+    .contact-field label {
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #7d8b9c;
+        font-weight: 800;
+    }
+
+    .contact-field input,
+    .contact-field select,
+    .contact-field textarea {
+        width: 100%;
+        border: 1px solid rgba(13, 42, 77, 0.1);
+        border-radius: 18px;
+        background: #fbfdff;
+        padding: 16px 18px;
+        font-size: 15px;
+        color: var(--contact-ink);
+        box-shadow: none;
+        outline: none;
+        transition: all 0.22s ease;
+    }
+
+    .contact-field input:focus,
+    .contact-field select:focus,
+    .contact-field textarea:focus {
+        border-color: rgba(29, 99, 216, 0.28);
+        background: #fff;
+        box-shadow: 0 0 0 5px rgba(29, 99, 216, 0.08);
+    }
+
+    .contact-field textarea {
+        resize: vertical;
+        min-height: 180px;
+    }
+
+    .contact-submit {
+        width: 100%;
+        min-height: 56px;
+        margin-top: 24px;
+        border: none;
+        border-radius: 999px;
+        background: linear-gradient(135deg, var(--contact-blue) 0%, #2b7df0 100%);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        box-shadow: 0 18px 34px rgba(29, 99, 216, 0.18);
+        transition: all 0.25s ease;
+    }
+
+    .contact-submit:hover,
+    .contact-submit:focus {
+        background: linear-gradient(135deg, #1459c4 0%, var(--contact-blue) 100%);
+        transform: translateY(-1px);
+        color: #fff;
+    }
+
+    .contact-channel-grid {
+        display: grid;
+        gap: 16px;
+    }
+
+    .contact-channel {
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+        padding: 18px;
+        border-radius: 20px;
+        background: #f8fbff;
+        border: 1px solid rgba(29, 99, 216, 0.08);
+    }
+
+    .contact-channel-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #e9f3ff;
+        color: var(--contact-blue);
+        font-size: 18px;
+        flex: 0 0 auto;
+    }
+
+    .contact-channel strong {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--contact-ink);
+    }
+
+    .contact-channel span,
+    .contact-channel p {
+        margin: 0;
+        color: var(--contact-muted);
+        line-height: 1.7;
+    }
+
+    .contact-channel a {
+        color: var(--contact-blue);
+        text-decoration: none;
+        font-weight: 700;
+    }
+
+    .contact-notes-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .contact-notes-list li {
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+        padding: 16px 0;
+        border-bottom: 1px solid rgba(13, 42, 77, 0.08);
+    }
+
+    .contact-notes-list li:last-child {
+        border-bottom: none;
+    }
+
+    .contact-bullet {
+        width: 30px;
+        height: 30px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #ebf4ff;
+        color: var(--contact-blue);
+        font-size: 13px;
+        font-weight: 800;
+        flex: 0 0 auto;
+    }
+
+    .contact-note-copy strong {
+        display: block;
+        color: var(--contact-ink);
+        margin-bottom: 4px;
+    }
+
+    .contact-note-copy span {
+        display: block;
+        color: var(--contact-muted);
+        line-height: 1.7;
+    }
+
+    @media (max-width: 1199px) {
+        .contact-hero,
+        .contact-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .contact-shell {
+            padding: 118px 0 72px;
+        }
+
+        .contact-hero-card,
+        .contact-side-card,
+        .contact-form-card,
+        .contact-channel-card,
+        .contact-notes-card {
+            padding: 24px;
+            border-radius: 24px;
+        }
+
+        .contact-form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .contact-actions {
+            flex-direction: column;
+        }
+
+        .contact-btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="contact-shell">
+    <div class="container">
+        <div class="contact-hero">
+            <section class="contact-hero-card">
+                <div class="contact-eyebrow">Contact Yoover</div>
+                <h1 class="contact-title">Talk to the team behind your mailbox, setup, and billing experience.</h1>
+                <p class="contact-copy">
+                    Use this page when you need help that goes beyond self-service setup instructions. Whether the issue is onboarding, billing, app passwords, mailbox behavior, or general product questions, this is the cleanest way to reach the right Yoover support path.
+                </p>
+                <div class="contact-actions">
+                    <a href="#contact-form" class="contact-btn primary">Send a Message</a>
+                    <a href="/help" class="contact-btn secondary">Read Help Center</a>
                 </div>
+            </section>
 
-                <div class="form-group" style="margin-bottom: 25px;">
-                    <label style="text-transform: uppercase; font-size: 11px; font-weight: 700; color: #999; letter-spacing: 1px;">Subject</label>
-                    <select name="subject" class="form-control" style="border-radius: 0; border: 2px solid #eee; box-shadow: none; height: 55px; font-size: 16px; appearance: none;">
-                        <option>General Inquiry</option>
-                        <option>Technical Support</option>
-                        <option>Billing & Payments</option>
-                        <option>Business Partnership</option>
-                    </select>
-                </div>
-
-                <div class="form-group" style="margin-bottom: 25px;">
-                    <label style="text-transform: uppercase; font-size: 11px; font-weight: 700; color: #999; letter-spacing: 1px;">Your Message</label>
-                    <textarea name="message" rows="8" class="form-control" placeholder="How can we help you today?" style="border-radius: 0; border: 2px solid #eee; box-shadow: none; resize: none; font-size: 16px; padding: 15px;" required></textarea>
-                </div>
-
-                <button type="submit" class="btn btn-primary btn-lg" style="border-radius: 0; padding: 18px 50px; background: #1A73E8; border: none; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; margin-top: 10px; width: 100%;">
-                    SEND MESSAGE
-                </button>
-            </form>
+            <aside class="contact-side-card">
+                <h3>Best reasons to contact us</h3>
+                <ul class="contact-side-list">
+                    <li><i class="fa-solid fa-circle-check"></i><span>Mailbox setup is failing in Apple Mail, Outlook, Thunderbird, iPhone, or Android.</span></li>
+                    <li><i class="fa-solid fa-circle-check"></i><span>You need billing or subscription clarification for your Yoover account.</span></li>
+                    <li><i class="fa-solid fa-circle-check"></i><span>You are troubleshooting passwords, 2FA, or app-specific password access.</span></li>
+                    <li><i class="fa-solid fa-circle-check"></i><span>You want general account help for <strong>@{{serviceDomain}}</strong>.</span></li>
+                </ul>
+            </aside>
         </div>
 
-        <div class="col-md-5" style="background: #fbfcfd; padding: 60px; border: 1px solid #f0f0f0;">
-            <h3 style="font-weight: 900; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 1px; color: #333;">Support Channels</h3>
-            
-            <div style="margin-bottom: 45px;">
-                <h5 style="font-weight: 900; color: #1A73E8; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; margin-bottom: 15px;">Direct Email</h5>
-                <p style="font-size: 20px; font-weight: 700; color: #333; margin: 0;">support@{{serviceDomain}}</p>
-                <p style="font-size: 14px; color: #777; margin-top: 5px;">We typically respond within 2-4 business hours.</p>
-            </div>
+        <div class="contact-grid">
+            <section class="contact-form-card" id="contact-form">
+                <h2>Send us a message</h2>
+                <p class="contact-intro">
+                    The more specific your message is, the faster we can help. Include the email app, device type, and the kind of issue you are seeing whenever possible.
+                </p>
 
-            <div style="margin-bottom: 45px;">
-                <h5 style="font-weight: 900; color: #1A73E8; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; margin-bottom: 15px;">Technical Docs</h5>
-                <p style="font-size: 16px; color: #555; line-height: 1.6;">Check our <a href="/help" style="color: #1A73E8; font-weight: 700; text-decoration: underline;">Help Center</a> for SMTP/IMAP settings and security guides.</p>
-            </div>
+                <form action="/contact" method="POST">
+                    <div class="contact-form-grid">
+                        <div class="contact-field">
+                            <label for="contactName">Full Name</label>
+                            <input type="text" id="contactName" name="name" placeholder="Gaurav Dhamija" required>
+                        </div>
 
-            <div style="border-top: 1px solid #eee; padding-top: 40px;">
-                <h5 style="font-weight: 900; color: #333; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; margin-bottom: 15px;">Office Hours</h5>
-                <p style="font-size: 16px; color: #555; margin: 0;">Monday – Friday</p>
-                <p style="font-size: 16px; color: #555; font-weight: 700;">9:00 AM – 6:00 PM (IST)</p>
+                        <div class="contact-field">
+                            <label for="contactEmail">Email Address</label>
+                            <input type="email" id="contactEmail" name="email" placeholder="name@example.com" required>
+                        </div>
+
+                        <div class="contact-field full">
+                            <label for="contactSubject">Subject</label>
+                            <select id="contactSubject" name="subject">
+                                <option>General Inquiry</option>
+                                <option>Technical Support</option>
+                                <option>Billing & Payments</option>
+                                <option>Mailbox Setup Help</option>
+                                <option>Business Partnership</option>
+                            </select>
+                        </div>
+
+                        <div class="contact-field full">
+                            <label for="contactMessage">Your Message</label>
+                            <textarea id="contactMessage" name="message" placeholder="Tell us what’s happening, what device or mail app you’re using, and what you’ve already tried." required></textarea>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="contact-submit">Send Message</button>
+                </form>
+            </section>
+
+            <div class="contact-channel-grid">
+                <section class="contact-channel-card">
+                    <h2>Support channels</h2>
+                    <p class="contact-intro">
+                        Choose the path that fits your question best.
+                    </p>
+
+                    <div class="contact-channel-grid">
+                        <div class="contact-channel">
+                            <span class="contact-channel-icon"><i class="fa-solid fa-envelope"></i></span>
+                            <div>
+                                <strong>Direct support email</strong>
+                                <span><a href="mailto:support@{{serviceDomain}}">support@{{serviceDomain}}</a></span>
+                                <p>Best for account issues, billing questions, and mailbox setup help.</p>
+                            </div>
+                        </div>
+
+                        <div class="contact-channel">
+                            <span class="contact-channel-icon"><i class="fa-solid fa-book-open"></i></span>
+                            <div>
+                                <strong>Help center</strong>
+                                <span><a href="/help">Open setup and troubleshooting docs</a></span>
+                                <p>Useful when you need server names, ports, or app-password guidance quickly.</p>
+                            </div>
+                        </div>
+
+                        <div class="contact-channel">
+                            <span class="contact-channel-icon"><i class="fa-solid fa-clock"></i></span>
+                            <div>
+                                <strong>Response window</strong>
+                                <span>Monday to Friday, 9:00 AM to 6:00 PM (IST)</span>
+                                <p>We usually reply to support email within a few business hours.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="contact-notes-card">
+                    <h2>Before you send</h2>
+                    <p class="contact-intro">
+                        These details help us resolve support questions faster and reduce back-and-forth.
+                    </p>
+
+                    <ul class="contact-notes-list">
+                        <li>
+                            <span class="contact-bullet">1</span>
+                            <div class="contact-note-copy">
+                                <strong>Include the mailbox or address involved</strong>
+                                <span>Share the affected <strong>@{{serviceDomain}}</strong> address so we know which account or signup flow to check.</span>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="contact-bullet">2</span>
+                            <div class="contact-note-copy">
+                                <strong>Mention your device or email app</strong>
+                                <span>Tell us if the issue is happening in iPhone Mail, Outlook, Apple Mail, Thunderbird, Android, or webmail.</span>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="contact-bullet">3</span>
+                            <div class="contact-note-copy">
+                                <strong>Describe the actual symptom</strong>
+                                <span>Examples: cannot log in, can receive but cannot send, app keeps asking for password, billing page not updating, or account setup still pending.</span>
+                            </div>
+                        </li>
+                    </ul>
+                </section>
             </div>
         </div>
     </div>
 </div>
-
-<section style="background: #f8f9fa; padding: 60px 10%; border-top: 1px solid #eee; text-align: center;">
-    <p style="color: #888; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0;">
-        Yoover Secure Mail — Protecting your digital conversations since 2017.
-    </p>
-</section>
-
-<style>
-    /* Focus effects for the sharp inputs */
-    .form-control:focus {
-        border-color: #1A73E8 !important;
-        background: #fff;
-    }
-</style>

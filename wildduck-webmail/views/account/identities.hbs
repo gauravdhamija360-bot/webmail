@@ -1,191 +1,150 @@
-<div class="yoover-centered-container">
-    <div class="yoover-view-header">
-        <div class="header-icon-bg">
-            <span class="glyphicon glyphicon-tags"></span>
-        </div>
-        <div class="header-text">
-            <h1>Email Identities</h1>
-            <p class="text-muted">Manage your primary address and secondary aliases.</p>
-        </div>
-    </div>
+<div class="account-shell">
+    <div class="account-wrap">
+        <div class="account-page-head">
+            <section class="account-page-hero">
+                <span class="account-page-kicker">
+                    <i class="glyphicon glyphicon-tags"></i>
+                    Identities
+                </span>
+                <h1 class="account-page-title">Manage the addresses that represent you across your Yoover account.</h1>
+                <p class="account-page-copy">
+                    Identities let you receive mail through multiple addresses while keeping one mailbox workflow. Use them for role-based inboxes, cleaner signups, or separating public-facing aliases from your primary identity.
+                </p>
+                <div class="account-page-meta">
+                    <div class="account-meta-chip">
+                        <i class="glyphicon glyphicon-inbox"></i>
+                        {{identities.length}} connected address entries
+                    </div>
+                    {{#if canCreate}}
+                    <div class="account-meta-chip">
+                        <i class="glyphicon glyphicon-plus"></i>
+                        Additional identities available
+                    </div>
+                    {{/if}}
+                </div>
+            </section>
 
-    <div class="yoover-tabs-wrapper">
-        <ul class="nav nav-tabs yoover-nav-tabs" role="tablist">
-            {{> accountmenu}}
-        </ul>
-    </div>
-
-    <div class="restore-info-box mb-30">
-        <div class="info-icon"><span class="glyphicon glyphicon-info-sign"></span></div>
-        <div class="info-content">
-            <p class="mb-0">Aliases act exactly like your main address. Use them to organize your incoming mail or protect your primary identity from spam.</p>
-        </div>
-    </div>
-
-    <div class="settings-section-card glass-card-list">
-        <div class="section-header flex-header">
-            <h3 class="section-title">Registered Addresses</h3>
-            {{#if canCreate}}
-                <a href="/account/identities/create" class="btn btn-yoover-success-sm">
-                    <span class="glyphicon glyphicon-plus"></span> Add Identity
-                </a>
-            {{/if}}
-        </div>
-        
-        <div class="table-responsive">
-            <table class="table yoover-table">
-                <thead>
-                    <tr>
-                        <th width="60">#</th>
-                        <th>Display Name</th>
-                        <th>Email Address</th>
-                        <th>Created</th>
-                        <th class="text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{#each identities}}
-                    <tr class="{{#if main}}row-main-identity{{/if}}">
-                        <td class="text-muted small-index">{{index}}</td>
-                        <td class="font-weight-600">
-                            {{#if name}}{{name}}{{else}}<span class="text-muted empty-dash">–</span>{{/if}}
-                        </td>
-                        <td>
-                            <span class="address-text">{{address}}</span>
-                            {{#if main}}<span class="badge-default-tag">PRIMARY</span>{{/if}}
-                        </td>
-                        <td class="datestring text-muted table-date" title="{{created}}">
-                            {{created}}
-                        </td>
-                        <td class="text-right">
-                            <div class="btn-group-yoover">
-                                {{#if ../canEdit}}
-                                    <a href="/account/identities/edit?id={{id}}" class="btn-action-icon" title="Edit Profile">
-                                        <span class="glyphicon glyphicon-pencil"></span>
-                                    </a>
-                                {{/if}}
-                                <button class="btn-action-icon text-danger" 
-                                        data-address="{{address}}" 
-                                        {{#if main}}disabled{{else}}data-identity="{{id}}" data-toggle="modal" data-target="#deleteModal"{{/if}}
-                                        title="{{#if main}}Primary cannot be deleted{{else}}Delete Identity{{/if}}">
-                                    <span class="glyphicon glyphicon-trash"></span>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    {{/each}}
-                </tbody>
-            </table>
+            <aside class="account-page-side">
+                <h3>Identity tips</h3>
+                <ul class="account-side-list">
+                    <li>
+                        <i class="glyphicon glyphicon-ok-circle"></i>
+                        <span>Aliases can receive mail like your main address while protecting your primary identity.</span>
+                    </li>
+                    <li>
+                        <i class="glyphicon glyphicon-star"></i>
+                        <span>Your primary address stays fixed and cannot be removed from this page.</span>
+                    </li>
+                    <li>
+                        <i class="glyphicon glyphicon-briefcase"></i>
+                        <span>Use separate identities for clients, signups, newsletters, or team-facing communication.</span>
+                    </li>
+                </ul>
+            </aside>
         </div>
 
-        {{#unless canCreate}}
-        <div class="section-footer-note">
-            <p class="text-muted small mb-0"><span class="glyphicon glyphicon-lock"></span> Identity limit reached for your current plan tier.</p>
+        <div class="account-tabs-card">
+            <ul class="nav nav-tabs account-tabs" role="tablist">
+                {{> accountmenu}}
+            </ul>
         </div>
-        {{/unless}}
+
+        <div class="account-content">
+            <div class="account-info-banner">
+                <i class="glyphicon glyphicon-info-sign"></i>
+                <p>Aliases act like your main address for receiving messages. They are useful for keeping public-facing signups separate from your core mailbox identity without managing another inbox.</p>
+            </div>
+
+            <div class="account-card">
+                <div class="account-section-head">
+                    <div>
+                        <h3>Registered Addresses</h3>
+                        <p>These are the identities currently attached to your account.</p>
+                    </div>
+                    {{#if canCreate}}
+                    <div class="account-actions">
+                        <a href="/account/identities/create" class="account-btn primary">
+                            <i class="glyphicon glyphicon-plus"></i>
+                            Add Identity
+                        </a>
+                    </div>
+                    {{/if}}
+                </div>
+
+                <div class="account-table-wrap">
+                    <table class="table account-table">
+                        <thead>
+                            <tr>
+                                <th width="70">#</th>
+                                <th>Display Name</th>
+                                <th>Email Address</th>
+                                <th>Created</th>
+                                <th class="text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each identities}}
+                            <tr>
+                                <td>{{index}}</td>
+                                <td>{{#if name}}{{name}}{{else}}<span class="text-muted">Not set</span>{{/if}}</td>
+                                <td>
+                                    <strong>{{address}}</strong>
+                                    {{#if main}}<span class="account-mini-pill" style="margin-left: 10px;">Primary</span>{{/if}}
+                                </td>
+                                <td>{{created}}</td>
+                                <td class="text-right">
+                                    <div class="account-actions" style="justify-content: flex-end;">
+                                        {{#if ../canEdit}}
+                                        <a href="/account/identities/edit?id={{id}}" class="account-btn secondary">
+                                            <i class="glyphicon glyphicon-pencil"></i>
+                                            Edit
+                                        </a>
+                                        {{/if}}
+                                        <button class="account-btn danger"
+                                            data-address="{{address}}"
+                                            {{#if main}}disabled{{else}}data-identity="{{id}}" data-toggle="modal" data-target="#deleteModal"{{/if}}>
+                                            <i class="glyphicon glyphicon-trash"></i>
+                                            Delete
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+
+                {{#unless canCreate}}
+                <p class="account-empty"><i class="glyphicon glyphicon-lock"></i> Identity limit reached for your current plan tier.</p>
+                {{/unless}}
+            </div>
+        </div>
     </div>
 </div>
 
 <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-sm centered-modal" role="document">
-    <div class="modal-content yoover-modal shadow-lg">
+    <div class="modal-content account-modal">
       <div class="modal-body text-center">
-        <div class="modal-icon-danger pulse-danger">
+        <div style="width: 72px; height: 72px; margin: 0 auto 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fff0ef; color: #c83b34; font-size: 28px;">
             <span class="glyphicon glyphicon-trash"></span>
         </div>
-        <h4 class="modal-heading">Remove Identity?</h4>
-        <p class="text-muted">Are you sure you want to delete <strong id="delete-form-identity-val" class="text-dark"></strong>? This action cannot be undone.</p>
+        <h4 style="font-weight: 800; color: #132238; margin-bottom: 10px;">Remove identity?</h4>
+        <p class="text-muted">Are you sure you want to delete <strong id="delete-form-identity-val" style="color: #132238;"></strong>? This action cannot be undone.</p>
       </div>
-      <div class="modal-footer flex-footer">
-        <form method="post" action="/account/identities/delete" class="full-width-form">
+      <div class="modal-footer" style="border-top: none; padding-top: 0;">
+        <form method="post" action="/account/identities/delete" style="width: 100%;">
             <input type="hidden" name="_csrf" value="{{csrfToken}}">
             <input type="hidden" id="delete-form-identity" name="id" value="">
-            <div class="modal-action-grid">
-                <button type="button" class="btn btn-yoover-light" data-dismiss="modal">Keep it</button>
-                <button type="submit" class="btn btn-yoover-danger">Delete</button>
+            <div class="account-actions" style="display: grid; grid-template-columns: 1fr 1fr;">
+                <button type="button" class="account-btn secondary" data-dismiss="modal">Keep It</button>
+                <button type="submit" class="account-btn danger">Delete</button>
             </div>
         </form>
       </div>
     </div>
   </div>
 </div>
-
-<style>
-    /* CENTERED CONTAINER ENGINE */
-    .yoover-centered-container {
-        max-width: 950px;
-        margin: 40px auto;
-        padding: 0 20px;
-        animation: fadeIn 0.5s ease-out;
-    }
-
-    /* GLASS CARD LIST */
-    .glass-card-list {
-        background: #fff;
-        border: 1px solid #e1e8ed;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.04);
-        overflow: hidden;
-    }
-
-    /* TABLE STYLING */
-    .yoover-table { margin-bottom: 0; }
-    .yoover-table thead th { 
-        background: #fafbfc; 
-        border-bottom: 1px solid #f1f3f4; 
-        padding: 16px 20px; 
-        font-size: 11px; 
-        text-transform: uppercase; 
-        letter-spacing: 1.2px; 
-        color: #80868b; 
-        font-weight: 800;
-    }
-    .yoover-table tbody td { padding: 20px; vertical-align: middle; border-top: 1px solid #f8f9fa; font-size: 14px; }
-    
-    .row-main-identity { background: #f8fbff; }
-    .address-text { font-weight: 700; color: #202124; }
-    .table-date { font-size: 12px; }
-    
-    .badge-default-tag { 
-        font-size: 9px; background: #1A73E8; color: #fff; padding: 3px 8px; 
-        border-radius: 5px; font-weight: 900; margin-left: 10px; vertical-align: middle;
-        box-shadow: 0 2px 4px rgba(26,115,232,0.2);
-    }
-
-    /* ACTIONS */
-    .btn-group-yoover { display: flex; justify-content: flex-end; gap: 8px; }
-    .btn-action-icon { 
-        background: #f1f3f4; border: none; color: #5f6368; padding: 10px; 
-        border-radius: 10px; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        display: inline-flex; align-items: center; justify-content: center;
-        text-decoration: none !important;
-    }
-    .btn-action-icon:hover { background: #e8f0fe; color: #1A73E8; transform: translateY(-2px); }
-    .btn-action-icon.text-danger:hover { background: #feebeb; color: #d93025; }
-    .btn-action-icon[disabled] { cursor: not-allowed; opacity: 0.4; background: #f8f9fa; color: #ccc; }
-
-    /* MODAL ENHANCEMENTS */
-    .yoover-modal { border-radius: 24px; padding: 20px; border: none; }
-    .modal-icon-danger { width: 70px; height: 70px; background: #feebeb; color: #d93025; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 20px; }
-    .modal-heading { font-weight: 800; color: #202124; margin-bottom: 10px; }
-    .modal-action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
-    
-    .btn-yoover-light { background: #f1f3f4; color: #5f6368; font-weight: 700; border-radius: 12px; padding: 12px; border: none; }
-    .btn-yoover-danger { background: #d93025; color: #fff; font-weight: 700; border-radius: 12px; padding: 12px; border: none; box-shadow: 0 4px 12px rgba(217,48,37,0.2); }
-
-    .section-footer-note { padding: 20px; background: #fafbfc; border-top: 1px solid #f1f3f4; text-align: center; }
-
-    /* FLEX HEADER */
-    .flex-header { display: flex; justify-content: space-between; align-items: center; }
-    .btn-yoover-success-sm { 
-        background: #34A853; color: white !important; padding: 10px 20px; 
-        border-radius: 10px; font-size: 13px; font-weight: 800; border: none; transition: 0.3s;
-        box-shadow: 0 4px 10px rgba(52,168,83,0.2);
-    }
-    .btn-yoover-success-sm:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(52,168,83,0.3); }
-
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

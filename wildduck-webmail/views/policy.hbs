@@ -1,181 +1,506 @@
-<div class="legal-hero text-center">
-    <span class="security-badge"><span class="glyphicon glyphicon-lock"></span> END-TO-END ENCRYPTED</span>
-    <h1 class="legal-title">Privacy Policy</h1>
-    <p class="legal-subtitle">How we protect your data at <strong>{{serviceDomain}}</strong></p>
-    <div class="last-updated">Effective: March 8, 2026</div>
-</div>
+<style>
+    :root {
+        --policy-ink: #132238;
+        --policy-muted: #627286;
+        --policy-blue: #1d63d8;
+        --policy-blue-deep: #0d47a1;
+        --policy-surface: #ffffff;
+        --policy-cloud: #f6faff;
+        --policy-border: rgba(13, 42, 77, 0.08);
+        --policy-good: #1f9d62;
+        --policy-warn: #b46a0b;
+        --policy-danger: #c83b34;
+        --policy-shadow: 0 18px 54px rgba(14, 42, 77, 0.08);
+        --policy-shadow-soft: 0 10px 30px rgba(14, 42, 77, 0.06);
+    }
 
-<div class="container-fluid legal-layout">
-    <div class="row">
-        <div class="col-md-3">
-            <div class="legal-sidebar">
-                <div class="sidebar-header">CONTENTS</div>
-                <ul class="nav">
-                    <li><a href="#data-collection" class="active">1. Data Collection</a></li>
-                    <li><a href="#data-usage">2. How We Use Data</a></li>
-                    <li><a href="#encryption">3. Encryption Standards</a></li>
-                    <li><a href="#cookies">4. Cookies & Tracking</a></li>
-                    <li><a href="#rights">5. Your Data Rights</a></li>
-                    <li><a href="#contact">6. Contact Privacy Team</a></li>
+    .policy-shell {
+        padding: 128px 0 96px;
+        background:
+            radial-gradient(circle at 14% 10%, rgba(76, 152, 255, 0.12), transparent 24%),
+            linear-gradient(180deg, #f8fbff 0%, #ffffff 44%);
+        color: var(--policy-ink);
+    }
+
+    .policy-hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(300px, 0.95fr);
+        gap: 28px;
+        align-items: stretch;
+        margin-bottom: 34px;
+    }
+
+    .policy-hero-card,
+    .policy-summary-card,
+    .policy-sidebar,
+    .policy-main-card,
+    .policy-note-card {
+        background: var(--policy-surface);
+        border: 1px solid var(--policy-border);
+        border-radius: 30px;
+        box-shadow: var(--policy-shadow-soft);
+    }
+
+    .policy-hero-card,
+    .policy-main-card,
+    .policy-note-card {
+        padding: 34px;
+    }
+
+    .policy-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        border-radius: 999px;
+        background: rgba(29, 99, 216, 0.08);
+        color: var(--policy-blue);
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+    }
+
+    .policy-title {
+        margin: 20px 0 16px;
+        font-size: clamp(2.4rem, 4vw, 3.9rem);
+        line-height: 1.03;
+        letter-spacing: -0.05em;
+        font-weight: 800;
+    }
+
+    .policy-copy {
+        font-size: 1.1rem;
+        line-height: 1.75;
+        color: var(--policy-muted);
+        max-width: 760px;
+    }
+
+    .policy-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 26px;
+    }
+
+    .policy-meta-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
+        border-radius: 16px;
+        background: #f4f8fd;
+        color: var(--policy-muted);
+        font-weight: 700;
+    }
+
+    .policy-meta-item i {
+        color: var(--policy-blue);
+    }
+
+    .policy-summary-card {
+        padding: 28px;
+        background: linear-gradient(180deg, #081a32 0%, #0d274c 100%);
+        color: #fff;
+        box-shadow: 0 24px 60px rgba(7, 26, 51, 0.18);
+    }
+
+    .policy-summary-card h3 {
+        margin: 0 0 16px;
+        font-size: 1.45rem;
+        font-weight: 800;
+    }
+
+    .policy-summary-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .policy-summary-list li {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        padding: 14px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 600;
+    }
+
+    .policy-summary-list li:last-child {
+        border-bottom: none;
+    }
+
+    .policy-summary-list i {
+        color: #97e8ff;
+        margin-top: 4px;
+    }
+
+    .policy-grid {
+        display: grid;
+        grid-template-columns: 300px minmax(0, 1fr);
+        gap: 24px;
+        align-items: start;
+    }
+
+    .policy-sidebar {
+        padding: 24px;
+        position: sticky;
+        top: 112px;
+    }
+
+    .policy-sidebar h4 {
+        margin: 0 0 16px;
+        font-size: 12px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--policy-blue);
+        font-weight: 900;
+    }
+
+    .policy-sidebar ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .policy-sidebar li {
+        margin-bottom: 10px;
+    }
+
+    .policy-sidebar a {
+        display: block;
+        padding: 12px 14px;
+        border-radius: 14px;
+        color: var(--policy-muted);
+        text-decoration: none;
+        font-weight: 700;
+        transition: all 0.2s ease;
+    }
+
+    .policy-sidebar a:hover {
+        background: #f4f8fd;
+        color: var(--policy-blue);
+        transform: translateX(2px);
+    }
+
+    .policy-main-card section + section {
+        margin-top: 44px;
+        padding-top: 38px;
+        border-top: 1px solid rgba(13, 42, 77, 0.08);
+    }
+
+    .policy-main-card h2 {
+        margin: 0 0 16px;
+        font-size: 1.85rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+    }
+
+    .policy-main-card p {
+        margin: 0 0 16px;
+        color: var(--policy-muted);
+        line-height: 1.8;
+        font-size: 1rem;
+    }
+
+    .policy-main-card ul {
+        margin: 0;
+        padding-left: 0;
+        list-style: none;
+    }
+
+    .policy-main-card li {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        margin-bottom: 12px;
+        color: var(--policy-muted);
+        line-height: 1.75;
+    }
+
+    .policy-main-card li i {
+        color: var(--policy-blue);
+        margin-top: 5px;
+    }
+
+    .policy-note-card {
+        margin: 22px 0 0;
+        border-radius: 22px;
+    }
+
+    .policy-note-card h3 {
+        margin: 0 0 12px;
+        font-size: 1.3rem;
+        font-weight: 800;
+    }
+
+    .policy-note-card p {
+        margin: 0;
+        color: var(--policy-muted);
+        line-height: 1.75;
+    }
+
+    .policy-highlight-list {
+        display: grid;
+        gap: 14px;
+        margin-top: 18px;
+    }
+
+    .policy-highlight {
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+        padding: 16px 18px;
+        border-radius: 18px;
+        border: 1px solid rgba(13, 42, 77, 0.08);
+    }
+
+    .policy-highlight.good {
+        background: #eef9f3;
+        border-color: rgba(31, 157, 98, 0.14);
+    }
+
+    .policy-highlight.warn {
+        background: #fff8ef;
+        border-color: rgba(180, 106, 11, 0.16);
+    }
+
+    .policy-highlight.bad {
+        background: #fff3f2;
+        border-color: rgba(200, 59, 52, 0.15);
+    }
+
+    .policy-highlight-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        font-size: 14px;
+        font-weight: 900;
+    }
+
+    .policy-highlight.good .policy-highlight-icon {
+        background: rgba(31, 157, 98, 0.14);
+        color: var(--policy-good);
+    }
+
+    .policy-highlight.warn .policy-highlight-icon {
+        background: rgba(180, 106, 11, 0.14);
+        color: var(--policy-warn);
+    }
+
+    .policy-highlight.bad .policy-highlight-icon {
+        background: rgba(200, 59, 52, 0.14);
+        color: var(--policy-danger);
+    }
+
+    .policy-highlight strong {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--policy-ink);
+    }
+
+    .policy-highlight span {
+        display: block;
+        color: var(--policy-muted);
+        line-height: 1.7;
+    }
+
+    .policy-contact-box {
+        margin-top: 22px;
+        padding: 22px;
+        border-radius: 22px;
+        background: linear-gradient(180deg, #f8fbff 0%, #eef6ff 100%);
+        border: 1px solid rgba(29, 99, 216, 0.1);
+    }
+
+    .policy-contact-box a {
+        color: var(--policy-blue);
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    @media (max-width: 1199px) {
+        .policy-hero,
+        .policy-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .policy-sidebar {
+            position: static;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .policy-shell {
+            padding: 118px 0 72px;
+        }
+
+        .policy-hero-card,
+        .policy-summary-card,
+        .policy-sidebar,
+        .policy-main-card,
+        .policy-note-card {
+            padding: 24px;
+            border-radius: 24px;
+        }
+    }
+</style>
+
+<div class="policy-shell">
+    <div class="container">
+        <div class="policy-hero">
+            <section class="policy-hero-card">
+                <div class="policy-eyebrow">Privacy Policy</div>
+                <h1 class="policy-title">How Yoover handles account, billing, and service data for <strong>{{serviceDomain}}</strong>.</h1>
+                <p class="policy-copy">
+                    This page explains what information we collect, why we collect it, how it supports the service, and what rights you retain over your personal data. The goal is clarity, not legal fog. We keep the policy structured around how the product actually works.
+                </p>
+                <div class="policy-meta">
+                    <span class="policy-meta-item"><i class="fa-solid fa-calendar-check"></i> Effective: April 4, 2026</span>
+                    <span class="policy-meta-item"><i class="fa-solid fa-lock"></i> Applies to Yoover services on {{serviceDomain}}</span>
+                </div>
+            </section>
+
+            <aside class="policy-summary-card">
+                <h3>Short version</h3>
+                <ul class="policy-summary-list">
+                    <li><i class="fa-solid fa-circle-check"></i><span>We collect the information needed to operate accounts, billing, and support.</span></li>
+                    <li><i class="fa-solid fa-circle-check"></i><span>We do not sell user data to advertisers.</span></li>
+                    <li><i class="fa-solid fa-circle-check"></i><span>We use service data for account operation, security, and support workflows.</span></li>
+                    <li><i class="fa-solid fa-circle-check"></i><span>You can contact us if you need help with access, deletion, or privacy questions.</span></li>
                 </ul>
-            </div>
+            </aside>
         </div>
 
-        <div class="col-md-9">
-            <div class="legal-body-content">
-                
-                <section id="data-collection">
-                    <h2>1. Data Collection</h2>
-                    <p>At Yoover, our philosophy is <strong>Data Minimization</strong>. We only collect the bare minimum required to provide a functional email service.</p>
-                    <div class="info-box-sharp">
-                        <strong>What we do NOT collect:</strong>
-                        <ul>
-                            <li>We do not read your emails.</li>
-                            <li>We do not track your physical location.</li>
-                            <li>We do not sell your data to third-party advertisers.</li>
-                        </ul>
+        <div class="policy-grid">
+            <aside class="policy-sidebar">
+                <h4>Contents</h4>
+                <ul>
+                    <li><a href="#collection">1. Information We Collect</a></li>
+                    <li><a href="#usage">2. How We Use It</a></li>
+                    <li><a href="#security">3. Security & Protection</a></li>
+                    <li><a href="#cookies">4. Cookies & Sessions</a></li>
+                    <li><a href="#rights">5. Your Choices & Rights</a></li>
+                    <li><a href="#contact">6. Privacy Contact</a></li>
+                </ul>
+            </aside>
+
+            <main class="policy-main-card">
+                <section id="collection">
+                    <h2>1. Information we collect</h2>
+                    <p>
+                        We follow a practical data-minimization approach: collect what is required to run the service, secure accounts, support billing, and respond to support requests. The exact categories depend on which parts of the service you use.
+                    </p>
+                    <ul>
+                        <li><i class="fa-solid fa-angle-right"></i><span><strong>Account information:</strong> details such as mailbox identity, email address, recovery email, and profile information required to create and manage your account.</span></li>
+                        <li><i class="fa-solid fa-angle-right"></i><span><strong>Authentication and session data:</strong> information required to sign in, protect sessions, and operate account security features like two-factor authentication or app-specific passwords.</span></li>
+                        <li><i class="fa-solid fa-angle-right"></i><span><strong>Billing information:</strong> purchase-related details, plan selection, billing email, subscription state, transaction references, and payment profile metadata necessary to manage billing workflows.</span></li>
+                        <li><i class="fa-solid fa-angle-right"></i><span><strong>Support submissions:</strong> contact form details and troubleshooting information that you voluntarily send to us.</span></li>
+                    </ul>
+
+                    <div class="policy-highlight-list">
+                        <div class="policy-highlight good">
+                            <span class="policy-highlight-icon"><i class="fa-solid fa-check"></i></span>
+                            <div>
+                                <strong>We do collect what is needed to operate the mailbox and support billing.</strong>
+                                <span>Without this, the service cannot authenticate users, deliver email, or manage subscriptions correctly.</span>
+                            </div>
+                        </div>
+                        <div class="policy-highlight bad">
+                            <span class="policy-highlight-icon"><i class="fa-solid fa-xmark"></i></span>
+                            <div>
+                                <strong>We do not treat user data as an advertising asset.</strong>
+                                <span>We do not sell user information to third-party advertisers or data brokers.</span>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
-                <hr class="legal-divider">
-
-                <section id="data-usage">
-                    <h2>2. How We Use Data</h2>
-                    <p>Your data is used exclusively for the following purposes:</p>
+                <section id="usage">
+                    <h2>2. How we use information</h2>
+                    <p>
+                        The information we collect is used to run the product responsibly and to provide the support users reasonably expect from a paid email platform.
+                    </p>
                     <ul>
-                        <li>Account authentication and security.</li>
-                        <li>Facilitating the delivery and receipt of electronic mail.</li>
-                        <li>Technical support and troubleshooting requested by the user.</li>
+                        <li><i class="fa-solid fa-angle-right"></i><span>To create, operate, and maintain mailboxes and account access.</span></li>
+                        <li><i class="fa-solid fa-angle-right"></i><span>To process plan selection, subscriptions, payment status, and billing management.</span></li>
+                        <li><i class="fa-solid fa-angle-right"></i><span>To troubleshoot issues you report through the help center or contact form.</span></li>
+                        <li><i class="fa-solid fa-angle-right"></i><span>To enforce security checks and reduce misuse of the service.</span></li>
                     </ul>
+
+                    <div class="policy-note-card">
+                        <h3>Operational use only</h3>
+                        <p>
+                            We use personal and account data for service operation, security, billing, and support. That is different from using it for unrelated profiling or advertising purposes.
+                        </p>
+                    </div>
                 </section>
 
-                <hr class="legal-divider">
+                <section id="security">
+                    <h2>3. Security and protection measures</h2>
+                    <p>
+                        Privacy depends not only on policy language, but also on how accounts, sessions, passwords, and service traffic are protected. Our security model includes secure transport, account controls, and service-layer protections that help keep the platform usable and defensible.
+                    </p>
 
-                <section id="encryption">
-                    <h2>3. Encryption Standards</h2>
-                    <p>All data transmitted through our servers is protected by industry-standard TLS/SSL encryption. At rest, your sensitive account information is stored using AES-256 encryption protocols.</p>
+                    <div class="policy-highlight-list">
+                        <div class="policy-highlight good">
+                            <span class="policy-highlight-icon"><i class="fa-solid fa-shield-halved"></i></span>
+                            <div>
+                                <strong>Encrypted transport</strong>
+                                <span>Secure mail protocols and login flows are intended to protect data in transit where supported by the relevant service configuration.</span>
+                            </div>
+                        </div>
+                        <div class="policy-highlight warn">
+                            <span class="policy-highlight-icon"><i class="fa-solid fa-key"></i></span>
+                            <div>
+                                <strong>User-side security still matters</strong>
+                                <span>Strong passwords, secure devices, and correct app configuration are still part of the privacy picture.</span>
+                            </div>
+                        </div>
+                    </div>
                 </section>
-
-                <hr class="legal-divider">
 
                 <section id="cookies">
-                    <h2>4. Cookies & Tracking</h2>
-                    <p>We use essential "Session Cookies" only to keep you logged in. We do not use tracking pixels, fingerprinting scripts, or third-party marketing cookies.</p>
-                </section>
-
-                <hr class="legal-divider">
-
-                <section id="rights">
-                    <h2>5. Your Data Rights</h2>
-                    <p>Under global privacy regulations (including GDPR), you have the right to:</p>
+                    <h2>4. Cookies and session handling</h2>
+                    <p>
+                        We use the technical mechanisms required to maintain login sessions, support account workflows, and protect authenticated interactions. These are functional service tools, not marketing trackers.
+                    </p>
                     <ul>
-                        <li>Request a copy of your personal data.</li>
-                        <li>Request the permanent deletion of your account.</li>
-                        <li>Export your data in a machine-readable format.</li>
+                        <li><i class="fa-solid fa-angle-right"></i><span>Session cookies may be used to keep you logged in and to support protected account actions.</span></li>
+                        <li><i class="fa-solid fa-angle-right"></i><span>Security-related session state may be used to validate account access and prevent misuse.</span></li>
+                        <li><i class="fa-solid fa-angle-right"></i><span>We do not describe this service as relying on third-party ad-tracking cookies for ordinary product use.</span></li>
                     </ul>
                 </section>
 
-                <hr class="legal-divider">
-
-                <section id="contact" style="padding-bottom: 100px;">
-                    <h2>6. Contact Privacy Team</h2>
-                    <p>If you have questions regarding your privacy, please reach out to our dedicated privacy officer:</p>
-                    <a href="/contact" class="btn-ultra-sharp" style="display: inline-block; margin-top: 15px;">
-                        ENCRYPTED CONTACT FORM
-                    </a>
+                <section id="rights">
+                    <h2>5. Your choices and privacy rights</h2>
+                    <p>
+                        Depending on your jurisdiction and the way you use the service, you may have rights related to access, correction, deletion, or export of your personal data. We handle privacy requests through our contact channels.
+                    </p>
+                    <ul>
+                        <li><i class="fa-solid fa-angle-right"></i><span>You can request clarification about the information associated with your account.</span></li>
+                        <li><i class="fa-solid fa-angle-right"></i><span>You can request account closure and related deletion handling, subject to operational and legal requirements.</span></li>
+                        <li><i class="fa-solid fa-angle-right"></i><span>You can contact support if you need help understanding what data is tied to your mailbox or billing profile.</span></li>
+                    </ul>
                 </section>
 
-            </div>
+                <section id="contact">
+                    <h2>6. Contact the privacy team</h2>
+                    <p>
+                        If you have a privacy-specific concern, a data-handling question, or a request related to your account information, contact us directly so we can route the issue properly.
+                    </p>
+
+                    <div class="policy-contact-box">
+                        <p><strong>Best route:</strong> use the <a href="/contact">contact page</a> and mention that your request is privacy-related.</p>
+                        <p style="margin-top:10px;"><strong>Service context:</strong> include the affected <span style="font-weight:800;color:#1d63d8;">@{{serviceDomain}}</span> mailbox or billing email so we can identify the relevant account safely.</p>
+                    </div>
+                </section>
+            </main>
         </div>
     </div>
 </div>
-
-<style>
-    /* 1. HERO SECTION */
-    .legal-hero {
-        padding: 120px 5% 60px;
-        background: #fcfcfc;
-        border-bottom: 1px solid #eee;
-    }
-    .security-badge {
-        background: #1A73E8;
-        color: #fff;
-        padding: 8px 15px;
-        font-weight: 900;
-        font-size: 10px;
-        letter-spacing: 2px;
-        text-transform: uppercase;
-        display: inline-block;
-        margin-bottom: 20px;
-    }
-    .legal-title { font-weight: 900; font-size: 45px; letter-spacing: -2px; text-transform: uppercase; margin: 0; }
-    .legal-subtitle { font-size: 18px; color: #666; margin-top: 10px; }
-    .last-updated { font-size: 12px; color: #999; margin-top: 20px; font-weight: 700; text-transform: uppercase; }
-
-    /* 2. LAYOUT */
-    .legal-layout { padding: 80px 5%; max-width: 1400px; margin: 0 auto; }
-
-    /* 3. SIDEBAR */
-    .legal-sidebar {
-        position: sticky;
-        top: 130px;
-        border-left: 3px solid #eee;
-        padding-left: 25px;
-        margin-bottom: 40px;
-    }
-    .sidebar-header {
-        font-weight: 900;
-        font-size: 11px;
-        letter-spacing: 2px;
-        color: #1A73E8;
-        margin-bottom: 25px;
-    }
-    .legal-sidebar ul { list-style: none; padding: 0; }
-    .legal-sidebar li { margin-bottom: 15px; }
-    .legal-sidebar a {
-        color: #666;
-        font-weight: 700;
-        font-size: 13px;
-        text-decoration: none;
-        transition: all 0.2s;
-        text-transform: uppercase;
-    }
-    .legal-sidebar a:hover, .legal-sidebar a.active { color: #1A73E8; padding-left: 5px; }
-
-    /* 4. CONTENT BODY */
-    .legal-body-content h2 {
-        font-weight: 900;
-        text-transform: uppercase;
-        letter-spacing: -1px;
-        font-size: 24px;
-        margin-bottom: 25px;
-        color: #111;
-    }
-    .legal-body-content p {
-        font-size: 16px;
-        line-height: 1.8;
-        color: #444;
-        margin-bottom: 20px;
-    }
-    .legal-body-content li {
-        font-size: 16px;
-        line-height: 2;
-        color: #444;
-    }
-    .legal-divider { margin: 60px 0; border-color: #f0f0f0; }
-
-    /* 5. BOX STYLES */
-    .info-box-sharp {
-        background: #f8f9fa;
-        border: 1px solid #eee;
-        padding: 30px;
-        margin: 30px 0;
-    }
-    .info-box-sharp strong { display: block; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; color: #d93025; }
-
-    /* 6. RESPONSIVE */
-    @media (max-width: 768px) {
-        .legal-sidebar { display: none; }
-        .legal-hero { padding-top: 150px; }
-    }
-</style>

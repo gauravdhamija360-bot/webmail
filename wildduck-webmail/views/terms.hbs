@@ -1,55 +1,576 @@
-<div class="legal-container">
-    <div class="legal-sidebar">
-        <h4>Navigation</h4>
-        <a href="#section1">1. Acceptance</a>
-        <a href="#section2">2. Usage Policy</a>
-        <a href="#section3">3. Data Privacy</a>
-        <a href="#section4">4. Termination</a>
-    </div>
-
-    <div class="legal-content">
-        <h1 style="font-weight: 900; margin-bottom: 10px;">TERMS OF SERVICE</h1>
-        <p style="color: #888; margin-bottom: 50px;">Last Updated: March 2026</p>
-
-        <section id="section1">
-            <h3>1. Acceptance of Terms</h3>
-            <p>By accessing Yoover at {{serviceDomain}}, you agree to be bound by these Terms of Service. If you do not agree, please discontinue use immediately.</p>
-        </section>
-
-        <hr>
-
-        <section id="section2">
-            <h3>2. User Responsibilities</h3>
-            <p>You are responsible for maintaining the security of your account and password. Yoover cannot and will not be liable for any loss or damage from your failure to comply with this security obligation.</p>
-            <ul>
-                <li>No illegal activity.</li>
-                <li>No bulk automated spamming.</li>
-                <li>No impersonation of others.</li>
-            </ul>
-        </section>
-
-        <hr>
-        
-        <section id="section3">
-            <h3>3. Privacy & Security</h3>
-            <p>Our commitment to your privacy is absolute. For more details, please review our <a href="/privacy" style="color:#1A73E8">Privacy Policy</a>.</p>
-        </section>
-    </div>
-</div>
-
 <style>
-    .legal-container { display: flex; max-width: 1200px; margin: 80px auto; padding: 0 40px; }
-    .legal-sidebar { width: 250px; position: sticky; top: 120px; height: fit-content; border-right: 1px solid #eee; padding-right: 30px; }
-    .legal-sidebar h4 { font-weight: 900; text-transform: uppercase; font-size: 12px; margin-bottom: 20px; color: #1A73E8; }
-    .legal-sidebar a { display: block; color: #555; margin-bottom: 15px; font-weight: 600; text-decoration: none; font-size: 13px; }
-    .legal-sidebar a:hover { color: #1A73E8; }
-    .legal-content { flex: 1; padding-left: 60px; line-height: 1.8; color: #333; }
-    .legal-content h3 { font-weight: 800; text-transform: uppercase; margin-top: 40px; font-size: 18px; }
-    .legal-content hr { margin: 40px 0; border-color: #f5f5f5; }
-    
-    @media (max-width: 768px) {
-        .legal-container { flex-direction: column; }
-        .legal-sidebar { display: none; }
-        .legal-content { padding-left: 0; }
+    :root {
+        --terms-ink: #132238;
+        --terms-muted: #627286;
+        --terms-blue: #1d63d8;
+        --terms-blue-deep: #0d47a1;
+        --terms-surface: #ffffff;
+        --terms-cloud: #f6faff;
+        --terms-border: rgba(13, 42, 77, 0.08);
+        --terms-good: #1f9d62;
+        --terms-warn: #b46a0b;
+        --terms-danger: #c83b34;
+        --terms-shadow: 0 18px 54px rgba(14, 42, 77, 0.08);
+        --terms-shadow-soft: 0 10px 30px rgba(14, 42, 77, 0.06);
+    }
+
+    .terms-shell {
+        padding: 128px 0 96px;
+        background:
+            radial-gradient(circle at 14% 10%, rgba(76, 152, 255, 0.12), transparent 24%),
+            linear-gradient(180deg, #f8fbff 0%, #ffffff 44%);
+        color: var(--terms-ink);
+    }
+
+    .terms-hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(300px, 0.95fr);
+        gap: 28px;
+        align-items: stretch;
+        margin-bottom: 34px;
+    }
+
+    .terms-hero-card,
+    .terms-summary-card,
+    .terms-sidebar,
+    .terms-main-card,
+    .terms-note-card {
+        background: var(--terms-surface);
+        border: 1px solid var(--terms-border);
+        border-radius: 30px;
+        box-shadow: var(--terms-shadow-soft);
+    }
+
+    .terms-hero-card,
+    .terms-main-card,
+    .terms-note-card {
+        padding: 34px;
+    }
+
+    .terms-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        border-radius: 999px;
+        background: rgba(29, 99, 216, 0.08);
+        color: var(--terms-blue);
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+    }
+
+    .terms-title {
+        margin: 20px 0 16px;
+        font-size: clamp(2.4rem, 4vw, 3.9rem);
+        line-height: 1.03;
+        letter-spacing: -0.05em;
+        font-weight: 800;
+    }
+
+    .terms-copy {
+        font-size: 1.1rem;
+        line-height: 1.75;
+        color: var(--terms-muted);
+        max-width: 760px;
+    }
+
+    .terms-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 26px;
+    }
+
+    .terms-meta-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
+        border-radius: 16px;
+        background: #f4f8fd;
+        color: var(--terms-muted);
+        font-weight: 700;
+    }
+
+    .terms-meta-item i {
+        color: var(--terms-blue);
+    }
+
+    .terms-summary-card {
+        padding: 28px;
+        background: linear-gradient(180deg, #081a32 0%, #0d274c 100%);
+        color: #fff;
+        box-shadow: 0 24px 60px rgba(7, 26, 51, 0.18);
+    }
+
+    .terms-summary-card h3 {
+        margin: 0 0 16px;
+        font-size: 1.45rem;
+        font-weight: 800;
+    }
+
+    .terms-summary-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .terms-summary-list li {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        padding: 14px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 600;
+    }
+
+    .terms-summary-list li:last-child {
+        border-bottom: none;
+    }
+
+    .terms-summary-list i {
+        color: #97e8ff;
+        margin-top: 4px;
+    }
+
+    .terms-grid {
+        display: grid;
+        grid-template-columns: 300px minmax(0, 1fr);
+        gap: 24px;
+        align-items: start;
+    }
+
+    .terms-sidebar {
+        padding: 24px;
+        position: sticky;
+        top: 112px;
+    }
+
+    .terms-sidebar h4 {
+        margin: 0 0 16px;
+        font-size: 12px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--terms-blue);
+        font-weight: 900;
+    }
+
+    .terms-sidebar ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .terms-sidebar li {
+        margin-bottom: 10px;
+    }
+
+    .terms-sidebar a {
+        display: block;
+        padding: 12px 14px;
+        border-radius: 14px;
+        color: var(--terms-muted);
+        text-decoration: none;
+        font-weight: 700;
+        transition: all 0.2s ease;
+    }
+
+    .terms-sidebar a:hover {
+        background: #f4f8fd;
+        color: var(--terms-blue);
+        transform: translateX(2px);
+    }
+
+    .terms-main-card section + section {
+        margin-top: 44px;
+        padding-top: 38px;
+        border-top: 1px solid rgba(13, 42, 77, 0.08);
+    }
+
+    .terms-main-card h2 {
+        margin: 0 0 16px;
+        font-size: 1.85rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+    }
+
+    .terms-main-card p {
+        margin: 0 0 16px;
+        color: var(--terms-muted);
+        line-height: 1.8;
+        font-size: 1rem;
+    }
+
+    .terms-main-card ul {
+        margin: 0;
+        padding-left: 0;
+        list-style: none;
+    }
+
+    .terms-main-card li {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        margin-bottom: 12px;
+        color: var(--terms-muted);
+        line-height: 1.75;
+    }
+
+    .terms-main-card li i {
+        color: var(--terms-blue);
+        margin-top: 5px;
+    }
+
+    .terms-callout-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 22px;
+    }
+
+    .terms-callout {
+        border: 1px solid rgba(13, 42, 77, 0.08);
+        border-radius: 20px;
+        padding: 18px;
+        background: #fbfdff;
+    }
+
+    .terms-callout h3 {
+        margin: 0 0 8px;
+        font-size: 1.05rem;
+        font-weight: 800;
+    }
+
+    .terms-callout p {
+        margin: 0;
+        color: var(--terms-muted);
+        line-height: 1.7;
+    }
+
+    .terms-note-card {
+        margin: 22px 0 0;
+        border-radius: 22px;
+    }
+
+    .terms-note-card h3 {
+        margin: 0 0 12px;
+        font-size: 1.3rem;
+        font-weight: 800;
+    }
+
+    .terms-note-card p {
+        margin: 0;
+        color: var(--terms-muted);
+        line-height: 1.75;
+    }
+
+    .terms-highlight-list {
+        display: grid;
+        gap: 14px;
+        margin-top: 18px;
+    }
+
+    .terms-highlight {
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+        padding: 16px 18px;
+        border-radius: 18px;
+        border: 1px solid rgba(13, 42, 77, 0.08);
+    }
+
+    .terms-highlight.good {
+        background: #eef9f3;
+    }
+
+    .terms-highlight.warn {
+        background: #fff7e8;
+    }
+
+    .terms-highlight i {
+        margin-top: 3px;
+    }
+
+    .terms-highlight.good i {
+        color: var(--terms-good);
+    }
+
+    .terms-highlight.warn i {
+        color: var(--terms-warn);
+    }
+
+    .terms-highlight strong {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 0.98rem;
+        color: var(--terms-ink);
+    }
+
+    .terms-highlight span {
+        color: var(--terms-muted);
+        line-height: 1.7;
+    }
+
+    .terms-link {
+        color: var(--terms-blue);
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .terms-link:hover {
+        color: var(--terms-blue-deep);
+        text-decoration: none;
+    }
+
+    @media (max-width: 1199px) {
+        .terms-hero,
+        .terms-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .terms-sidebar {
+            position: static;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .terms-shell {
+            padding: 112px 0 72px;
+        }
+
+        .terms-hero-card,
+        .terms-summary-card,
+        .terms-sidebar,
+        .terms-main-card,
+        .terms-note-card {
+            border-radius: 24px;
+        }
+
+        .terms-hero-card,
+        .terms-main-card,
+        .terms-note-card,
+        .terms-summary-card,
+        .terms-sidebar {
+            padding: 24px;
+        }
+
+        .terms-callout-grid {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
+
+<div class="terms-shell">
+    <div class="container">
+        <div class="terms-hero">
+            <div class="terms-hero-card">
+                <span class="terms-eyebrow">
+                    <i class="glyphicon glyphicon-file"></i>
+                    Terms Of Service
+                </span>
+                <h1 class="terms-title">Clear rules for using your Yoover account professionally and responsibly.</h1>
+                <p class="terms-copy">
+                    These terms explain how Yoover accounts, billing, acceptable use, service availability, and support work across <strong>{{serviceDomain}}</strong>. They are written to be readable first, while still covering the things users and teams actually need to know.
+                </p>
+
+                <div class="terms-meta">
+                    <div class="terms-meta-item">
+                        <i class="glyphicon glyphicon-calendar"></i>
+                        Effective April 4, 2026
+                    </div>
+                    <div class="terms-meta-item">
+                        <i class="glyphicon glyphicon-lock"></i>
+                        Applies to webmail, billing, and account access
+                    </div>
+                    <div class="terms-meta-item">
+                        <i class="glyphicon glyphicon-envelope"></i>
+                        Domain: {{serviceDomain}}
+                    </div>
+                </div>
+            </div>
+
+            <aside class="terms-summary-card">
+                <h3>Quick Summary</h3>
+                <ul class="terms-summary-list">
+                    <li>
+                        <i class="glyphicon glyphicon-ok-circle"></i>
+                        <span>Use Yoover for legitimate personal or professional communication.</span>
+                    </li>
+                    <li>
+                        <i class="glyphicon glyphicon-ban-circle"></i>
+                        <span>No spam, phishing, impersonation, abuse, or unlawful activity.</span>
+                    </li>
+                    <li>
+                        <i class="glyphicon glyphicon-credit-card"></i>
+                        <span>Paid plans renew according to your selected billing cycle unless canceled.</span>
+                    </li>
+                    <li>
+                        <i class="glyphicon glyphicon-repeat"></i>
+                        <span>Cancellation stops future renewals, while refunds are reviewed based on timing and service usage.</span>
+                    </li>
+                    <li>
+                        <i class="glyphicon glyphicon-user"></i>
+                        <span>You are responsible for securing your mailbox credentials and devices.</span>
+                    </li>
+                </ul>
+            </aside>
+        </div>
+
+        <div class="terms-grid">
+            <aside class="terms-sidebar">
+                <h4>On This Page</h4>
+                <ul>
+                    <li><a href="#acceptance">Acceptance</a></li>
+                    <li><a href="#accounts">Accounts & Eligibility</a></li>
+                    <li><a href="#acceptable-use">Acceptable Use</a></li>
+                    <li><a href="#billing">Billing & Renewals</a></li>
+                    <li><a href="#refunds">Cancellation & Refunds</a></li>
+                    <li><a href="#security">Security Responsibilities</a></li>
+                    <li><a href="#availability">Availability & Support</a></li>
+                    <li><a href="#termination">Suspension & Termination</a></li>
+                    <li><a href="#contact">Questions</a></li>
+                </ul>
+            </aside>
+
+            <div>
+                <div class="terms-main-card">
+                    <section id="acceptance">
+                        <h2>Acceptance Of Terms</h2>
+                        <p>
+                            By accessing Yoover, purchasing a plan, or signing in to an account hosted on <strong>{{serviceDomain}}</strong>, you agree to these Terms of Service and the related <a class="terms-link" href="/privacy">Privacy Policy</a>. If you do not agree with these terms, you should not continue using the service.
+                        </p>
+                        <p>
+                            These terms apply to public signup, billing, webmail, account settings, technical support, and related communication sent by Yoover about your account or service status.
+                        </p>
+                    </section>
+
+                    <section id="accounts">
+                        <h2>Accounts & Eligibility</h2>
+                        <p>
+                            You may create and use an account only if the information you provide is accurate and you are permitted to enter into a binding agreement under the laws that apply to you. You are responsible for keeping your contact email, billing details, and password current.
+                        </p>
+                        <div class="terms-callout-grid">
+                            <div class="terms-callout">
+                                <h3>What you control</h3>
+                                <p>Your mailbox identity, aliases, password, connected clients, and how you use your account day to day.</p>
+                            </div>
+                            <div class="terms-callout">
+                                <h3>What we provide</h3>
+                                <p>Hosted mailbox infrastructure, account access, plan management, and support channels for normal service use.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="acceptable-use">
+                        <h2>Acceptable Use</h2>
+                        <p>
+                            Yoover is designed for legitimate communication and account identity. You agree not to misuse the platform in ways that damage service integrity, create risk for other users, or violate law or policy.
+                        </p>
+                        <ul>
+                            <li><i class="glyphicon glyphicon-ok"></i><span>Use the service for personal, business, team, or project communication that is lawful and respectful.</span></li>
+                            <li><i class="glyphicon glyphicon-remove"></i><span>Do not send spam, phishing campaigns, malware, or bulk automated abuse through Yoover infrastructure.</span></li>
+                            <li><i class="glyphicon glyphicon-remove"></i><span>Do not impersonate another person, misrepresent your affiliation, or use the service for fraud or harassment.</span></li>
+                            <li><i class="glyphicon glyphicon-remove"></i><span>Do not attempt to interfere with system operations, authentication, billing, or other accounts.</span></li>
+                        </ul>
+                    </section>
+
+                    <section id="billing">
+                        <h2>Billing, Renewals & Plan Changes</h2>
+                        <p>
+                            Paid Yoover plans renew on the billing interval you selected during signup unless canceled beforehand. Initial charges, renewal timing, and payment method details may be processed by third-party billing providers that support our subscription flow.
+                        </p>
+                        <ul>
+                            <li><i class="glyphicon glyphicon-usd"></i><span>Charges are billed in the currency and amount shown during checkout.</span></li>
+                            <li><i class="glyphicon glyphicon-refresh"></i><span>Subscriptions may renew automatically until canceled from your account or through support.</span></li>
+                            <li><i class="glyphicon glyphicon-list-alt"></i><span>During testing or sandbox flows, subscription status may briefly appear as pending while provider records sync.</span></li>
+                        </ul>
+                    </section>
+
+                    <section id="refunds">
+                        <h2>Cancellation & Refund Policy</h2>
+                        <p>
+                            You may request cancellation of a subscription before the next renewal date to avoid future recurring charges. Cancellation generally applies to future billing cycles and does not automatically reverse charges that were already successfully processed.
+                        </p>
+                        <ul>
+                            <li><i class="glyphicon glyphicon-stop"></i><span>Cancel before renewal if you do not want the next billing cycle to be charged.</span></li>
+                            <li><i class="glyphicon glyphicon-time"></i><span>When a payment has already been captured, any refund request is reviewed based on timing, whether the mailbox was provisioned, and whether the service was materially used.</span></li>
+                            <li><i class="glyphicon glyphicon-envelope"></i><span>If provisioning fails after payment, contact support from your billing email so we can review activation status and determine the appropriate next step.</span></li>
+                            <li><i class="glyphicon glyphicon-briefcase"></i><span>Abuse, fraud, policy violations, or chargeback misuse may make an account ineligible for refund consideration.</span></li>
+                        </ul>
+                        <div class="terms-highlight-list">
+                            <div class="terms-highlight good">
+                                <i class="glyphicon glyphicon-ok-circle"></i>
+                                <div>
+                                    <strong>Before renewal</strong>
+                                    <span>If you cancel in time, future automatic renewals should stop and no new cycle should be billed.</span>
+                                </div>
+                            </div>
+                            <div class="terms-highlight warn">
+                                <i class="glyphicon glyphicon-warning-sign"></i>
+                                <div>
+                                    <strong>After a successful charge</strong>
+                                    <span>Refunds are not guaranteed automatically and may depend on activation state, usage, and provider processing status.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="security">
+                        <h2>Security Responsibilities</h2>
+                        <p>
+                            We work to protect the service platform, but you are responsible for your own password hygiene, device security, and account access choices. If your credentials are lost, leaked, or shared, the risk to the account increases significantly.
+                        </p>
+                        <ul>
+                            <li><i class="glyphicon glyphicon-lock"></i><span>Choose a strong password and avoid reusing credentials from other sites.</span></li>
+                            <li><i class="glyphicon glyphicon-phone"></i><span>Use two-factor authentication or app-specific credentials when available and appropriate.</span></li>
+                            <li><i class="glyphicon glyphicon-warning-sign"></i><span>Notify support promptly if you suspect unauthorized access or billing misuse.</span></li>
+                        </ul>
+                    </section>
+
+                    <section id="availability">
+                        <h2>Availability, Maintenance & Support</h2>
+                        <p>
+                            We aim to keep Yoover stable and available, but uptime cannot be guaranteed without interruption. Planned maintenance, provider incidents, abuse prevention actions, or infrastructure faults may occasionally affect access or performance.
+                        </p>
+                        <p>
+                            Support is provided on a reasonable-effort basis through our help and contact channels. The fastest way to resolve account-specific issues is usually to contact support using the billing email associated with your purchase.
+                        </p>
+                    </section>
+
+                    <section id="termination">
+                        <h2>Suspension & Termination</h2>
+                        <p>
+                            We may suspend or terminate access if an account violates these terms, creates security or abuse risk, fails payment obligations, or causes operational harm to the service or other users. We may also remove inactive or canceled services according to retention and recovery rules communicated in the product.
+                        </p>
+                        <div class="terms-highlight-list">
+                            <div class="terms-highlight good">
+                                <i class="glyphicon glyphicon-ok-circle"></i>
+                                <div>
+                                    <strong>Normal cancellation</strong>
+                                    <span>You can cancel an eligible plan through account billing controls or by contacting support.</span>
+                                </div>
+                            </div>
+                            <div class="terms-highlight warn">
+                                <i class="glyphicon glyphicon-warning-sign"></i>
+                                <div>
+                                    <strong>Abuse or risk cases</strong>
+                                    <span>We may suspend sooner where necessary to protect infrastructure, users, deliverability, or legal compliance.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="terms-note-card" id="contact">
+                    <h3>Questions About These Terms</h3>
+                    <p>
+                        If you need clarification about plan usage, account restrictions, cancellation, or billing obligations, visit the <a class="terms-link" href="/help">Help Center</a> or reach out through <a class="terms-link" href="/contact">Contact Support</a>. For privacy-specific concerns, review our <a class="terms-link" href="/privacy">Privacy Policy</a>.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
