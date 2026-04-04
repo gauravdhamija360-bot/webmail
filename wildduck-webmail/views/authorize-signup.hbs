@@ -1,92 +1,798 @@
-<div class="container mt-5">
-    <h2>Secure Signup: {{requestedUsername}}@{{serviceDomain}}</h2>
-    <p class="text-muted">Payment processed via Authorize.net Sandbox</p>
+<div class="checkout-shell">
+    <div class="checkout-aside">
+        <div class="aside-chip">Authorize.Net Secure Checkout</div>
+        <div class="sidebar-identity">
+            <span class="sidebar-label">Selected address</span>
+            <h1><span id="sidebarUsername">{{requestedUsername}}@{{serviceDomain}}</span></h1>
+        </div>
+        <p>Review your chosen identity, select a plan, and finish the setup in a guided payment flow.</p>
 
-    <form id="paymentForm" method="POST" action="/execute-authorize-payment">
-        <input type="hidden" name="_csrf" value="{{csrfToken}}">
-        <input type="hidden" name="requestedUsername" value="{{requestedUsername}}">
-        <input type="hidden" name="dataValue" id="dataValue">
-        <input type="hidden" name="dataDescriptor" id="dataDescriptor">
-
-        <div class="mb-3">
-            <label>Full Name</label>
-            <input type="text" name="fullName" class="form-control" required placeholder="John Doe">
+        <div class="step-list">
+            <div class="step-item active" data-nav-step="1"><span>1</span> Identity & plan</div>
+            <div class="step-item" data-nav-step="2"><span>2</span> Account details</div>
+            <div class="step-item" data-nav-step="3"><span>3</span> Billing & payment</div>
         </div>
 
-        <div class="row">
-            <div class="col-md-8 mb-3">
-                <label>Card Number</label>
-                <input type="text" id="cardNumber" class="form-control" placeholder="4007000000027">
-            </div>
-            <div class="col-md-4 mb-3">
-                <label>CVV</label>
-                <input type="text" id="cardCode" class="form-control" placeholder="123">
-            </div>
+        <div class="plan-preview">
+            {{#each plans}}
+            <button type="button" class="plan-preview-card {{#if selected}}selected{{/if}}" data-plan-preview="{{code}}">
+                <strong>{{name}}</strong>
+                <span>{{price}}</span>
+                <p>{{summary}}</p>
+            </button>
+            {{/each}}
         </div>
+    </div>
 
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label>Expiry Month (MM)</label>
-                <input type="text" id="expMonth" class="form-control" placeholder="12">
-            </div>
-            <div class="col-md-6 mb-3">
-                <label>Expiry Year (YYYY)</label>
-                <input type="text" id="expYear" class="form-control" placeholder="2027">
-            </div>
-        </div>
+    <div class="checkout-main">
+        <form id="paymentForm" method="POST" action="/execute-authorize-payment" class="wizard-card">
+            <input type="hidden" name="_csrf" value="{{csrfToken}}">
+            <input type="hidden" name="requestedUsername" value="{{values.requestedUsername}}" id="requestedUsernameHidden">
+            <input type="hidden" name="dataValue" id="dataValue">
+            <input type="hidden" name="dataDescriptor" id="dataDescriptor">
 
-        <button type="button" id="payButton" class="btn btn-primary w-100" onclick="sendPaymentDataToAnet()">
-            Pay $15.00 & Create Account
-        </button>
-    </form>
+            <div class="wizard-step is-active" data-step="1">
+                <div class="step-head">
+                    <label class="eyebrow">Step 1</label>
+                    <h2>Identity & plan</h2>
+                    <p>Confirm the address you want and choose how you want it billed.</p>
+                </div>
+
+                <div class="identity-review">
+                    <span class="identity-label">Selected address</span>
+                    <strong id="selectedAddressLabel">{{values.requestedUsername}}@{{serviceDomain}}</strong>
+                    {{#if errors.requestedUsername}}<span class="err-msg">{{errors.requestedUsername}}</span>{{/if}}
+                </div>
+
+                <div class="username-edit-card">
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label for="requestedUsernameInput">Edit username</label>
+                        <div class="username-inline">
+                            <input type="text" class="form-control" id="requestedUsernameInput" value="{{values.requestedUsername}}" autocomplete="off" spellcheck="false">
+                            <span class="username-domain">@{{serviceDomain}}</span>
+                            <button type="button" class="btn btn-default" id="recheckUsernameBtn">Check</button>
+                        </div>
+                    </div>
+                    <div id="usernameCheckResult" class="username-check-result"></div>
+                </div>
+
+                <div class="plan-grid">
+                    {{#each plans}}
+                    <label class="plan-card {{#if selected}}selected{{/if}}">
+                        <input type="radio" name="selectedPlan" value="{{code}}" {{#if selected}}checked{{/if}}>
+                        <span class="plan-name">{{name}}</span>
+                        <span class="plan-price">{{price}}</span>
+                        <span class="plan-copy">{{summary}}</span>
+                    </label>
+                    {{/each}}
+                </div>
+                {{#if errors.selectedPlan}}<span class="err-msg">{{errors.selectedPlan}}</span>{{/if}}
+            </div>
+
+            <div class="wizard-step" data-step="2">
+                <div class="step-head">
+                    <label class="eyebrow">Step 2</label>
+                    <h2>Mailbox account details</h2>
+                    <p>These details will be used to create the WildDuck mailbox and recovery profile.</p>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-12 form-group">
+                        <label>Full Name</label>
+                        <input type="text" class="form-control" name="fullName" value="{{values.fullName}}" required>
+                        {{#if errors.fullName}}<span class="err-msg">{{errors.fullName}}</span>{{/if}}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6 form-group">
+                        <label>Recovery Email</label>
+                        <input type="email" class="form-control" name="recoveryEmail" value="{{values.recoveryEmail}}" required>
+                        {{#if errors.recoveryEmail}}<span class="err-msg">{{errors.recoveryEmail}}</span>{{/if}}
+                    </div>
+                    <div class="col-sm-6 form-group">
+                        <label>Billing Email</label>
+                        <input type="email" class="form-control" name="billingEmail" value="{{values.billingEmail}}" required>
+                        {{#if errors.billingEmail}}<span class="err-msg">{{errors.billingEmail}}</span>{{/if}}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6 form-group">
+                        <label>Password</label>
+                        <input type="password" class="form-control" name="password" required>
+                        {{#if errors.password}}<span class="err-msg">{{errors.password}}</span>{{/if}}
+                    </div>
+                    <div class="col-sm-6 form-group">
+                        <label>Confirm Password</label>
+                        <input type="password" class="form-control" name="password2" required>
+                        {{#if errors.password2}}<span class="err-msg">{{errors.password2}}</span>{{/if}}
+                    </div>
+                </div>
+            </div>
+
+            <div class="wizard-step" data-step="3">
+                <div class="step-head">
+                    <label class="eyebrow">Step 3</label>
+                    <h2>Billing & payment</h2>
+                    <p>Your card details are tokenized by Authorize.Net before they ever reach this app.</p>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-12 form-group">
+                        <label>Company</label>
+                        <input type="text" class="form-control" name="company" value="{{values.company}}">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-8 form-group">
+                        <label>Address Line 1</label>
+                        <input type="text" class="form-control" name="addressLine1" value="{{values.addressLine1}}" required>
+                        {{#if errors.addressLine1}}<span class="err-msg">{{errors.addressLine1}}</span>{{/if}}
+                    </div>
+                    <div class="col-sm-4 form-group">
+                        <label>Address Line 2</label>
+                        <input type="text" class="form-control" name="addressLine2" value="{{values.addressLine2}}">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-4 form-group">
+                        <label>City</label>
+                        <input type="text" class="form-control" name="city" value="{{values.city}}" required>
+                    </div>
+                    <div class="col-sm-4 form-group">
+                        <label>State</label>
+                        <input type="text" class="form-control" name="state" value="{{values.state}}" required>
+                    </div>
+                    <div class="col-sm-4 form-group">
+                        <label>ZIP</label>
+                        <input type="text" class="form-control" name="zip" value="{{values.zip}}" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-4 form-group">
+                        <label>Country</label>
+                        <input type="text" class="form-control" name="country" value="{{values.country}}" maxlength="2" required>
+                        {{#if errors.country}}<span class="err-msg">{{errors.country}}</span>{{/if}}
+                    </div>
+                    <div class="col-sm-8 form-group">
+                        <label>Card Number</label>
+                        <input type="text" id="cardNumber" class="form-control" placeholder="4007000000027" autocomplete="cc-number">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-4 form-group">
+                        <label>Expiry Month</label>
+                        <input type="text" id="expMonth" class="form-control" placeholder="MM" autocomplete="cc-exp-month">
+                    </div>
+                    <div class="col-sm-4 form-group">
+                        <label>Expiry Year</label>
+                        <input type="text" id="expYear" class="form-control" placeholder="YYYY" autocomplete="cc-exp-year">
+                    </div>
+                    <div class="col-sm-4 form-group">
+                        <label>CVV</label>
+                        <input type="text" id="cardCode" class="form-control" placeholder="123" autocomplete="cc-csc">
+                    </div>
+                </div>
+            </div>
+
+            <div class="wizard-footer">
+                <button type="button" class="btn btn-default" id="prevStep" disabled>Back</button>
+                <button type="button" class="btn btn-primary" id="nextStep">Continue</button>
+                <button type="button" class="btn btn-primary hidden" id="payButton">Start Secure Payment</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <script type="text/javascript" src="https://jstest.authorize.net/v1/Accept.js" charset="utf-8"></script>
-
 <script type="text/javascript">
-    function sendPaymentDataToAnet() {
-        const btn = document.getElementById("payButton");
-        btn.disabled = true;
-        btn.innerHTML = "Authenticating...";
-
-        // Ensure these variable names match exactly what you pass in res.render
-        var authData = {
-            clientKey: "{{authorizeClientKey}}",
-            apiLoginID: "{{authorizeApiLoginID}}"
+    (function () {
+        var currentStep = 1;
+        var totalSteps = 3;
+        var form = document.getElementById('paymentForm');
+        var nextButton = document.getElementById('nextStep');
+        var prevButton = document.getElementById('prevStep');
+        var payButton = document.getElementById('payButton');
+        var stepEls = document.querySelectorAll('.wizard-step');
+        var stepNavEls = document.querySelectorAll('[data-nav-step]');
+        var planRadios = document.querySelectorAll('.plan-card input[type="radio"]');
+        var planCards = document.querySelectorAll('.plan-card');
+        var planPreviewCards = document.querySelectorAll('[data-plan-preview]');
+        var usernameInput = document.getElementById('requestedUsernameInput');
+        var usernameHiddenInput = document.getElementById('requestedUsernameHidden');
+        var selectedAddressLabel = document.getElementById('selectedAddressLabel');
+        var sidebarUsername = document.getElementById('sidebarUsername');
+        var recheckUsernameBtn = document.getElementById('recheckUsernameBtn');
+        var usernameCheckResult = document.getElementById('usernameCheckResult');
+        var usernamePattern = /^[a-z0-9][a-z0-9.-]*$/i;
+        var usernameStatus = {
+            value: usernameInput.value.trim().toLowerCase(),
+            available: false
         };
 
-        var cardData = {
-            cardNumber: document.getElementById("cardNumber").value,
-            month: document.getElementById("expMonth").value,
-            year: document.getElementById("expYear").value,
-            cardCode: document.getElementById("cardCode").value
-        };
+        function normalizeUsername(value) {
+            return value.replace(/[^a-z0-9.-]/gi, '').toLowerCase();
+        }
 
-        var secureData = {
-            authData: authData,
-            cardData: cardData
-        };
+        function updateUsernameViews(username) {
+            var address = username ? username + '@{{serviceDomain}}' : '@{{serviceDomain}}';
+            usernameHiddenInput.value = username;
+            selectedAddressLabel.textContent = address;
+            sidebarUsername.textContent = address;
+        }
 
-        // DEBUG: Check console to see if keys are actually rendering
-        console.log("Client Key Check:", authData.clientKey ? "OK" : "MISSING");
-        console.log("Login ID Check:", authData.apiLoginID ? "OK" : "MISSING");
+        function setUsernameMessage(message, type) {
+            usernameCheckResult.className = 'username-check-result ' + (type || '');
+            usernameCheckResult.textContent = message || '';
+        }
 
-        Accept.dispatchData(secureData, responseHandler);
+        async function checkUsernameAvailability() {
+            var username = normalizeUsername(usernameInput.value.trim());
+            usernameInput.value = username;
+            updateUsernameViews(username);
+
+            if (!username || username.length < 3) {
+                usernameStatus = { value: username, available: false };
+                setUsernameMessage('Username must be at least 3 characters.', 'error');
+                return false;
+            }
+
+            if (!usernamePattern.test(username)) {
+                usernameStatus = { value: username, available: false };
+                setUsernameMessage('Use only letters, numbers, dots, and hyphens.', 'error');
+                return false;
+            }
+
+            recheckUsernameBtn.disabled = true;
+            recheckUsernameBtn.textContent = 'Checking...';
+            setUsernameMessage('Checking availability...', 'pending');
+
+            try {
+                var response = await fetch('/check-username?username=' + encodeURIComponent(username));
+                var data = await response.json();
+
+                if (!response.ok) {
+                    usernameStatus = { value: username, available: false };
+                    setUsernameMessage(data.error || 'Unable to check username right now.', 'error');
+                    return false;
+                }
+
+                if (!data.available) {
+                    usernameStatus = { value: username, available: false };
+                    setUsernameMessage('That username is already taken.', 'error');
+                    return false;
+                }
+
+                usernameStatus = { value: username, available: true };
+                setUsernameMessage(username + '@{{serviceDomain}} is available.', 'success');
+                return true;
+            } catch (err) {
+                usernameStatus = { value: username, available: false };
+                setUsernameMessage('Connection error while checking username.', 'error');
+                return false;
+            } finally {
+                recheckUsernameBtn.disabled = false;
+                recheckUsernameBtn.textContent = 'Check';
+            }
+        }
+
+        function showStep(step) {
+            currentStep = step;
+            Array.prototype.forEach.call(stepEls, function (stepEl) {
+                stepEl.classList.toggle('is-active', Number(stepEl.getAttribute('data-step')) === currentStep);
+            });
+            Array.prototype.forEach.call(stepNavEls, function (stepNavEl) {
+                var navStep = Number(stepNavEl.getAttribute('data-nav-step'));
+                stepNavEl.classList.toggle('active', navStep === currentStep);
+                stepNavEl.classList.toggle('completed', navStep < currentStep);
+            });
+
+            prevButton.disabled = currentStep === 1;
+            nextButton.classList.toggle('hidden', currentStep === totalSteps);
+            payButton.classList.toggle('hidden', currentStep !== totalSteps);
+        }
+
+        function syncPlanSelection(selectedPlan) {
+            Array.prototype.forEach.call(planCards, function (planCard) {
+                var radio = planCard.querySelector('input[type="radio"]');
+                planCard.classList.toggle('selected', !!radio && radio.value === selectedPlan);
+            });
+
+            Array.prototype.forEach.call(planPreviewCards, function (previewCard) {
+                previewCard.classList.toggle('selected', previewCard.getAttribute('data-plan-preview') === selectedPlan);
+            });
+        }
+
+        async function validateCurrentStep() {
+            var activeStep = document.querySelector('.wizard-step.is-active');
+            var inputs = activeStep.querySelectorAll('input[name]');
+
+            for (var i = 0; i < inputs.length; i++) {
+                if (!inputs[i].checkValidity()) {
+                    inputs[i].reportValidity();
+                    return false;
+                }
+            }
+
+            if (currentStep === 1) {
+                var normalizedUsername = normalizeUsername(usernameInput.value.trim());
+
+                if (!normalizedUsername) {
+                    usernameInput.reportValidity();
+                    return false;
+                }
+
+                if (!(usernameStatus.available && usernameStatus.value === normalizedUsername)) {
+                    return checkUsernameAvailability();
+                }
+            }
+
+            return true;
+        }
+
+        nextButton.addEventListener('click', async function () {
+            if (!(await validateCurrentStep())) {
+                return;
+            }
+
+            showStep(Math.min(totalSteps, currentStep + 1));
+        });
+
+        prevButton.addEventListener('click', function () {
+            showStep(Math.max(1, currentStep - 1));
+        });
+
+        payButton.addEventListener('click', async function () {
+            if (!(await validateCurrentStep())) {
+                return;
+            }
+
+            payButton.disabled = true;
+            payButton.textContent = 'Authenticating...';
+
+            Accept.dispatchData(
+                {
+                    authData: {
+                        clientKey: '{{authorizeClientKey}}',
+                        apiLoginID: '{{authorizeApiLoginID}}'
+                    },
+                    cardData: {
+                        cardNumber: document.getElementById('cardNumber').value,
+                        month: document.getElementById('expMonth').value,
+                        year: document.getElementById('expYear').value,
+                        cardCode: document.getElementById('cardCode').value
+                    }
+                },
+                function (response) {
+                    if (response.messages.resultCode === 'Error') {
+                        alert(response.messages.message.map(function (message) {
+                            return message.text;
+                        }).join('\n'));
+                        payButton.disabled = false;
+                        payButton.textContent = 'Start Secure Payment';
+                        return;
+                    }
+
+                    document.getElementById('dataDescriptor').value = response.opaqueData.dataDescriptor;
+                    document.getElementById('dataValue').value = response.opaqueData.dataValue;
+                    form.submit();
+                }
+            );
+        });
+
+        Array.prototype.forEach.call(planRadios, function (radio) {
+            radio.addEventListener('change', function () {
+                syncPlanSelection(radio.value);
+            });
+        });
+
+        Array.prototype.forEach.call(planPreviewCards, function (previewCard) {
+            previewCard.addEventListener('click', function () {
+                var selectedPlan = previewCard.getAttribute('data-plan-preview');
+                var matchingRadio = document.querySelector('.plan-card input[type="radio"][value="' + selectedPlan + '"]');
+
+                if (!matchingRadio) {
+                    return;
+                }
+
+                matchingRadio.checked = true;
+                syncPlanSelection(selectedPlan);
+            });
+        });
+
+        usernameInput.addEventListener('input', function () {
+            var username = normalizeUsername(usernameInput.value);
+            usernameInput.value = username;
+            updateUsernameViews(username);
+            usernameStatus = { value: username, available: false };
+            setUsernameMessage('', '');
+        });
+
+        usernameInput.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                checkUsernameAvailability();
+            }
+        });
+
+        recheckUsernameBtn.addEventListener('click', checkUsernameAvailability);
+
+        updateUsernameViews(usernameStatus.value);
+        var initiallySelectedPlan = document.querySelector('.plan-card input[type="radio"]:checked');
+        if (initiallySelectedPlan) {
+            syncPlanSelection(initiallySelectedPlan.value);
+        }
+        showStep(currentStep);
+    }());
+</script>
+
+<style>
+    .checkout-shell {
+        min-height: calc(100vh - 85px);
+        display: grid;
+        grid-template-columns: 420px minmax(0, 1fr);
+        background: linear-gradient(180deg, #edf4fb 0%, #ffffff 100%);
     }
 
-    function responseHandler(response) {
-        const btn = document.getElementById("payButton");
-        
-        if (response.messages.resultCode === "Error") {
-            console.error("Full Error Response:", response);
-            let errorMsg = response.messages.message.map(m => m.text).join("\n");
-            alert("Payment Failed: " + errorMsg);
-            btn.disabled = false;
-            btn.innerHTML = "Pay $15.00 & Create Account";
-        } else {
-            document.getElementById("dataDescriptor").value = response.opaqueData.dataDescriptor;
-            document.getElementById("dataValue").value = response.opaqueData.dataValue;
-            document.getElementById("paymentForm").submit();
+    .checkout-aside {
+        background: radial-gradient(circle at top, #1c3d70, #081629 58%);
+        color: #fff;
+        padding: 60px 48px;
+    }
+
+    .sidebar-identity {
+        margin: 18px 0 14px;
+    }
+
+    .sidebar-label {
+        display: inline-block;
+        margin-bottom: 10px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: rgba(223, 242, 255, 0.72);
+    }
+
+    .checkout-aside h1 {
+        margin: 0;
+        max-width: 100%;
+        font-size: clamp(28px, 3vw, 38px);
+        line-height: 1.12;
+        font-weight: 900;
+        letter-spacing: -1.5px;
+        color: #ffffff;
+    }
+
+    #sidebarUsername {
+        color: #dff2ff;
+        display: inline-block;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    .checkout-aside p {
+        color: rgba(255, 255, 255, 0.75);
+        font-size: 16px;
+        line-height: 1.7;
+    }
+
+    .aside-chip {
+        display: inline-block;
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .step-list {
+        margin: 32px 0;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .step-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: rgba(255, 255, 255, 0.78);
+        font-weight: 700;
+    }
+
+    .step-item span {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .step-item.active span {
+        background: #5ec0ff;
+        color: #08223f;
+    }
+
+    .step-item.active {
+        color: #ffffff;
+    }
+
+    .step-item.completed {
+        color: #9edaff;
+    }
+
+    .step-item.completed span {
+        background: rgba(94, 192, 255, 0.22);
+        color: #9edaff;
+    }
+
+    .plan-preview {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .plan-preview-card {
+        width: 100%;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 20px;
+        padding: 18px 20px;
+        background: rgba(255, 255, 255, 0.04);
+        text-align: left;
+        color: #ffffff;
+        cursor: pointer;
+        transition: 0.25s ease;
+    }
+
+    .plan-preview-card.selected {
+        border-color: #71c9ff;
+        background: rgba(113, 201, 255, 0.14);
+        box-shadow: 0 16px 30px rgba(6, 23, 44, 0.18);
+    }
+
+    .plan-preview-card:hover,
+    .plan-preview-card:focus {
+        border-color: rgba(113, 201, 255, 0.82);
+        background: rgba(113, 201, 255, 0.1);
+        outline: none;
+    }
+
+    .plan-preview-card span,
+    .plan-preview-card p {
+        display: block;
+        margin-top: 8px;
+    }
+
+    .plan-preview-card strong {
+        display: block;
+        font-size: 17px;
+    }
+
+    .plan-preview-card span {
+        font-size: 26px;
+        font-weight: 900;
+        color: #dff2ff;
+    }
+
+    .plan-preview-card p {
+        color: rgba(255, 255, 255, 0.76);
+        line-height: 1.5;
+    }
+
+    .checkout-main {
+        padding: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .wizard-card {
+        width: 100%;
+        max-width: 860px;
+        background: #fff;
+        border: 1px solid #d9e7f2;
+        border-radius: 32px;
+        padding: 36px;
+        box-shadow: 0 24px 70px rgba(9, 35, 66, 0.08);
+    }
+
+    .wizard-step {
+        display: none;
+    }
+
+    .wizard-step.is-active {
+        display: block;
+    }
+
+    .step-head {
+        margin-bottom: 28px;
+    }
+
+    .eyebrow {
+        display: inline-block;
+        margin-bottom: 10px;
+        color: #1A73E8;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .step-head h2 {
+        margin: 0 0 8px;
+        font-size: 32px;
+        font-weight: 900;
+        letter-spacing: -1px;
+    }
+
+    .step-head p {
+        margin: 0;
+        color: #5f6368;
+    }
+
+    .identity-review {
+        background: #f7fbff;
+        border: 1px solid #dbe8f8;
+        border-radius: 22px;
+        padding: 22px;
+        margin-bottom: 24px;
+    }
+
+    .identity-review strong {
+        display: block;
+        font-size: 26px;
+        margin-top: 8px;
+    }
+
+    .identity-label {
+        font-size: 11px;
+        color: #5f6368;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        font-weight: 800;
+    }
+
+    .username-edit-card {
+        background: #ffffff;
+        border: 1px solid #dbe8f8;
+        border-radius: 22px;
+        padding: 20px 22px;
+        margin-bottom: 24px;
+    }
+
+    .username-inline {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .username-domain {
+        font-weight: 800;
+        color: #5f6368;
+        white-space: nowrap;
+    }
+
+    .username-check-result {
+        min-height: 20px;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .username-check-result.success {
+        color: #1f7a38;
+    }
+
+    .username-check-result.error {
+        color: #d93025;
+    }
+
+    .username-check-result.pending {
+        color: #5f6368;
+    }
+
+    .plan-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .plan-card {
+        border: 2px solid #dbe8f8;
+        border-radius: 22px;
+        padding: 24px;
+        cursor: pointer;
+        transition: 0.25s ease;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .plan-card input {
+        display: none;
+    }
+
+    .plan-card.selected {
+        border-color: #1A73E8;
+        background: #f3f9ff;
+        box-shadow: 0 14px 36px rgba(26, 115, 232, 0.12);
+    }
+
+    .plan-name {
+        font-size: 20px;
+        font-weight: 800;
+    }
+
+    .plan-price {
+        font-size: 28px;
+        color: #1A73E8;
+        font-weight: 900;
+    }
+
+    .plan-copy {
+        color: #5f6368;
+        line-height: 1.6;
+    }
+
+    .wizard-footer {
+        margin-top: 28px;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .wizard-footer .btn {
+        min-width: 160px;
+        padding: 14px 24px;
+        font-weight: 800;
+        border-radius: 14px !important;
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    .err-msg {
+        display: block;
+        color: #d93025;
+        font-size: 12px;
+        margin-top: 6px;
+        font-weight: 700;
+    }
+
+    @media (max-width: 960px) {
+        .checkout-shell {
+            grid-template-columns: 1fr;
+        }
+
+        .checkout-main,
+        .checkout-aside {
+            padding: 28px 20px;
+        }
+
+        .wizard-card {
+            padding: 24px;
+        }
+
+        .plan-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .username-inline {
+            grid-template-columns: 1fr;
+        }
+
+        .wizard-footer {
+            flex-direction: column;
+        }
+
+        .wizard-footer .btn {
+            width: 100%;
         }
     }
-</script>
+</style>

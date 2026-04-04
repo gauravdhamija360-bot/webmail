@@ -1,12 +1,24 @@
-<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-  <rect x="20" y="20" width="160" height="160" rx="40" fill="#FFFFFF" stroke="#E3F2FD" stroke-width="2"/>
-  
-  <path d="M60 70 L100 100 L140 70 M60 70 V130 H140 V70 M100 100 V140" 
-        stroke="#1A73E8" 
-        stroke-width="12" 
-        stroke-linecap="round" 
-        stroke-linejoin="round" 
-        fill="none"/>
-        
-  <circle cx="150" cy="130" r="8" fill="#0D47A1" />
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="yooverIconBg" x1="18" y1="14" x2="108" y2="114" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0B2240"/>
+      <stop offset="0.55" stop-color="#165CC2"/>
+      <stop offset="1" stop-color="#4FCBFF"/>
+    </linearGradient>
+    <linearGradient id="yooverFlap" x1="35" y1="33" x2="84" y2="78" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#D7EEFF"/>
+    </linearGradient>
+    <linearGradient id="yooverY" x1="46" y1="38" x2="72" y2="76" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#82E4FF"/>
+      <stop offset="1" stop-color="#FFFFFF"/>
+    </linearGradient>
+  </defs>
+  <rect x="10" y="10" width="108" height="108" rx="32" fill="url(#yooverIconBg)"/>
+  <rect x="28" y="32" width="72" height="60" rx="18" fill="#0E2C56" fill-opacity="0.26"/>
+  <path d="M28 44.5C28 37.6 33.6 32 40.5 32H87.5C94.4 32 100 37.6 100 44.5V45L67.8 67.8C65.5 69.4 62.5 69.4 60.2 67.8L28 45V44.5Z" fill="url(#yooverFlap)"/>
+  <path d="M28 54L54.1 72.4C60 76.5 68 76.5 73.9 72.4L100 54V80.5C100 87.4 94.4 93 87.5 93H40.5C33.6 93 28 87.4 28 80.5V54Z" fill="#123D76" fill-opacity="0.34"/>
+  <path d="M47.5 41.5H58.8L64 50.8L69.2 41.5H80.5L69.8 59.3V76.5H58.2V59.3L47.5 41.5Z" fill="url(#yooverY)"/>
+  <path d="M60.7 67.8L64 73.8L67.3 67.8" stroke="#8EE7FF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="87" cy="39" r="5.5" fill="#A5ECFF"/>
 </svg>

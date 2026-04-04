@@ -10,6 +10,7 @@ const https = require('https');
 const http = require('http');
 const pem = require('pem');
 const db = require('./lib/db');
+const billingStore = require('./lib/billing-store');
 
 const port = config.www.port;
 const host = config.www.host;
@@ -27,76 +28,84 @@ db.connect(err => {
         return process.exit(1);
     }
 
-    const app = require('./app'); // eslint-disable-line global-require
-    app.set('port', port);
+    billingStore
+        .init()
+        .then(() => {
+            const app = require('./app'); // eslint-disable-line global-require
+            app.set('port', port);
 
-    /**
-     * Create HTTP server.
-     */
-    let getServer = next => {
-        if (config.www.secure) {
-            return pem.createCertificate({ days: 1, selfSigned: true }, (err, keys) => {
+            /**
+             * Create HTTP server.
+             */
+            let getServer = next => {
+                if (config.www.secure) {
+                    return pem.createCertificate({ days: 1, selfSigned: true }, (err, keys) => {
+                        if (err) {
+                            throw err;
+                        }
+                        let server = https.createServer({ key: keys.serviceKey, cert: keys.certificate }, app);
+
+                        return next(null, server);
+                    });
+                }
+                next(null, http.createServer(app));
+            };
+
+            getServer((err, server) => {
                 if (err) {
                     throw err;
                 }
-                let server = https.createServer({ key: keys.serviceKey, cert: keys.certificate }, app);
+                server.on('error', err => {
+                    if (err.syscall !== 'listen') {
+                        throw err;
+                    }
 
-                return next(null, server);
+                    let bind = typeof port === 'string' ? 'Pipe ' + port : 'Port ' + port;
+
+                    // handle specific listen errors with friendly messages
+                    switch (err.code) {
+                        case 'EACCES':
+                            log.error('Express', '%s requires elevated privileges', bind);
+                            return process.exit(1);
+                        case 'EADDRINUSE':
+                            log.error('Express', '%s is already in use', bind);
+                            return process.exit(1);
+                        default:
+                            throw err;
+                    }
+                });
+
+                server.on('listening', () => {
+                    let addr = server.address();
+                    let bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
+                    log.info('Express', 'WWW server listening on %s', bind);
+
+                    if (config.group) {
+                        try {
+                            process.setgid(config.group);
+                            log.info('Service', 'Changed group to "%s" (%s)', config.group, process.getgid());
+                        } catch (E) {
+                            log.error('Service', 'Failed to change group to "%s" (%s)', config.group, E.message);
+                            return process.exit(1);
+                        }
+                    }
+
+                    if (config.user) {
+                        try {
+                            process.setuid(config.user);
+                            log.info('Service', 'Changed user to "%s" (%s)', config.user, process.getuid());
+                        } catch (E) {
+                            log.info('Service', 'Failed to change user to "%s" (%s)', config.user, E.message);
+                            return process.exit(1);
+                        }
+                    }
+                });
+
+                server.listen(port, host);
             });
-        }
-        next(null, http.createServer(app));
-    };
-
-    getServer((err, server) => {
-        if (err) {
-            throw err;
-        }
-        server.on('error', err => {
-            if (err.syscall !== 'listen') {
-                throw err;
-            }
-
-            let bind = typeof port === 'string' ? 'Pipe ' + port : 'Port ' + port;
-
-            // handle specific listen errors with friendly messages
-            switch (err.code) {
-                case 'EACCES':
-                    log.error('Express', '%s requires elevated privileges', bind);
-                    return process.exit(1);
-                case 'EADDRINUSE':
-                    log.error('Express', '%s is already in use', bind);
-                    return process.exit(1);
-                default:
-                    throw err;
-            }
+        })
+        .catch(initErr => {
+            log.error('Db', 'Failed to initialize billing indexes: %s', initErr.message);
+            return process.exit(1);
         });
-
-        server.on('listening', () => {
-            let addr = server.address();
-            let bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
-            log.info('Express', 'WWW server listening on %s', bind);
-
-            if (config.group) {
-                try {
-                    process.setgid(config.group);
-                    log.info('Service', 'Changed group to "%s" (%s)', config.group, process.getgid());
-                } catch (E) {
-                    log.error('Service', 'Failed to change group to "%s" (%s)', config.group, E.message);
-                    return process.exit(1);
-                }
-            }
-
-            if (config.user) {
-                try {
-                    process.setuid(config.user);
-                    log.info('Service', 'Changed user to "%s" (%s)', config.user, process.getuid());
-                } catch (E) {
-                    log.info('Service', 'Failed to change user to "%s" (%s)', config.user, E.message);
-                    return process.exit(1);
-                }
-            }
-        });
-
-        server.listen(port, host);
-    });
 });

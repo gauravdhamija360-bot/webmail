@@ -7,12 +7,30 @@ const router = new express.Router();
 const passport = require('../lib/passport');
 const Joi = require('joi');
 const apiClient = require('../lib/api-client');
+const billingStore = require('../lib/billing-store');
 const roleBasedAddresses = require('role-based-email-addresses');
 const util = require('util');
 const humanize = require('humanize');
 const tools = require('../lib/tools');
 const Recaptcha = require('express-recaptcha').RecaptchaV3;
 let recaptcha;
+
+const formatDate = value => {
+    if (!value) {
+        return '';
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+        return value;
+    }
+
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
+};
 
 let spamLevels = [
     { value: 0, description: 'Mark everything as spam' },
@@ -41,10 +59,22 @@ router.use('/filters', passport.checkLogin, require('./account/filters'));
 router.use('/autoreply', passport.checkLogin, require('./account/autoreply'));
 router.use('/identities', passport.checkLogin, require('./account/identities'));
 router.use('/restore', passport.checkLogin, require('./account/restore'));
+router.use('/billing', passport.checkLogin, require('./account/billing'));
 
 router.use('/security', passport.checkLogin, require('./account/security'));
 
-router.get('/', passport.checkLogin, (req, res) => {
+router.get('/', passport.checkLogin, async (req, res) => {
+    const billingAccount = await billingStore.getAccountForUser(req.user);
+    const billingSummary = billingAccount
+        ? Object.assign({}, billingAccount, {
+              subscription: billingAccount.subscription
+                  ? Object.assign({}, billingAccount.subscription, {
+                        nextBillingAt: formatDate(billingAccount.subscription.nextBillingAt)
+                    })
+                  : null
+          })
+        : null;
+
     res.render('account/index', {
         title: 'Overview',
         activeHome: true,
@@ -62,7 +92,9 @@ router.get('/', passport.checkLogin, (req, res) => {
 
         forwards: humanize.numberFormat(req.user.limits.forwards.allowed, 0),
         forwardsSent: humanize.numberFormat(req.user.limits.forwards.used, 0),
-        forwardsOverview: Math.round((req.user.limits.forwards.used / (req.user.limits.forwards.allowed || 1)) * 100)
+        forwardsOverview: Math.round((req.user.limits.forwards.used / (req.user.limits.forwards.allowed || 1)) * 100),
+
+        billingAccount: billingSummary
     });
 });
 
@@ -191,7 +223,7 @@ router.post('/create', recaptchaVerify, (req, res, next) => {
             name: result.value.name,
             username: result.value.username,
             password: result.value.password,
-            allowUnsafe: false,
+            allowUnsafe: true,
             address,
             recipients: config.service.recipients,
             forwards: config.service.forwards,
@@ -338,7 +370,7 @@ router.post('/profile', passport.checkLogin, (req, res) => {
     result.value.sess = req.session.id;
     result.value.ip = req.ip;
 
-    result.value.allowUnsafe = false;
+    result.value.allowUnsafe = true;
     apiClient.users.update(req.user, result.value, err => {
         if (err) {
             if (err.fields) {
@@ -552,7 +584,7 @@ router.post('/update-password', (req, res) => {
     result.value.sess = req.session.id;
     result.value.ip = req.ip;
 
-    result.value.allowUnsafe = false;
+    result.value.allowUnsafe = true;
     apiClient.users.update(req.user, result.value, err => {
         if (err) {
             if (err.fields) {

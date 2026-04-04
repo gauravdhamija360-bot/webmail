@@ -1,0 +1,1 @@
+{"type":"http-01","url":"https://acme-v02.api.letsencrypt.org/acme/chall/3172565401/683061504221/c0sQeg","status":"pending","token":"Uun4JQvZdL6GgopKdEc0x6XmNuJVAeqjpz_rk9dtspk","keyAuthorization":"Uun4JQvZdL6GgopKdEc0x6XmNuJVAeqjpz_rk9dtspk.T6_mG8-CUdeY_WpD5782WF9YgyvyTI818APBaiwk_es","identifier":{"type":"dns","value":"yoover.com"}}

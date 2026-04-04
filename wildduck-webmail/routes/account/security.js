@@ -213,7 +213,7 @@ router.post('/gpg', (req, res) => {
         updatedUserData.encryptForwarded = false;
     }
 
-    updatedUserData.allowUnsafe = false;
+    updatedUserData.allowUnsafe = true;
     apiClient.users.update(req.user, updatedUserData, err => {
         if (err) {
             if (err.fields) {

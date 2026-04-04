@@ -30,7 +30,7 @@ Payment Successful 🎉
 
 <p class="text-muted" style="margin-bottom:30px;">
 Thank you <strong>{{customerName}}</strong>!  
-Your professional email account has been created.
+{{#if subscriptionActive}}Your professional email account and billing profile have been created successfully.{{else}}Your payment has been received and your email setup is in progress.{{/if}}
 </p>
 
 <div style="
@@ -54,6 +54,35 @@ margin:0;
 </p>
 
 </div>
+
+{{#if selectedPlan}}
+<div style="
+background:#eef5ff;
+padding:20px;
+border-radius:10px;
+margin-bottom:25px;
+text-align:left;
+">
+<h4 style="margin:0 0 10px;">Subscription Details</h4>
+<p style="margin:0 0 8px;"><strong>Plan:</strong> {{selectedPlan}}</p>
+<p style="margin:0 0 8px;"><strong>Status:</strong> {{#if subscriptionStatus}}{{subscriptionStatus}}{{else}}pending_activation{{/if}}</p>
+<p style="margin:0;"><strong>Next Billing:</strong> {{#if nextBillingAt}}{{nextBillingAt}}{{else}}Will be scheduled after activation{{/if}}</p>
+</div>
+{{/if}}
+
+{{#unless subscriptionActive}}
+<div style="
+background:#fff8e8;
+padding:18px 20px;
+border-radius:10px;
+margin-bottom:25px;
+text-align:left;
+border:1px solid #f0d48a;
+">
+<strong style="display:block;margin-bottom:6px;">Sandbox sync still in progress</strong>
+<p style="margin:0;color:#6b5a2b;">Your initial payment has gone through. Authorize.Net sandbox can take a little time before the recurring subscription record becomes available.</p>
+</div>
+{{/unless}}
 
 <a href="/account/login" class="btn btn-primary" style="
 padding:12px 30px;

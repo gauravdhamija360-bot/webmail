@@ -362,39 +362,68 @@
 </section>
 
 <script>
-document.getElementById('checkBtn').addEventListener('click', async function() {
-    const username = document.getElementById('usernameInput').value.trim();
-    const resultDiv = document.getElementById('checkResult');
-    const btn = this;
+const usernameInput = document.getElementById('usernameInput');
+const checkBtn = document.getElementById('checkBtn');
+const checkResult = document.getElementById('checkResult');
+const usernamePattern = /^[a-z0-9][a-z0-9.-]*$/i;
+
+async function checkUsernameAvailability() {
+    const username = usernameInput.value.trim().toLowerCase();
+
+    usernameInput.value = username;
 
     if (!username || username.length < 3) {
-        resultDiv.innerHTML = '<span style="color: #d93025;">⚠️ Username must be at least 3 characters.</span>';
+        checkResult.innerHTML = '<span style="color: #d93025;">Username must be at least 3 characters.</span>';
         return;
     }
 
-    btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> CHECKING...';
-    btn.disabled = true;
+    if (!usernamePattern.test(username)) {
+        checkResult.innerHTML = '<span style="color: #d93025;">Use only letters, numbers, dots, and hyphens.</span>';
+        return;
+    }
+
+    checkBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> CHECKING...';
+    checkBtn.disabled = true;
 
     try {
-        const response = await fetch(`/api/check-username?username=${username}`);
+        const response = await fetch(`/check-username?username=${encodeURIComponent(username)}`);
         const data = await response.json();
 
-        if (data.available) {
-            resultDiv.innerHTML = `
-                <div style="background: #e6f4ea; color: #1e7e34; padding: 15px 30px; border-radius: 50px; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-                    <i class="fa fa-check-circle"></i> <strong>${username}@{{serviceDomain}}</strong> is available! 
-                    <a href="/purchase?username=${username}" style="margin-left: 15px; font-weight: 800; text-decoration: underline; color: #1e7e34;">CLAIM NOW</a>
-                </div>`;
-        } else {
-            resultDiv.innerHTML = '<span style="color: #d93025;"><i class="fa fa-circle-xmark"></i> Sorry, that name is already taken.</span>';
+        if (!response.ok) {
+            checkResult.innerHTML = `<span style="color: #d93025;">${data.error || 'Unable to check username right now.'}</span>`;
+            return;
         }
+
+        if (data.available) {
+            checkResult.innerHTML = `
+                <div style="background: #e6f4ea; color: #1e7e34; padding: 15px 30px; border-radius: 50px; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                    <i class="fa fa-check-circle"></i> <strong>${username}@{{serviceDomain}}</strong> is available!
+                    <a href="/purchase?username=${encodeURIComponent(username)}" style="margin-left: 15px; font-weight: 800; text-decoration: underline; color: #1e7e34;">CLAIM NOW</a>
+                </div>`;
+            return;
+        }
+
+        checkResult.innerHTML = '<span style="color: #d93025;"><i class="fa fa-circle-xmark"></i> Sorry, that name is already taken.</span>';
     } catch (err) {
-        resultDiv.innerHTML = '<span style="color: #f4b400;">Connection error. Please try again.</span>';
+        checkResult.innerHTML = '<span style="color: #f4b400;">Connection error. Please try again.</span>';
     } finally {
-        btn.innerHTML = 'CHECK AVAILABILITY';
-        btn.disabled = false;
+        checkBtn.innerHTML = 'CHECK AVAILABILITY';
+        checkBtn.disabled = false;
+    }
+}
+
+usernameInput.addEventListener('input', function () {
+    this.value = this.value.replace(/[^a-z0-9.-]/gi, '');
+});
+
+usernameInput.addEventListener('keydown', function (event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        checkUsernameAvailability();
     }
 });
+
+checkBtn.addEventListener('click', checkUsernameAvailability);
 </script>
 
 
@@ -1297,4 +1326,3 @@ document.getElementById('checkBtn').addEventListener('click', async function() {
         </div>
     </div>
 </section>
-

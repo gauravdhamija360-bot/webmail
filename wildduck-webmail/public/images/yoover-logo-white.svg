@@ -1,0 +1,24 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="yooverIconBgWhite" x1="18" y1="14" x2="108" y2="114" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#86E2FF"/>
+      <stop offset="0.55" stop-color="#4EA9FF"/>
+      <stop offset="1" stop-color="#143964"/>
+    </linearGradient>
+    <linearGradient id="yooverFlapWhite" x1="35" y1="33" x2="84" y2="78" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#E8F6FF"/>
+    </linearGradient>
+    <linearGradient id="yooverYWhite" x1="46" y1="38" x2="72" y2="76" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#D8F5FF"/>
+      <stop offset="1" stop-color="#FFFFFF"/>
+    </linearGradient>
+  </defs>
+  <rect x="10" y="10" width="108" height="108" rx="32" fill="url(#yooverIconBgWhite)"/>
+  <rect x="28" y="32" width="72" height="60" rx="18" fill="#092441" fill-opacity="0.22"/>
+  <path d="M28 44.5C28 37.6 33.6 32 40.5 32H87.5C94.4 32 100 37.6 100 44.5V45L67.8 67.8C65.5 69.4 62.5 69.4 60.2 67.8L28 45V44.5Z" fill="url(#yooverFlapWhite)"/>
+  <path d="M28 54L54.1 72.4C60 76.5 68 76.5 73.9 72.4L100 54V80.5C100 87.4 94.4 93 87.5 93H40.5C33.6 93 28 87.4 28 80.5V54Z" fill="#143A63" fill-opacity="0.3"/>
+  <path d="M47.5 41.5H58.8L64 50.8L69.2 41.5H80.5L69.8 59.3V76.5H58.2V59.3L47.5 41.5Z" fill="url(#yooverYWhite)"/>
+  <path d="M60.7 67.8L64 73.8L67.3 67.8" stroke="#E8FBFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="87" cy="39" r="5.5" fill="#F3FDFF"/>
+</svg>

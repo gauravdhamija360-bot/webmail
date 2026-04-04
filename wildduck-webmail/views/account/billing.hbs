@@ -1,0 +1,511 @@
+<div class="yoover-centered-container">
+    <div class="yoover-view-header">
+        <div class="header-icon-bg">
+            <span class="glyphicon glyphicon-credit-card"></span>
+        </div>
+        <div class="header-text">
+            <h1>Billing & Subscription</h1>
+            <p class="text-muted">Manage your plan, payment methods, and renewal timeline.</p>
+        </div>
+    </div>
+
+    <div class="yoover-tabs-wrapper">
+        <ul class="nav nav-tabs yoover-nav-tabs" role="tablist">
+            {{> accountmenu}}
+        </ul>
+    </div>
+
+    {{#if billingAccount}}
+    <div class="billing-shell">
+        <div class="billing-hero">
+            <div>
+                <label class="yoover-label-sm">Current Subscription</label>
+                <h2>{{billingAccount.plan.name}} Plan</h2>
+                <p>{{billingAccount.emailAddress}}</p>
+            </div>
+            <div class="billing-hero-meta">
+                <span class="status-pill">{{billingAccount.subscription.status}}</span>
+                <strong>{{billingAccount.plan.formattedPrice}}</strong>
+                {{#if canSyncSubscription}}
+                <form method="post" action="/account/billing/sync" class="sync-action-form">
+                    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                    <button type="submit" class="btn btn-sync">Sync Billing</button>
+                </form>
+                {{/if}}
+            </div>
+        </div>
+
+        {{#if subscriptionPending}}
+        <div class="billing-alert billing-alert-warning">
+            <div>
+                <strong>Subscription sync is still in progress</strong>
+                <p>{{#if subscriptionSetupNote}}{{subscriptionSetupNote}}{{else}}Authorize.Net sandbox can take a little time before a new recurring subscription becomes visible.{{/if}}</p>
+            </div>
+            {{#if canSyncSubscription}}
+            <form method="post" action="/account/billing/sync" class="sync-inline-form">
+                <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                <button type="submit" class="btn btn-yoover-outline">Try Sync Again</button>
+            </form>
+            {{/if}}
+        </div>
+        {{/if}}
+
+        <div class="billing-metrics">
+            <div class="metric-card">
+                <span class="metric-label">Next Charge</span>
+                <strong>{{#if billingAccount.subscription.nextBillingAt}}{{billingAccount.subscription.nextBillingAt}}{{else}}Not scheduled yet{{/if}}</strong>
+                <small>{{#if subscriptionPending}}This will update after the recurring subscription is activated.{{else}}Your next automatic renewal date.{{/if}}</small>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Billing Email</span>
+                <strong>{{billingAccount.billingEmail}}</strong>
+                <small>Receipts and billing updates are sent here.</small>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Recovery Email</span>
+                <strong>{{billingAccount.recoveryEmail}}</strong>
+                <small>Used if you need to recover mailbox access.</small>
+            </div>
+        </div>
+
+        <div class="billing-grid">
+            <div class="billing-panel">
+                <div class="panel-head">
+                    <h3>Payment Methods</h3>
+                    <p>Saved cards in your Authorize.Net customer profile.</p>
+                </div>
+
+                {{#if billingAccount.paymentMethods.length}}
+                    {{#each billingAccount.paymentMethods}}
+                    <div class="method-card">
+                        <div>
+                            <strong>{{#if cardType}}{{cardType}}{{else}}Card{{/if}} {{cardNumber}}</strong>
+                            <div class="method-meta">{{billTo.firstName}} {{billTo.lastName}} {{#if expirationDate}}• Expires {{expirationDate}}{{/if}}</div>
+                        </div>
+                        <div class="method-actions">
+                            {{#if defaultPaymentProfile}}
+                            <span class="mini-pill">Default</span>
+                            {{else}}
+                            <form method="post" action="/account/billing/payment-methods/{{customerPaymentProfileId}}/default">
+                                <input type="hidden" name="_csrf" value="{{../csrfToken}}">
+                                <button type="submit" class="btn btn-yoover-outline btn-sm">Use Next</button>
+                            </form>
+                            {{/if}}
+                            <form method="post" action="/account/billing/payment-methods/{{customerPaymentProfileId}}/delete">
+                                <input type="hidden" name="_csrf" value="{{../csrfToken}}">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                    {{/each}}
+                {{else}}
+                <p class="empty-copy">No payment methods saved yet.</p>
+                {{/if}}
+            </div>
+
+            <div class="billing-panel">
+                <div class="panel-head">
+                    <h3>Add Payment Method</h3>
+                    <p>Add another card to use for future renewals.</p>
+                </div>
+
+                {{#if addMethodErrors.general}}
+                <div class="alert alert-danger">{{addMethodErrors.general}}</div>
+                {{/if}}
+
+                <form id="addPaymentMethodForm" method="post" action="/account/billing/payment-methods">
+                    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                    <input type="hidden" name="dataDescriptor" id="addDataDescriptor">
+                    <input type="hidden" name="dataValue" id="addDataValue">
+
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" class="form-control" name="fullName" value="{{addMethodValues.fullName}}" required>
+                        {{#if addMethodErrors.fullName}}<span class="err-msg">{{addMethodErrors.fullName}}</span>{{/if}}
+                    </div>
+                    <div class="form-group">
+                        <label>Company</label>
+                        <input type="text" class="form-control" name="company" value="{{addMethodValues.company}}">
+                    </div>
+                    <div class="form-group">
+                        <label>Address Line 1</label>
+                        <input type="text" class="form-control" name="addressLine1" value="{{addMethodValues.addressLine1}}" required>
+                        {{#if addMethodErrors.addressLine1}}<span class="err-msg">{{addMethodErrors.addressLine1}}</span>{{/if}}
+                    </div>
+                    <div class="form-group">
+                        <label>Address Line 2</label>
+                        <input type="text" class="form-control" name="addressLine2" value="{{addMethodValues.addressLine2}}">
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6 form-group">
+                            <label>City</label>
+                            <input type="text" class="form-control" name="city" value="{{addMethodValues.city}}" required>
+                        </div>
+                        <div class="col-sm-6 form-group">
+                            <label>State</label>
+                            <input type="text" class="form-control" name="state" value="{{addMethodValues.state}}" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6 form-group">
+                            <label>ZIP</label>
+                            <input type="text" class="form-control" name="zip" value="{{addMethodValues.zip}}" required>
+                        </div>
+                        <div class="col-sm-6 form-group">
+                            <label>Country</label>
+                            <input type="text" class="form-control" name="country" value="{{addMethodValues.country}}" maxlength="2" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-8 form-group">
+                            <label>Card Number</label>
+                            <input type="text" id="billingCardNumber" class="form-control" autocomplete="cc-number">
+                        </div>
+                        <div class="col-sm-4 form-group">
+                            <label>CVV</label>
+                            <input type="text" id="billingCardCode" class="form-control" autocomplete="cc-csc">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6 form-group">
+                            <label>Expiry Month</label>
+                            <input type="text" id="billingExpMonth" class="form-control" placeholder="MM" autocomplete="cc-exp-month">
+                        </div>
+                        <div class="col-sm-6 form-group">
+                            <label>Expiry Year</label>
+                            <input type="text" id="billingExpYear" class="form-control" placeholder="YYYY" autocomplete="cc-exp-year">
+                        </div>
+                    </div>
+
+                    <button type="button" id="addPaymentMethodButton" class="btn btn-primary btn-block">Save Payment Method</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="billing-panel">
+            <div class="panel-head">
+                <h3>Recent Payments</h3>
+                <p>Transaction history saved in Mongo for your account.</p>
+            </div>
+
+            <div class="payment-table-wrap">
+                <table class="table billing-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Transaction</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#if payments.length}}
+                            {{#each payments}}
+                            <tr>
+                                <td>{{createdAt}}</td>
+                                <td>{{type}}</td>
+                                <td>${{amount}}</td>
+                                <td>{{status}}</td>
+                                <td>{{transactionId}}</td>
+                            </tr>
+                            {{/each}}
+                        {{else}}
+                            <tr>
+                                <td colspan="5" class="empty-row">No payments recorded yet.</td>
+                            </tr>
+                        {{/if}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {{#if billingAccount.subscription}}
+        <div class="billing-panel danger-zone">
+            <div class="panel-head">
+                <h3>Cancel Subscription</h3>
+                <p>Stop future recurring charges while keeping your historical billing records.</p>
+            </div>
+            <form method="post" action="/account/billing/cancel">
+                <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                <button type="submit" class="btn btn-danger">Cancel Subscription</button>
+            </form>
+        </div>
+        {{/if}}
+    </div>
+    {{else}}
+    <div class="billing-panel">
+        <div class="panel-head">
+            <h3>No Billing Profile Yet</h3>
+            <p>Choose your plan and create your hosted email identity to unlock subscription billing.</p>
+        </div>
+        <a href="/pricing" class="btn btn-primary">View Plans</a>
+    </div>
+    {{/if}}
+</div>
+
+<script type="text/javascript" src="https://jstest.authorize.net/v1/Accept.js" charset="utf-8"></script>
+<script>
+    (function () {
+        var addButton = document.getElementById('addPaymentMethodButton');
+        var addForm = document.getElementById('addPaymentMethodForm');
+
+        if (!addButton || !addForm) {
+            return;
+        }
+
+        addButton.addEventListener('click', function () {
+            addButton.disabled = true;
+            addButton.textContent = 'Saving...';
+
+            Accept.dispatchData(
+                {
+                    authData: {
+                        clientKey: '{{authorizeClientKey}}',
+                        apiLoginID: '{{authorizeApiLoginID}}'
+                    },
+                    cardData: {
+                        cardNumber: document.getElementById('billingCardNumber').value,
+                        month: document.getElementById('billingExpMonth').value,
+                        year: document.getElementById('billingExpYear').value,
+                        cardCode: document.getElementById('billingCardCode').value
+                    }
+                },
+                function (response) {
+                    if (response.messages.resultCode === 'Error') {
+                        alert(response.messages.message.map(function (message) {
+                            return message.text;
+                        }).join('\n'));
+                        addButton.disabled = false;
+                        addButton.textContent = 'Save Payment Method';
+                        return;
+                    }
+
+                    document.getElementById('addDataDescriptor').value = response.opaqueData.dataDescriptor;
+                    document.getElementById('addDataValue').value = response.opaqueData.dataValue;
+                    addForm.submit();
+                }
+            );
+        });
+    }());
+</script>
+
+<style>
+    .billing-shell {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .billing-hero,
+    .billing-panel {
+        background: #fff;
+        border: 1px solid #e1e8ed;
+        border-radius: 24px;
+        padding: 28px 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+    }
+
+    .billing-hero {
+        background: linear-gradient(135deg, #07162c, #173660);
+        color: #fff;
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        align-items: center;
+    }
+
+    .billing-hero h2 {
+        margin: 10px 0 6px;
+        font-size: 30px;
+        font-weight: 900;
+    }
+
+    .billing-hero p {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.72);
+    }
+
+    .billing-hero-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 12px;
+        font-size: 24px;
+        font-weight: 800;
+    }
+
+    .status-pill,
+    .mini-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding: 7px 14px;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        background: rgba(255, 255, 255, 0.12);
+    }
+
+    .sync-action-form,
+    .sync-inline-form {
+        margin: 0;
+    }
+
+    .btn-sync {
+        background: #ffffff;
+        color: #0e2d55;
+        border: none;
+        border-radius: 999px;
+        padding: 10px 18px;
+        font-weight: 800;
+    }
+
+    .btn-sync:hover,
+    .btn-sync:focus {
+        background: #e9f3ff;
+        color: #0a2241;
+    }
+
+    .billing-alert {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 18px;
+        border-radius: 22px;
+        padding: 20px 22px;
+    }
+
+    .billing-alert strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 16px;
+    }
+
+    .billing-alert p {
+        margin: 0;
+        color: #5f6368;
+        line-height: 1.6;
+    }
+
+    .billing-alert-warning {
+        background: #fff8e8;
+        border: 1px solid #f1d38d;
+    }
+
+    .billing-metrics,
+    .billing-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 20px;
+    }
+
+    .billing-grid {
+        grid-template-columns: 1.1fr 1fr;
+    }
+
+    .metric-card,
+    .method-card {
+        background: #f8fbff;
+        border: 1px solid #dbe8f8;
+        border-radius: 18px;
+        padding: 18px;
+    }
+
+    .metric-label,
+    .method-meta {
+        display: block;
+        color: #5f6368;
+        font-size: 12px;
+        margin-bottom: 8px;
+    }
+
+    .metric-card small {
+        display: block;
+        margin-top: 10px;
+        color: #708090;
+        line-height: 1.5;
+    }
+
+    .panel-head {
+        margin-bottom: 22px;
+    }
+
+    .panel-head h3 {
+        margin: 0 0 8px;
+        font-size: 22px;
+        font-weight: 800;
+    }
+
+    .panel-head p {
+        margin: 0;
+        color: #5f6368;
+    }
+
+    .method-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 14px;
+    }
+
+    .method-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .payment-table-wrap {
+        overflow-x: auto;
+    }
+
+    .billing-table th {
+        text-transform: uppercase;
+        font-size: 12px;
+        letter-spacing: 1px;
+        color: #5f6368;
+    }
+
+    .empty-copy,
+    .empty-row {
+        color: #5f6368;
+        text-align: center;
+        padding: 24px;
+    }
+
+    .danger-zone {
+        border-color: #f1c4c4;
+        background: #fff7f7;
+    }
+
+    @media (max-width: 900px) {
+        .billing-metrics,
+        .billing-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .billing-hero {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .billing-hero-meta {
+            align-items: flex-start;
+        }
+
+        .billing-alert {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .method-card {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>

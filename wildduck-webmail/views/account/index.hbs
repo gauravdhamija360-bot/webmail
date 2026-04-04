@@ -33,6 +33,32 @@
                         </div>
                     </div>
 
+                    {{#if billingAccount}}
+                    <div class="billing-snapshot">
+                        <div class="snapshot-header">
+                            <div>
+                                <label class="yoover-label-sm">Billing Snapshot</label>
+                                <h3>{{billingAccount.plan.name}} Plan</h3>
+                            </div>
+                            <a href="/account/billing" class="btn btn-yoover-outline btn-sm">Manage Billing</a>
+                        </div>
+                        <div class="snapshot-grid">
+                            <div class="snapshot-item">
+                                <span class="snapshot-label">Status</span>
+                                <strong>{{billingAccount.subscription.status}}</strong>
+                            </div>
+                            <div class="snapshot-item">
+                                <span class="snapshot-label">Price</span>
+                                <strong>{{billingAccount.plan.formattedPrice}}</strong>
+                            </div>
+                            <div class="snapshot-item">
+                                <span class="snapshot-label">Next Charge</span>
+                                <strong>{{#if billingAccount.subscription.nextBillingAt}}{{billingAccount.subscription.nextBillingAt}}{{else}}Not scheduled{{/if}}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    {{/if}}
+
                     <div class="usage-section">
                         <h3 class="section-title">Resource Consumption</h3>
                         
@@ -137,6 +163,44 @@
 
     .section-title { font-size: 14px; font-weight: 800; color: #202124; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1px; }
 
+    .billing-snapshot {
+        background: #0f1f38;
+        color: #fff;
+        border-radius: 20px;
+        padding: 28px 30px;
+    }
+    .snapshot-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 18px;
+    }
+    .snapshot-header h3 {
+        margin: 8px 0 0;
+        font-size: 24px;
+        font-weight: 800;
+    }
+    .snapshot-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+    }
+    .snapshot-item {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        padding: 16px;
+    }
+    .snapshot-label {
+        display: block;
+        font-size: 11px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.65);
+        margin-bottom: 8px;
+    }
+
     /* USAGE WIDGETS */
     .usage-widget { margin-bottom: 30px; }
     .usage-info { display: flex; justify-content: space-between; margin-bottom: 10px; }
@@ -162,5 +226,16 @@
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 767px) {
+        .snapshot-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .snapshot-grid {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
