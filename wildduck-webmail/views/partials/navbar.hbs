@@ -62,15 +62,18 @@
 
                 <li class="dropdown profile-zone">
                     <a href="#"
+                       id="profileMenuToggle"
                        class="dropdown-toggle"
+                       aria-expanded="false"
                        data-toggle="dropdown">
 
-                        <div class="avatar-box">
-                            <img src="{{user.gravatar}}"
-                                 class="avatar-sharp">
+                        <div class="profile-pill-badge">
+                            <div class="profile-badge-core">
+                                <span class="glyphicon glyphicon-user"></span>
+                            </div>
                         </div>
 
-                        <span class="user-label">
+                        <span class="user-label user-label-yoover">
                             {{#if user.name}}
                                 {{user.name}}
                             {{else}}
@@ -82,18 +85,43 @@
                     </a>
 
                     <ul class="dropdown-menu slide-up-menu">
+                        <li class="profile-menu-head">
+                            <div class="profile-menu-identity">
+                                <div class="profile-menu-badge">
+                                    <span class="glyphicon glyphicon-user"></span>
+                                </div>
+                                <div class="profile-menu-copy">
+                                    <strong>
+                                        {{#if user.name}}
+                                            {{user.name}}
+                                        {{else}}
+                                            {{user.username}}
+                                        {{/if}}
+                                    </strong>
+                                    <span>{{user.username}}</span>
+                                </div>
+                            </div>
+                        </li>
+
+                        <li role="separator" class="divider"></li>
 
                         <li>
-                            <a href="/account/">
+                            <a href="/account/" class="profile-menu-link">
                                 <span class="glyphicon glyphicon-user"></span>
-                                ACCOUNT INFO
+                                <span>
+                                    <strong>Account Overview</strong>
+                                    <small>Profile, usage, and account controls</small>
+                                </span>
                             </a>
                         </li>
 
                         <li>
-                            <a href="/account/security">
+                            <a href="/account/security" class="profile-menu-link">
                                 <span class="glyphicon glyphicon-lock"></span>
-                                SECURITY
+                                <span>
+                                    <strong>Security Center</strong>
+                                    <small>Password, 2FA, encryption, and events</small>
+                                </span>
                             </a>
                         </li>
 
@@ -101,9 +129,12 @@
 
                         <li>
                             <a href="/account/logout"
-                               class="text-danger">
+                               class="profile-menu-link profile-menu-link-danger">
                                 <span class="glyphicon glyphicon-log-out"></span>
-                                LOG OUT
+                                <span>
+                                    <strong>Log Out</strong>
+                                    <small>End the current session safely</small>
+                                </span>
                             </a>
                         </li>
 
@@ -289,8 +320,219 @@
         100% { opacity: 0.45; transform: scaleX(0.82); }
     }
     #scroll-progress { position: absolute; bottom: 0; left: 0; height: 3px; background: #1A73E8; width: 0%; transition: width 0.1s; }
-    .avatar-box { border: 2px solid #1A73E8; padding: 2px; display: flex; align-items: center; margin-right: 10px; }
-    .avatar-sharp { border-radius: 0 !important; width: 24px; height: 24px; }
+    .profile-zone > .dropdown-toggle {
+        display: inline-flex !important;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px !important;
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(29, 99, 216, 0.08), rgba(70, 197, 255, 0.08)) !important;
+        border: 1px solid rgba(29, 99, 216, 0.12);
+        transition: all 0.22s ease;
+    }
+
+    .profile-zone.open > .dropdown-toggle,
+    .profile-zone > .dropdown-toggle:hover,
+    .profile-zone > .dropdown-toggle:focus {
+        background: linear-gradient(135deg, rgba(29, 99, 216, 0.12), rgba(70, 197, 255, 0.14)) !important;
+        box-shadow: 0 12px 28px rgba(29, 99, 216, 0.12);
+    }
+
+    .profile-pill-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        padding: 2px;
+        background: linear-gradient(135deg, #144fae 0%, #46c5ff 100%);
+        box-shadow: 0 10px 24px rgba(29, 99, 216, 0.18);
+        flex: 0 0 auto;
+    }
+
+    .profile-badge-core {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background:
+            radial-gradient(circle at 28% 28%, rgba(255, 255, 255, 0.18), transparent 38%),
+            linear-gradient(180deg, #0d274c 0%, #143a67 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #9ee8ff;
+        font-size: 15px;
+    }
+
+    .user-label-yoover {
+        max-width: 168px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: #17304e;
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .profile-zone .caret {
+        color: #4f6480;
+    }
+
+    .profile-zone {
+        position: relative;
+        z-index: 10020;
+    }
+
+    .profile-zone .dropdown-menu {
+        display: none;
+        right: 0;
+        left: auto;
+        min-width: 290px;
+        margin-top: 12px;
+        border: 1px solid rgba(13, 42, 77, 0.08);
+        border-radius: 22px;
+        box-shadow: 0 24px 48px rgba(11, 34, 64, 0.16);
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(14px);
+        z-index: 10050;
+    }
+
+    .profile-zone .dropdown-menu .divider {
+        margin: 8px 0;
+        background-color: rgba(13, 42, 77, 0.08);
+    }
+
+    .slide-up-menu {
+        animation: profileMenuDrop 0.18s ease-out;
+        transform-origin: top right;
+    }
+
+    .profile-zone.open .dropdown-menu {
+        display: block;
+    }
+
+    .profile-menu-head {
+        padding: 6px 4px 2px;
+    }
+
+    .profile-menu-identity {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        padding: 12px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, rgba(29, 99, 216, 0.08), rgba(70, 197, 255, 0.08));
+    }
+
+    .profile-menu-badge {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #144fae 0%, #46c5ff 100%);
+        color: #fff;
+        font-size: 16px;
+        flex: 0 0 auto;
+        box-shadow: 0 10px 22px rgba(29, 99, 216, 0.18);
+    }
+
+    .profile-menu-copy {
+        min-width: 0;
+    }
+
+    .profile-menu-copy strong,
+    .profile-menu-copy span {
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .profile-menu-copy strong {
+        color: #12263f;
+        font-size: 13px;
+        font-weight: 900;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+    }
+
+    .profile-menu-copy span {
+        color: #6f8094;
+        font-size: 12px;
+        margin-top: 4px;
+    }
+
+    .profile-menu-link {
+        display: flex !important;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px !important;
+        border-radius: 16px;
+        color: #17304e !important;
+    }
+
+    .profile-menu-link > .glyphicon {
+        margin-top: 3px;
+        font-size: 15px;
+        color: #1d63d8;
+    }
+
+    .profile-menu-link span {
+        display: block;
+        min-width: 0;
+    }
+
+    .profile-menu-link strong,
+    .profile-menu-link small {
+        display: block;
+    }
+
+    .profile-menu-link strong {
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #17304e;
+    }
+
+    .profile-menu-link small {
+        margin-top: 4px;
+        font-size: 12px;
+        line-height: 1.5;
+        color: #728295;
+    }
+
+    .profile-menu-link:hover,
+    .profile-menu-link:focus {
+        background: #f4f8fd !important;
+        color: #17304e !important;
+    }
+
+    .profile-menu-link-danger > .glyphicon,
+    .profile-menu-link-danger strong {
+        color: #c83b34 !important;
+    }
+
+    .profile-menu-link-danger small {
+        color: #9a6b66;
+    }
+
+    @keyframes profileMenuDrop {
+        from {
+            opacity: 0;
+            transform: translateY(-6px) scale(0.98);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
 
 @media (min-width: 768px) and (max-width: 1200px) {
     .flex-nav-list { gap: 5px; }
@@ -309,5 +551,54 @@
         text-align: center;
         width: 100%;
     }
+
+    .profile-zone > .dropdown-toggle {
+        width: 100%;
+        justify-content: flex-start;
+        margin: 8px 15px 12px;
+    }
+
+    .profile-zone .dropdown-menu {
+        position: static;
+        width: calc(100% - 30px);
+        margin: 0 15px 12px;
+        box-shadow: 0 14px 28px rgba(11, 34, 64, 0.1);
+    }
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var profileZone = document.querySelector('.profile-zone');
+    var profileToggle = document.getElementById('profileMenuToggle');
+
+    if (!profileZone || !profileToggle) {
+        return;
+    }
+
+    var closeProfileMenu = function () {
+        profileZone.classList.remove('open');
+        profileToggle.setAttribute('aria-expanded', 'false');
+    };
+
+    profileToggle.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        var isOpen = profileZone.classList.toggle('open');
+        profileToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+
+    document.addEventListener('click', function (event) {
+        if (!profileZone.contains(event.target)) {
+            closeProfileMenu();
+        }
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            closeProfileMenu();
+        }
+    });
+});
+</script>

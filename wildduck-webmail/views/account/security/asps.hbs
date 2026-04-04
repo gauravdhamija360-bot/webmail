@@ -1,139 +1,111 @@
-<div class="row">
-    <div class="col-md-12">
-        <h1><span class="glyphicon glyphicon-lock" aria-hidden="true"></span> Security</h1>
-    </div>
-</div>
+<div class="account-shell">
+    <div class="account-wrap">
+        <div class="account-page-head">
+            <section class="account-page-hero">
+                <span class="account-page-kicker"><i class="glyphicon glyphicon-console"></i> Application Passwords</span>
+                <h1 class="account-page-title">Create client-specific passwords without exposing your main login.</h1>
+                <p class="account-page-copy">Application-specific passwords are ideal for desktop clients, phones, and mail tools that should not use your primary account password directly, especially after enabling two-factor authentication.</p>
+            </section>
+            <aside class="account-page-side">
+                <h3>Best use</h3>
+                <ul class="account-side-list">
+                    <li><i class="glyphicon glyphicon-ok-circle"></i><span>Generate one password per app or device so you can revoke only what is needed.</span></li>
+                    <li><i class="glyphicon glyphicon-lock"></i><span>Use these for IMAP, POP3, and SMTP clients when two-factor authentication is turned on.</span></li>
+                    <li><i class="glyphicon glyphicon-trash"></i><span>If a client is lost or compromised, delete its app password instead of rotating your entire login.</span></li>
+                </ul>
+            </aside>
+        </div>
 
-<div class="row">
-    <div class="col-md-12">
+        <div class="account-tabs-card"><ul class="nav nav-tabs account-tabs" role="tablist">{{> accountmenu}}</ul></div>
+        <div class="account-tabs-card"><ul class="nav nav-tabs account-tabs" role="tablist">{{> securitymenu}}</ul></div>
 
-        <!-- Nav tabs -->
-        <ul class="nav nav-tabs" role="tablist">
-            {{> securitymenu}}
-        </ul>
-
-        <div class="tab-content">
-            <div role="tabpanel" class="tab-pane active" id="overview">
-
-                <p>&nbsp;</p>
-
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Application specific passwords</h3></div>
-                    <div class="panel-body">
-                        <p>Here are listed passwords generated for specific applications. If the password is leaked then delete it and generate a new one.</p>
-                        <p>
-                            Application Specific Passwords must be used for external applications if two factor authentication is enabled.
-                        </p>
+        <div class="account-content">
+            <div class="account-card">
+                <div class="account-section-head">
+                    <div>
+                        <h3>Saved Application Passwords</h3>
+                        <p>Review generated credentials and remove anything you no longer trust or use.</p>
                     </div>
-                    <table class="table table-responsive table-no-header-radius">
+                </div>
+
+                <div class="account-table-wrap">
+                    <table class="table account-table">
                         <thead>
                             <tr>
-                                <th>
-                                    #
-                                </th>
-                                <th>
-                                    Description
-                                </th>
-                                <th>
-                                    Created
-                                </th>
-                                <th>
-                                    Used
-                                </th>
-                                <th>
-                                    &nbsp;
-                                </th>
+                                <th>#</th>
+                                <th>Description</th>
+                                <th>Created</th>
+                                <th>Last Used</th>
+                                <th class="text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {{#if asps}}
-
                                 {{#each asps}}
-                                    <tr>
-                                        <th>
-                                            {{index}}
-                                        </th>
-                                        <td>
-                                            {{description}}
-                                        </td>
-                                        <td class="datestring" title="{{created}}">
-                                            {{created}}
-                                        </td>
-                                        <td>
-                                            {{#if lastUse.time}}
-                                                <a href="/account/security/events?event={{lastUse.event}}"><span class="datestring" title="{{lastUse.time}}">{{lastUse.time}}</span></a>
-                                            {{else}}
-                                                never
-                                            {{/if}}
-                                        </td>
-                                        <td>
-                                            <div class="pull-right">
-                                                <button type="button" data-asp="{{id}}" class="btn btn-danger btn-xs" data-toggle="modal" data-target="#deleteModal"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete</button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                {{/each}}
-                            {{else}}
                                 <tr>
-                                    <td colspan="4">
-                                        No application specific passwords generated
+                                    <td>{{index}}</td>
+                                    <td>{{description}}</td>
+                                    <td class="datestring" title="{{created}}">{{created}}</td>
+                                    <td>
+                                        {{#if lastUse.time}}
+                                            <a href="/account/security/events?event={{lastUse.event}}">{{lastUse.time}}</a>
+                                        {{else}}
+                                            never
+                                        {{/if}}
+                                    </td>
+                                    <td class="text-right">
+                                        <button type="button" data-asp="{{id}}" class="account-btn danger" data-toggle="modal" data-target="#deleteModal">Delete</button>
                                     </td>
                                 </tr>
+                                {{/each}}
+                            {{else}}
+                                <tr><td colspan="5" class="account-empty">No application-specific passwords generated yet.</td></tr>
                             {{/if}}
                         </tbody>
                     </table>
                 </div>
-
-                <form method="post" action="/account/security/asps/create">
-                    <input type="hidden" name="_csrf" value="{{csrfToken}}">
-
-                    <fieldset>
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title">Create new application specific password</h3>
-                            </div>
-                            <div class="panel-body">
-
-                                <div class="form-group{{#if errors.description}} has-error{{/if}}">
-                                    <label for="description">Application description</label>
-                                    <input type="text" class="form-control" name="description" id="description" placeholder="Password for Outlook ..." required>
-                                    {{#if errors.description}}
-                                        <span class="help-block">{{errors.description}}</span>
-                                    {{/if}}
-                                </div>
-
-                                <div class="form-group">
-                                    <button type="submit" class="btn btn-success"><span class="glyphicon glyphicon-lock" aria-hidden="true"></span> Generate password</button>
-                                </div>
-
-                            </div>
-                        </div>
-                    </fieldset>
-                </form>
             </div>
+
+            <form method="post" action="/account/security/asps/create" class="account-card">
+                <input type="hidden" name="_csrf" value="{{csrfToken}}">
+
+                <div class="account-section-head">
+                    <div>
+                        <h3>Create A New App Password</h3>
+                        <p>Give the password a clear description so you know which client or device it belongs to later.</p>
+                    </div>
+                </div>
+
+                <div class="account-form-grid">
+                    <div class="account-field full {{#if errors.description}}has-error{{/if}}">
+                        <label for="description">Application Description</label>
+                        <input type="text" name="description" id="description" class="account-input" placeholder="Password for Outlook on Mac" required>
+                        {{#if errors.description}}<span class="account-error">{{errors.description}}</span>{{/if}}
+                    </div>
+                </div>
+
+                <div class="account-actions" style="margin-top: 22px;">
+                    <button type="submit" class="account-btn primary">Generate Password</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
-
-<!-- Modal -->
 <div class="modal" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel">
   <div class="modal-dialog" role="document">
-    <div class="modal-content">
+    <div class="modal-content account-modal">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="deleteModalLabel">Delete password</h4>
+        <h4 class="modal-title" id="deleteModalLabel">Delete application password</h4>
       </div>
-      <div class="modal-body">
-        Are you sure you want to permanently delete Application Specific Password?
-      </div>
+      <div class="modal-body">Are you sure you want to permanently delete this application-specific password?</div>
       <div class="modal-footer">
         <form method="post" action="/account/security/asps/delete">
             <input type="hidden" name="_csrf" value="{{csrfToken}}">
             <input type="hidden" id="delete-form-asp" name="id" value="">
-            <button type="button" class="btn btn-default" data-dismiss="modal">No, cancel</button>
-            <button type="submit" class="btn btn-danger bulk-delete-confirm">Yes, delete</button>
+            <button type="button" class="account-btn secondary" data-dismiss="modal">Keep It</button>
+            <button type="submit" class="account-btn danger">Delete</button>
         </form>
       </div>
     </div>
@@ -143,9 +115,8 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     $('#deleteModal').on('show.bs.modal', function (event) {
-        var button = $(event.relatedTarget); // Button that triggered the modal
-        var asp = button.data('asp'); // Extract info from data-* attributes
-        document.getElementById('delete-form-asp').value = asp;
+        var button = $(event.relatedTarget);
+        document.getElementById('delete-form-asp').value = button.data('asp');
     });
 }, false);
 </script>

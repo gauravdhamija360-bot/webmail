@@ -1,25 +1,126 @@
-<div class="row">
-    <div class="col-md-12">
-        <h1><span class="glyphicon glyphicon-lock" aria-hidden="true"></span> Security</h1>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-12">
-
-        <!-- Nav tabs -->
-        <ul class="nav nav-tabs" role="tablist">
-            {{> securitymenu}}
-        </ul>
-
-        <div class="tab-content">
-            <div role="tabpanel" class="tab-pane active" id="overview">
-
-                <p>&nbsp;</p>
-
-                <p>
-                    Future feature
+<div class="account-shell">
+    <div class="account-wrap">
+        <div class="account-page-head">
+            <section class="account-page-hero">
+                <span class="account-page-kicker">
+                    <i class="glyphicon glyphicon-shield"></i>
+                    Security Center
+                </span>
+                <h1 class="account-page-title">Keep your Yoover account resilient, auditable, and ready for serious work.</h1>
+                <p class="account-page-copy">
+                    This area brings together sign-in protection, password management, application-specific credentials, encryption controls, and authentication activity so you can understand and improve your account security from one place.
                 </p>
+                <div class="account-page-meta">
+                    <div class="account-meta-chip">
+                        <i class="glyphicon glyphicon-lock"></i>
+                        2FA {{#if enabled2fa}}enabled{{else}}not enabled{{/if}}
+                    </div>
+                    <div class="account-meta-chip">
+                        <i class="glyphicon glyphicon-flash"></i>
+                        U2F {{#if enabledU2f}}active{{else}}not configured{{/if}}
+                    </div>
+                </div>
+            </section>
+
+            <aside class="account-page-side">
+                <h3>Security priorities</h3>
+                <ul class="account-side-list">
+                    <li>
+                        <i class="glyphicon glyphicon-phone"></i>
+                        <span>Turn on two-factor authentication to protect account access beyond just the main password.</span>
+                    </li>
+                    <li>
+                        <i class="glyphicon glyphicon-console"></i>
+                        <span>Use application-specific passwords for external clients when your account has 2FA enabled.</span>
+                    </li>
+                    <li>
+                        <i class="glyphicon glyphicon-list-alt"></i>
+                        <span>Review security events to understand recent authentication activity and unusual access attempts.</span>
+                    </li>
+                </ul>
+            </aside>
+        </div>
+
+        <div class="account-tabs-card">
+            <ul class="nav nav-tabs account-tabs" role="tablist">
+                {{> accountmenu}}
+            </ul>
+        </div>
+
+        <div class="account-tabs-card">
+            <ul class="nav nav-tabs account-tabs" role="tablist">
+                {{> securitymenu}}
+            </ul>
+        </div>
+
+        <div class="account-content">
+            <div class="account-metric-grid">
+                <div class="account-metric">
+                    <span class="account-metric-label">Two-Factor Authentication</span>
+                    <strong>{{#if enabled2fa}}Enabled{{else}}Disabled{{/if}}</strong>
+                    <small>{{#if enabled2fa}}A second factor is required during sign in.{{else}}Enable 2FA to add another layer to account access.{{/if}}</small>
+                </div>
+                <div class="account-metric">
+                    <span class="account-metric-label">Authenticator App</span>
+                    <strong>{{#if enabledTotp}}Configured{{else}}Not set{{/if}}</strong>
+                    <small>TOTP-based sign-in codes work with standard authenticator apps.</small>
+                </div>
+                <div class="account-metric">
+                    <span class="account-metric-label">Security Key</span>
+                    <strong>{{#if enabledU2f}}Configured{{else}}Not set{{/if}}</strong>
+                    <small>Hardware-backed sign-in support when U2F is enabled on your account.</small>
+                </div>
+            </div>
+
+            <div class="account-two-col">
+                {{#unless ssoEnabled}}
+                <div class="account-card">
+                    <div class="account-section-head">
+                        <div>
+                            <h3>Login Protection</h3>
+                            <p>Strengthen sign-in with a mobile authenticator and, when supported, a hardware security key.</p>
+                        </div>
+                        <a href="/account/security/2fa" class="account-btn primary">Manage 2FA</a>
+                    </div>
+                    <p class="account-card-copy">Two-factor authentication makes it much harder for stolen passwords to be used successfully. Once enabled, external mail clients should use application-specific passwords instead of your main login password.</p>
+                </div>
+
+                <div class="account-card">
+                    <div class="account-section-head">
+                        <div>
+                            <h3>Password Hygiene</h3>
+                            <p>Change your account password when access needs to be refreshed or exposure is suspected.</p>
+                        </div>
+                        <a href="/account/security/password" class="account-btn secondary">Change Password</a>
+                    </div>
+                    <p class="account-card-copy">Use a unique password for Yoover and rotate it promptly if a device, browser, or reused credential may have been exposed elsewhere.</p>
+                </div>
+                {{/unless}}
+
+                <div class="account-card">
+                    <div class="account-section-head">
+                        <div>
+                            <h3>External Client Access</h3>
+                            <p>Create application-specific passwords for IMAP, POP3, and SMTP clients when needed.</p>
+                        </div>
+                        <a href="/account/security/asps" class="account-btn secondary">App Passwords</a>
+                    </div>
+                    <p class="account-card-copy">These credentials help you isolate external app access and revoke one device or client without changing your main account password.</p>
+                </div>
+
+                <div class="account-card">
+                    <div class="account-section-head">
+                        <div>
+                            <h3>Encryption & Audit</h3>
+                            <p>Control archived message encryption and inspect recent authentication activity.</p>
+                        </div>
+                        <div class="account-actions">
+                            <a href="/account/security/gpg" class="account-btn secondary">Encryption</a>
+                            <a href="/account/security/events" class="account-btn secondary">Events</a>
+                        </div>
+                    </div>
+                    <p class="account-card-copy">Use GPG settings for archived message encryption, and review event history to see successful logins, failed attempts, and application-specific password activity.</p>
+                </div>
             </div>
         </div>
     </div>

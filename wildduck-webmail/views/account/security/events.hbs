@@ -1,114 +1,83 @@
-<div class="row">
-    <div class="col-md-12">
-        <h1><span class="glyphicon glyphicon-lock" aria-hidden="true"></span> Security</h1>
-    </div>
-</div>
+<div class="account-shell">
+    <div class="account-wrap">
+        <div class="account-page-head">
+            <section class="account-page-hero">
+                <span class="account-page-kicker"><i class="glyphicon glyphicon-list-alt"></i> Security Events</span>
+                <h1 class="account-page-title">Review recent authentication activity and account security actions.</h1>
+                <p class="account-page-copy">This log helps you understand who signed in, from where, and what kind of security-related action happened. Use it to investigate unfamiliar access and validate expected activity.</p>
+            </section>
+            <aside class="account-page-side">
+                <h3>How to read this log</h3>
+                <ul class="account-side-list">
+                    <li><i class="glyphicon glyphicon-map-marker"></i><span>Check IP and environment to spot unexpected login origin or client behavior.</span></li>
+                    <li><i class="glyphicon glyphicon-ok-circle"></i><span>Look for repeated failures or unknown sessions if you suspect unauthorized attempts.</span></li>
+                    <li><i class="glyphicon glyphicon-console"></i><span>Application password usage can also appear here when relevant.</span></li>
+                </ul>
+            </aside>
+        </div>
 
-<div class="row">
-    <div class="col-md-12">
+        <div class="account-tabs-card"><ul class="nav nav-tabs account-tabs" role="tablist">{{> accountmenu}}</ul></div>
+        <div class="account-tabs-card"><ul class="nav nav-tabs account-tabs" role="tablist">{{> securitymenu}}</ul></div>
 
-        <!-- Nav tabs -->
-        <ul class="nav nav-tabs" role="tablist">
-            {{> securitymenu}}
-        </ul>
+        <div class="account-content">
+            <div class="account-card">
+                <div class="account-section-head">
+                    <div>
+                        <h3>Authentication Timeline</h3>
+                        <p>Recent security-related events for your account and connected sessions.</p>
+                    </div>
+                </div>
 
-        <div class="tab-content">
-            <div role="tabpanel" class="tab-pane active" id="overview">
-
-                <p>&nbsp;</p>
-
-                <table class="table table-responsive">
-                    <thead>
-                        <tr>
-                            <th>
-                                Environment
-                            </th>
-                            <th>
-                                Action
-                            </th>
-                            <th>
-                                Result
-                            </th>
-                            <th>
-                                IP
-                            </th>
-                            <th>
-                                Session
-                            </th>
-                            <th>
-                                Time
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {{#if results}}
-
-                            {{#each results}}
+                <div class="account-table-wrap">
+                    <table class="table account-table">
+                        <thead>
+                            <tr>
+                                <th>Environment</th>
+                                <th>Action</th>
+                                <th>Result</th>
+                                <th>IP</th>
+                                <th>Session</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#if results}}
+                                {{#each results}}
                                 <tr>
+                                    <td>{{protocol}}</td>
                                     <td>
-                                        {{protocol}}
-                                    </td>
-                                    <td>
-
-
-                                        {{#if asp}}
-                                            <div class="pull-right">
-                                                <strong>{{asp.name}}</strong>
-                                            </div>
-                                        {{/if}}
-
-                                        {{action}}
-
-                                        ({{events}})
+                                        {{#if asp}}<strong>{{asp.name}}</strong><br>{{/if}}
+                                        {{action}} ({{events}})
                                     </td>
                                     <td>
                                         {{#if label}}
-                                            <span class="label label-{{label}}">{{result}}</span>
+                                            <span class="account-mini-pill">{{result}}</span>
                                         {{else}}
                                             {{result}}
                                         {{/if}}
                                     </td>
-                                    <td>
-                                        {{ip}}
-                                    </td>
-                                    <td>
-                                        {{#if sess}}
-                                            <em>{{sessStr}}</em>
-                                        {{else}}
-                                            –
-                                        {{/if}}
-                                    </td>
-                                    <td class="datestring-fixed text-right" title="{{created}}">
-                                        {{created}}
-                                    </td>
+                                    <td>{{ip}}</td>
+                                    <td>{{#if sess}}<em>{{sessStr}}</em>{{else}}–{{/if}}</td>
+                                    <td class="datestring-fixed" title="{{created}}">{{created}}</td>
                                 </tr>
-                            {{/each}}
-                        {{else}}
-                            <tr>
-                                <td colspan="6">
-                                    <em>No events found</em>
-                                </td>
-                            </tr>
-                        {{/if}}
-                    </tbody>
-                </table>
+                                {{/each}}
+                            {{else}}
+                                <tr><td colspan="6" class="account-empty">No security events found.</td></tr>
+                            {{/if}}
+                        </tbody>
+                    </table>
+                </div>
 
-                <nav aria-label="nav">
-                    <ul class="pager">
-                        {{#if previousCursor}}
-                            <li class="previous"><a href="/account/security/events?previous={{previousCursor}}&amp;page={{previousPage}}"><span aria-hidden="true">&larr;</span> Newer</a></li>
-                        {{else}}
-                            <li class="previous disabled"><a href="#"><span aria-hidden="true">&larr;</span> Newer</a></li>
-                        {{/if}}
-
-                        {{#if nextCursor}}
-                            <li class="next"><a href="/account/security/events?next={{nextCursor}}&amp;page={{nextPage}}">Older <span aria-hidden="true">&rarr;</span></a></li>
-                        {{else}}
-                            <li class="next disabled"><a href="#">Older <span aria-hidden="true">&rarr;</span></a></li>
-                        {{/if}}
-                    </ul>
-                </nav>
-
+                <div class="account-actions" style="justify-content: space-between; margin-top: 20px;">
+                    {{#if previousCursor}}
+                        <a href="/account/security/events?previous={{previousCursor}}&amp;page={{previousPage}}" class="account-btn secondary">Newer</a>
+                    {{else}}
+                        <span></span>
+                    {{/if}}
+                    {{#if nextCursor}}
+                        <a href="/account/security/events?next={{nextCursor}}&amp;page={{nextPage}}" class="account-btn secondary">Older</a>
+                    {{/if}}
+                </div>
             </div>
         </div>
     </div>

@@ -23,14 +23,12 @@ const AUTH_EVENTS = new Map([
 ]);
 
 router.get('/', (req, res) => {
-    if (config.service.sso.http.enabled) {
-        return res.redirect('/account/security/asps');
-    }
-
-    res.render('account/security/2fa', {
+    res.render('account/security', {
         title: 'Security',
         activeSecurity: true,
-        secMenu2fa: true,
+        accMenuProfile: true,
+        secMenuOverview: true,
+        ssoEnabled: config.service.sso.http.enabled,
 
         values: req.user,
         enabled2fa: req.user.enabled2fa,
@@ -86,7 +84,9 @@ router.get('/events', (req, res, next) => {
         }
         log.title = 'Security';
         log.activeSecurity = true;
+        log.accMenuProfile = true;
         log.secMenuEvents = true;
+        log.ssoEnabled = config.service.sso.http.enabled;
         log.nextPage = log.page + 1;
         log.previousPage = Math.max(log.page - 1, 1);
         log.results.forEach(entry => {
@@ -126,7 +126,9 @@ router.get('/gpg', (req, res) => {
     res.render('account/security/gpg', {
         title: 'Security',
         activeSecurity: true,
+        accMenuProfile: true,
         secMenuGpg: true,
+        ssoEnabled: config.service.sso.http.enabled,
 
         values: req.user,
         fingerprint: req.user.keyInfo ? formatFingerprint(req.user.keyInfo.fingerprint) : false,
@@ -165,7 +167,9 @@ router.post('/gpg', (req, res) => {
         res.render('account/security/gpg', {
             title: 'Security',
             activeSecurity: true,
+            accMenuProfile: true,
             secMenuGpg: true,
+            ssoEnabled: config.service.sso.http.enabled,
 
             values: result.value,
             errors,
@@ -237,7 +241,9 @@ router.get('/password', (req, res) => {
     res.render('account/security/password', {
         title: 'Security',
         activeSecurity: true,
+        accMenuProfile: true,
         secMenuPassword: true,
+        ssoEnabled: config.service.sso.http.enabled,
 
         values: req.user,
 
@@ -275,7 +281,9 @@ router.post('/password', (req, res) => {
         res.render('account/security/password', {
             title: 'Account',
             activeProfile: true,
+            accMenuProfile: true,
             secMenuPassword: true,
+            ssoEnabled: config.service.sso.http.enabled,
             values: result.value,
             errors,
 
@@ -330,7 +338,9 @@ router.get('/asps', (req, res) => {
         res.render('account/security/asps', {
             title: 'Security',
             activeSecurity: true,
+            accMenuProfile: true,
             secMenuAsps: true,
+            ssoEnabled: config.service.sso.http.enabled,
 
             values: req.user,
 
@@ -432,7 +442,9 @@ router.get('/2fa', (req, res) => {
     res.render('account/security/2fa', {
         title: 'Security',
         activeSecurity: true,
+        accMenuProfile: true,
         secMenu2fa: true,
+        ssoEnabled: config.service.sso.http.enabled,
 
         values: req.user,
         enabled2fa: req.user.enabled2fa,
