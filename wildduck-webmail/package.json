@@ -43,6 +43,7 @@
         "npmlog": "6.0.2",
         "passport": "0.6.0",
         "passport-local": "1.0.0",
+        "pdfkit": "^0.17.2",
         "pem": "1.14.6",
         "request": "2.88.2",
         "restify-clients": "4.1.1",

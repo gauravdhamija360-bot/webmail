@@ -7,6 +7,7 @@ const Joi = require('joi');
 const apiClient = require('../lib/api-client');
 const billingStore = require('../lib/billing-store');
 const authorizeNet = require('../lib/authorize-net');
+const adminNotifier = require('../lib/admin-notifier');
 const { getPlan, listPlans } = require('../lib/billing-plans');
 const roleBasedAddresses = require('role-based-email-addresses');
 /* ------------------------------
@@ -555,6 +556,17 @@ router.post('/execute-test-signup', async (req, res) => {
 
         const wildDuckUser = await createWildDuckAccount(req, values);
 
+        adminNotifier
+            .notifyFreeSignup({
+                emailAddress: `${values.requestedUsername}@${getServiceDomain()}`,
+                fullName: values.fullName,
+                recoveryEmail: values.recoveryEmail,
+                createdAt: new Date()
+            })
+            .catch(err => {
+                console.error('Free signup admin notification error:', err);
+            });
+
         return res.render('test-signup-success', {
             title: 'Test Mailbox Created',
             customerName: values.fullName,
@@ -1018,6 +1030,7 @@ router.post('/execute-authorize-payment', async (req, res) => {
             username: billingAccount.username,
             transactionId: transaction.transactionId,
             subscriptionId: subscription && subscription.subscriptionId,
+            invoiceNumber,
             amount: plan.price,
             status: 'paid',
             type: 'initial',
@@ -1035,6 +1048,22 @@ router.post('/execute-authorize-payment', async (req, res) => {
                     status: subscription ? 'active' : 'active-pending-billing'
                 })
             );
+
+            adminNotifier
+                .notifyPaidSignup({
+                    emailAddress: billingAccount.emailAddress,
+                    fullName: billingAccount.fullName,
+                    billingEmail: billingAccount.billingEmail,
+                    planName: plan.name,
+                    amount: plan.price,
+                    invoiceNumber,
+                    transactionId: transaction.transactionId,
+                    createdAt: new Date(),
+                    paymentStatus: 'Paid'
+                })
+                .catch(notificationErr => {
+                    console.error('Paid signup admin notification error:', notificationErr);
+                });
         } catch (provisionErr) {
             console.error('Mailbox Provisioning Error:', provisionErr);
             req.flash('warning', 'Payment was successful, but mailbox provisioning needs manual review. Support can help using your billing email.');

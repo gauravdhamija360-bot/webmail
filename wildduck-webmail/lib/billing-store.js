@@ -96,6 +96,7 @@ module.exports.recordPayment = async payment => {
         username: payment.username,
         transactionId: payment.transactionId || null,
         subscriptionId: payment.subscriptionId || null,
+        invoiceNumber: payment.invoiceNumber || '',
         amount: payment.amount,
         status: payment.status,
         type: payment.type,
