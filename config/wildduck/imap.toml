@@ -1,11 +1,11 @@
 # If enabled then WildDuck exposes an IMAP interface for listing and fetching emails
 enabled = true
-port = 143
+port = 993
 host = "0.0.0.0"
 
 # Use `true` for port 993 and `false` for 143. If connection is not secured
 # on connection then WildDuck enables STARTTLS extension
-secure = false
+secure = true
 
 # Max size for messages uploaded via APPEND
 maxMB = 25
@@ -56,15 +56,15 @@ ignoredHosts = []
 
 [setup]
 # Public configuration for IMAP
-hostname="email.example.com"
+hostname="imap.yoover.com"
 secure = true
 # port defaults to imap.port
 port = 993
 
 [tls]
 ## If certificate path is not defined, use global or built-in self-signed certs
-#key="/path/to/server/key.pem"
-#cert="/path/to/server/cert.pem"
+key="/wildduck/certs/yoover.com-key.pem"
+cert="/wildduck/certs/yoover.com.pem"
 #dhparam="/path/to/server/dhparam.pem"
 
 ## You can also define extra options for specific TLS settings:

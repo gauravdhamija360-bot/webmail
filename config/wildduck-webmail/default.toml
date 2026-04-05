@@ -4,7 +4,7 @@ favicon = "/app/public/images/yoover-logo.svg"
 
 [service]
     # email domain for new users
-    domain="app.yoover.com"
+    domain="yoover.com"
     # default quotas for new users
     quota=1024
     recipients=2000
@@ -14,7 +14,7 @@ favicon = "/app/public/images/yoover-logo.svg"
     allowJoin=true
     enableSpecial=false # if true the allow creating addresses with special usernames
     # allowed domains for new addresses
-    domains=["app.yoover.com", "local.test", "localhost","yoover.com"]
+    domains=["yoover.com"]
 
     generalNotification="" # static notification to show on top of the page
 
@@ -30,7 +30,7 @@ favicon = "/app/public/images/yoover-logo.svg"
 
 [dbs]
     # mongodb connection string for the main database
-    mongo="mongodb://mongo:27017/wildduck-webmail"
+    mongo="mongodb://yoovermongo:YooverMongo2026@mongo:27017/wildduck-webmail?authSource=admin"
 
     # redis connection string for Express sessions
     redis="redis://redis:6379/5"
@@ -60,7 +60,7 @@ favicon = "/app/public/images/yoover-logo.svg"
     # set to false if not using HTTPS
     enabled=true
     # must be https url or use default
-    appId="https://local.test"
+    appId="https://yoover.com"
 
 [log]
     level="silly"
@@ -69,14 +69,14 @@ favicon = "/app/public/images/yoover-logo.svg"
 [setup]
     # these values are shown in the configuration help page
     [setup.imap]
-        hostname="mail.yoover.com"
+        hostname="imap.yoover.com"
         secure=true
         port=993
     [setup.pop3]
-        hostname="mail.yoover.com"
+        hostname="pop3.yoover.com"
         secure=true
         port=995
     [setup.smtp]
-        hostname="mail.yoover.com"
+        hostname="smtp.yoover.com"
         secure=true
         port=465

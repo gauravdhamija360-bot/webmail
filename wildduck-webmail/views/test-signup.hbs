@@ -1,0 +1,65 @@
+<div class="container" style="padding: 90px 15px 60px; max-width: 760px;">
+    <div style="background: #ffffff; border-radius: 18px; box-shadow: 0 18px 50px rgba(11, 34, 64, 0.08); overflow: hidden;">
+        <div style="padding: 28px 32px; background: linear-gradient(135deg, #0b223f, #1d4f7a); color: #ffffff;">
+            <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.75;">Test Provisioning</div>
+            <h1 style="margin: 10px 0 8px; font-size: 32px; font-weight: 800; color: #ffffff;">Create a Yoover mailbox without payment</h1>
+            <p style="margin: 0; max-width: 560px; color: rgba(255, 255, 255, 0.82);">This page is for testing only. It provisions a real <strong>@{{serviceDomain}}</strong> mailbox directly in WildDuck and skips the billing flow.</p>
+        </div>
+
+        <div style="padding: 30px 32px 34px;">
+            {{#if errors.general}}
+            <div class="alert alert-danger">{{errors.general}}</div>
+            {{/if}}
+
+            <form method="POST" action="/execute-test-signup">
+                <input type="hidden" name="_csrf" value="{{csrfToken}}">
+
+                <div class="row">
+                    <div class="col-sm-12 form-group">
+                        <label for="requestedUsername">Mailbox Username</label>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="text" class="form-control {{#if errors.requestedUsername}}field-error{{/if}}" id="requestedUsername" name="requestedUsername" value="{{values.requestedUsername}}" autocomplete="off" spellcheck="false" required>
+                            <span style="white-space: nowrap; font-weight: 700; color: #0b223f;">@{{serviceDomain}}</span>
+                        </div>
+                        {{#if errors.requestedUsername}}<span class="err-msg">{{errors.requestedUsername}}</span>{{/if}}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-12 form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" class="form-control {{#if errors.fullName}}field-error{{/if}}" id="fullName" name="fullName" value="{{values.fullName}}" minlength="2" maxlength="120" required>
+                        {{#if errors.fullName}}<span class="err-msg">{{errors.fullName}}</span>{{/if}}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-12 form-group">
+                        <label for="recoveryEmail">Recovery Email</label>
+                        <input type="email" class="form-control {{#if errors.recoveryEmail}}field-error{{/if}}" id="recoveryEmail" name="recoveryEmail" value="{{values.recoveryEmail}}" maxlength="190" placeholder="optional@example.com">
+                        {{#if errors.recoveryEmail}}<span class="err-msg">{{errors.recoveryEmail}}</span>{{/if}}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-6 form-group">
+                        <label for="password">Password</label>
+                        <input type="password" class="form-control {{#if errors.password}}field-error{{/if}}" id="password" name="password" minlength="8" maxlength="256" required>
+                        {{#if errors.password}}<span class="err-msg">{{errors.password}}</span>{{/if}}
+                    </div>
+                    <div class="col-sm-6 form-group">
+                        <label for="password2">Confirm Password</label>
+                        <input type="password" class="form-control {{#if errors.password2}}field-error{{/if}}" id="password2" name="password2" minlength="8" maxlength="256" required>
+                        {{#if errors.password2}}<span class="err-msg">{{errors.password2}}</span>{{/if}}
+                    </div>
+                </div>
+
+                <div style="margin: 16px 0 24px; padding: 14px 16px; border-radius: 12px; background: #f6f8fb; border: 1px solid #dbe5ef; color: #4d5b6a;">
+                    This path is intended for internal testing. It does not create a billing profile, charge a card, or subscribe the mailbox to a paid plan.
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="min-width: 220px; font-weight: 700;">Create Test Mailbox</button>
+            </form>
+        </div>
+    </div>
+</div>

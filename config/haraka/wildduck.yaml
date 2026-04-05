@@ -20,7 +20,7 @@ redis:
 
 mongo:
   # connection string for main messages database
-  url: "mongodb://mongo:27017/wildduck"
+  url: "mongodb://yoovermongo:YooverMongo2026@mongo:27017/wildduck?authSource=admin"
 
   ## database name or connection string for the users db
   #users: "users"

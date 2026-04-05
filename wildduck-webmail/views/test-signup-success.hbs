@@ -1,0 +1,32 @@
+<div class="container" style="padding:80px 0;max-width:700px;">
+<div style="background:white;padding:50px;border-radius:15px;box-shadow:0 15px 35px rgba(0,0,0,0.08);text-align:center;">
+<div style="width:80px;height:80px;margin:auto;border-radius:50%;background:#e6f9f0;display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+<i class="fa fa-check" style="font-size:40px;color:#28a745;"></i>
+</div>
+
+<h2 style="font-weight:800;margin-bottom:10px;">Test Mailbox Created</h2>
+
+<p class="text-muted" style="margin-bottom:30px;">
+Mailbox provisioning completed for <strong>{{customerName}}</strong>. This account skipped the payment flow and was created directly for testing.
+</p>
+
+<div style="background:#f4f7f9;padding:20px;border-radius:10px;margin-bottom:20px;">
+<h4 style="margin-bottom:5px;">New email address</h4>
+<p style="font-size:20px;font-weight:700;color:#1d4f7a;margin:0;">{{newEmail}}</p>
+</div>
+
+{{#if recoveryEmail}}
+<div style="background:#f8fbff;padding:18px 20px;border-radius:10px;margin-bottom:20px;text-align:left;">
+<p style="margin:0;"><strong>Recovery email:</strong> {{recoveryEmail}}</p>
+</div>
+{{/if}}
+
+{{#if accountId}}
+<div style="background:#eef5ff;padding:18px 20px;border-radius:10px;margin-bottom:25px;text-align:left;">
+<p style="margin:0;"><strong>WildDuck user id:</strong> {{accountId}}</p>
+</div>
+{{/if}}
+
+<a href="/account/login" class="btn btn-primary" style="padding:12px 30px;font-weight:700;border-radius:8px;background:#1d4f7a;border:none;">Go to Webmail Login</a>
+</div>
+</div>

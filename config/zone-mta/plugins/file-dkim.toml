@@ -1,0 +1,5 @@
+["./file-dkim"]
+enabled = "sender"
+domain = "mail.yoover.com"
+selector = "default"
+path = "/app/certs/dkim-mail-yoover-com.key"

@@ -39,6 +39,14 @@ const checkoutSchema = Joi.object({
     dataValue: Joi.string().trim().required()
 });
 
+const testSignupSchema = Joi.object({
+    requestedUsername: Joi.string().trim().lowercase().required(),
+    fullName: Joi.string().trim().min(2).max(120).required(),
+    recoveryEmail: Joi.string().trim().email().allow('').default(''),
+    password: Joi.string().min(8).max(256).required(),
+    password2: Joi.string().valid(Joi.ref('password')).required()
+});
+
 const validateRequestedUsername = username => {
     const normalizedUsername = (username || '').trim().toLowerCase();
 
@@ -299,6 +307,18 @@ const renderCheckout = (req, res, values, options) =>
         serviceDomain: getServiceDomain()
     });
 
+const renderTestSignup = (req, res, values, options) =>
+    res.render('test-signup', {
+        title: 'Create Test Mailbox',
+        activePurchase: true,
+        activeTestSignup: true,
+        requestedUsername: values.requestedUsername,
+        values,
+        errors: options.errors || {},
+        csrfToken: req.csrfToken(),
+        serviceDomain: getServiceDomain()
+    });
+
 const redirectCheckout = (req, res, values, options) => {
     req.session.checkoutFormState = {
         values: Object.assign({}, values, {
@@ -420,6 +440,147 @@ router.get('/purchase/:plan', (req, res) => {
     const username = (req.query.username || '').trim().toLowerCase();
 
     return res.redirect(`/purchase?username=${encodeURIComponent(username)}&plan=${plan.code}`);
+});
+
+router.get('/test-signup', (req, res) => {
+    const requestedUsername = (req.query.username || '').trim().toLowerCase();
+    const formState = req.session.testSignupFormState;
+    delete req.session.testSignupFormState;
+
+    return renderTestSignup(
+        req,
+        res,
+        Object.assign(
+            {
+                requestedUsername,
+                fullName: '',
+                recoveryEmail: '',
+                password: '',
+                password2: ''
+            },
+            formState && formState.values ? formState.values : {},
+            {
+                requestedUsername,
+                password: '',
+                password2: ''
+            }
+        ),
+        {
+            errors: (formState && formState.errors) || {}
+        }
+    );
+});
+
+router.post('/execute-test-signup', async (req, res) => {
+    const payload = Object.assign({}, req.body);
+    delete payload._csrf;
+
+    try {
+        const result = testSignupSchema.validate(payload, {
+            abortEarly: false,
+            convert: true,
+            allowUnknown: false
+        });
+
+        const formValues = Object.assign({}, payload, (result && result.value) || {});
+
+        if (result.error) {
+            const errors = {};
+            result.error.details.forEach(detail => {
+                errors[detail.path] = detail.message;
+            });
+
+            req.session.testSignupFormState = {
+                values: Object.assign({}, formValues, {
+                    password: '',
+                    password2: ''
+                }),
+                errors
+            };
+
+            return res.redirect(`/test-signup?username=${encodeURIComponent((formValues.requestedUsername || '').trim().toLowerCase())}`);
+        }
+
+        const values = result.value;
+        const validationError = validateRequestedUsername(values.requestedUsername);
+
+        if (validationError) {
+            req.session.testSignupFormState = {
+                values: Object.assign({}, values, {
+                    password: '',
+                    password2: ''
+                }),
+                errors: {
+                    requestedUsername: validationError
+                }
+            };
+
+            return res.redirect(`/test-signup?username=${encodeURIComponent(values.requestedUsername)}`);
+        }
+
+        const usernameAvailable = await new Promise((resolve, reject) => {
+            apiClient.users.resolve(
+                {
+                    username: `${values.requestedUsername}@${getServiceDomain()}`,
+                    ip: req.ip,
+                    sess: req.session.id
+                },
+                err => {
+                    if (!err) {
+                        return resolve(false);
+                    }
+
+                    if (err.statusCode === 404) {
+                        return resolve(true);
+                    }
+
+                    return reject(err);
+                }
+            );
+        });
+
+        if (!usernameAvailable) {
+            req.session.testSignupFormState = {
+                values: Object.assign({}, values, {
+                    password: '',
+                    password2: ''
+                }),
+                errors: {
+                    requestedUsername: 'That username is no longer available. Please choose another one.'
+                }
+            };
+
+            return res.redirect(`/test-signup?username=${encodeURIComponent(values.requestedUsername)}`);
+        }
+
+        const wildDuckUser = await createWildDuckAccount(req, values);
+
+        return res.render('test-signup-success', {
+            title: 'Test Mailbox Created',
+            customerName: values.fullName,
+            newEmail: `${values.requestedUsername}@${getServiceDomain()}`,
+            recoveryEmail: values.recoveryEmail,
+            accountId: wildDuckUser && wildDuckUser.id,
+            serviceDomain: getServiceDomain()
+        });
+    } catch (err) {
+        console.error('Test Signup Error:', err);
+
+        req.session.testSignupFormState = {
+            values: {
+                requestedUsername: (payload.requestedUsername || '').trim().toLowerCase(),
+                fullName: payload.fullName || '',
+                recoveryEmail: payload.recoveryEmail || '',
+                password: '',
+                password2: ''
+            },
+            errors: {
+                general: err.message || 'Unable to create the test mailbox right now.'
+            }
+        };
+
+        return res.redirect(`/test-signup?username=${encodeURIComponent((payload.requestedUsername || '').trim().toLowerCase())}`);
+    }
 });
 
 router.get('/success', async (req, res) => {

@@ -1,6 +1,6 @@
 # If enabled then WildDuck exposes a limited POP3 interface for listing and fetching emails
 enabled = true
-port = 110
+port = 995
 # by default bind to localhost only
 host = "0.0.0.0"
 
@@ -8,7 +8,7 @@ host = "0.0.0.0"
 disableSTARTTLS = true
 
 # Use `true` for port 995 and `false` for 110
-secure = false
+secure = true
 
 # If true, then do not show server info in CAPA response
 disableVersionString = false
@@ -32,12 +32,12 @@ ignoredHosts = []
 
 [tls]
 # If certificate path is not defined, use global or built-in self-signed certs
-#key="/path/to/server/key.pem"
-#cert="/path/to/server/cert.pem"
+key="/wildduck/certs/yoover.com-key.pem"
+cert="/wildduck/certs/yoover.com.pem"
 
 [setup]
 # Public configuration for POP3
-hostname = "email.example.com"
+hostname = "pop3.yoover.com"
 secure = true
 # port defaults to pop3.port
 port = 995

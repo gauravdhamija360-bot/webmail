@@ -1,0 +1,15 @@
+# SMTPS interface for clients that require implicit TLS on port 465
+
+[submissions]
+enabled = true
+processes = 1
+maxSize = 31457280
+host = "0.0.0.0"
+port = 465
+logger = true
+authentication = true
+maxRecipients = 1000
+starttls = false
+secure = true
+key = "/app/certs/yoover.com-key.pem"
+cert = "/app/certs/yoover.com.pem"

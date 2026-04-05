@@ -2,7 +2,7 @@
 # this file is loaded when NODE_ENV=production
 
 # MongoDB connection string
-mongo = "mongodb://mongo:27017/wildduck"
+mongo = "mongodb://yoovermongo:YooverMongo2026@mongo:27017/wildduck?authSource=admin"
 
 # Redis connection string
 redis = "redis://redis:6379/2"

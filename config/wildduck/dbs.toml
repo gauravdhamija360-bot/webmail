@@ -1,5 +1,5 @@
 # mongodb connection string for the main database
-mongo = "mongodb://mongo:27017/wildduck"
+mongo = "mongodb://yoovermongo:YooverMongo2026@mongo:27017/wildduck?authSource=admin"
 
 # redis connection string to connect to a single master (see below for Sentinel example)
 #redis="redis://127.0.0.1:6379/3"

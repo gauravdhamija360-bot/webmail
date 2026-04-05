@@ -3,7 +3,7 @@
 # If you do not use privileged ports then you can start the app already under required user account
 #user="wildduck"
 #group="wildduck"
-emailDomain="email.example.com"
+emailDomain="yoover.com"
 
 # process title
 ident = "wildduck"
@@ -26,7 +26,7 @@ processes = 1
 #cipher="aes192" # only for decrypting legacy values (if there are any)
 
 [webauthn]
-rpId="email.example.com"       # origin domain
+rpId="yoover.com"       # origin domain
 rpName="WildDuck Email Server"
 
 challengeSize=64
@@ -95,7 +95,7 @@ enabled = true
 
 [smtp.setup]
 # Public configuration for SMTP MDA, needed for mobileconfig files
-hostname = "email.example.com"
+hostname = "smtp.yoover.com"
 secure = true
 port = 465
 

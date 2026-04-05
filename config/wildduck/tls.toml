@@ -1,5 +1,5 @@
 # Default TLS keys (can be overriden by individual services)
-#key="/path/to/server/key.pem"
-#ca=["/path/to/server/ca1.pem", "/path/to/server/ca2.pem"]
-#cert="/path/to/server/cert.pem"
-#dhparam="/path/to/server/dhparam.pem"
+key="/wildduck/certs/yoover.com-key.pem"
+#ca=["/wildduck/certs/ca.pem"]
+cert="/wildduck/certs/yoover.com.pem"
+#dhparam="/wildduck/certs/dhparam.pem"

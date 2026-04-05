@@ -1,7 +1,7 @@
 # Database configuration
 
 # MongoDB connection string
-mongo = "mongodb://mongo:27017/zone-mta"
+mongo = "mongodb://yoovermongo:YooverMongo2026@mongo:27017/wildduck?authSource=admin"
 
 # Database name for ZoneMTA data in MongoDB. In most cases it should be the same as in the connection string
 sender = "zone-mta"

@@ -1,0 +1,78 @@
+; Domain: yoover.com
+; Exported (y-m-d hh:mm:ss): 2026-04-05 03:22:09
+;
+; This file is intended for use for informational and archival
+; purposes ONLY and MUST be edited before use on a production
+; DNS server.
+;
+; In particular, you must update the SOA record with the correct
+; authoritative name server and contact e-mail address information,
+; and add the correct NS records for the name servers which will
+; be authoritative for this domain.
+;
+; For further information, please consult the BIND documentation
+; located on the following website:
+;
+; http://www.isc.org/
+;
+; And RFC 1035:
+;
+; http://www.ietf.org/rfc/rfc1035.txt
+;
+; Please note that we do NOT offer technical support for any use
+; of this zone data, the BIND name server, or any other third-
+; party DNS software.
+;
+; Use at your own risk.
+
+
+$ORIGIN yoover.com.
+
+; SOA Record
+@	3600	 IN 	SOA	ns11.domaincontrol.com.	dns.jomax.net. (
+					2026040407
+					28800
+					7200
+					604800
+					3600
+					) 
+
+; A Record
+@	600	 IN 	A	162.222.206.152
+app	600	 IN 	A	162.222.206.152
+dev	600	 IN 	A	162.222.206.152
+development	600	 IN 	A	162.222.206.152
+email	600	 IN 	A	162.222.206.152
+imap	600	 IN 	A	162.222.206.152
+mail	600	 IN 	A	162.222.206.152
+market	600	 IN 	A	34.174.136.41
+mobile	600	 IN 	A	162.222.206.152
+pop3	600	 IN 	A	162.222.206.152
+smtp	600	 IN 	A	162.222.206.152
+
+; TXT Record
+@	3600	 IN 	TXT	"google-site-verification=4S91quBRsBRbfSpKnXjUyGA6F3mxGF8FMn9pcktmmus"
+@	3600	 IN 	TXT	"google-site-verification=CS8MBj43inZGuZD6nlQZaiFofSSbgm-laWlszm8rsLU"
+@	3600	 IN 	TXT	"google-site-verification=GAU2h45HjqqZKab2aAqJ4nLRADCO5C1FN0JEtBYTUDE"
+@	3600	 IN 	TXT	"v=spf1 mx a:mail.yoover.com ip4:162.222.206.152 ~all"
+@	3600	 IN 	TXT	"zone-ownership-verification-cc4ac70e3456d9e6fb3c8959fe34d29d7f30d6265a347538050c327c7eef67b3"
+default._domainkey.mail	3600	 IN 	TXT	"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsjXOxnZKHh+qcAm4V8AeB9knT7QGQ/01asitpV6op1EuvPxGREJOvwUwxqD6MhWwHMl7L4TiZSdEgRioC04Hhu/NYE2Z4Q8TIC0dJb2i3/+LC0bMgvVXA7aRR6ForUeylgk50Gjech+o3gz5Kl6aGDrD84eG0U3qO3YVIbUurQas2iUu0jx7vJ7d577cXxKOX"	"UbMaj9/ZZlPuxKlSasScQdLTyP8mp/05/wSaf9HRrXgTJpE/L/RvxFyUp+i28+4tboX3B7bmAgfDquqz5oR9zSgCfHatkjoCRKt6uFIMRJSAcOCzmea3vGya0VS7P7WPDsQJF44T3O/6dxcSbCyMwIDAQAB"
+mail	3600	 IN 	TXT	"v=spf1 a ip4:162.222.206.152 ~all"
+_dmarc	3600	 IN 	TXT	"v=DMARC1; p=none; fo=1; rua=mailto:info@yoover.com"
+
+; CNAME Record
+29080251	3600	 IN 	CNAME	29080251.c7a6a5cbc3.chierchiae.eoidentity.com.
+eo._domainkey	3600	 IN 	CNAME	eo._domainkey.c7a6a5cbc3.chierchiae.eoidentity.com.
+eom	3600	 IN 	CNAME	eom.c7a6a5cbc3.chierchiae.eoidentity.com.
+eot	3600	 IN 	CNAME	eot.c7a6a5cbc3.chierchiae.eoidentity.com.
+www	3600	 IN 	CNAME	@
+_add4181a19157a7151bcd8b86f7ec43b.info	3600	 IN 	CNAME	_603f4e67ad44a20c77cd0e98d0eb71d9.dhzvlrndnj.acm-validations.aws.
+_domainconnect	3600	 IN 	CNAME	_domainconnect.gd.domaincontrol.com.
+
+; NS Record
+@	3600	 IN 	NS	ns11.domaincontrol.com.
+@	3600	 IN 	NS	ns12.domaincontrol.com.
+
+; MX Record
+@	3600	 IN 	MX	10	mail.yoover.com.
+
