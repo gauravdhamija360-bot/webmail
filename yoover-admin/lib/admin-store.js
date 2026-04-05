@@ -100,6 +100,8 @@ const SETTINGS_DEFINITIONS = [
 ];
 
 let db;
+let billingDb;
+let wildduckDb;
 
 const now = () => new Date();
 const daysAgo = days => new Date(Date.now() - days * 24 * 60 * 60 * 1000);
@@ -204,14 +206,16 @@ export const connectStore = async mongoUri => {
   const client = new MongoClient(mongoUri);
   await client.connect();
   db = client.db();
+  billingDb = client.db(process.env.ADMIN_PANEL_BILLING_DB_NAME || db.databaseName);
+  wildduckDb = client.db(process.env.ADMIN_PANEL_WILDDUCK_DB_NAME || db.databaseName);
 
   await Promise.all([
     db.collection(ADMIN_USERS).createIndex({ email: 1 }, { unique: true }),
     db.collection(ADMIN_AUDIT_LOGS).createIndex({ createdAt: -1 }),
     db.collection(ADMIN_SETTINGS).createIndex({ key: 1 }, { unique: true }),
     db.collection(ADMIN_SUPPORT_NOTES).createIndex({ accountId: 1, createdAt: -1 }),
-    db.collection(BILLING_ACCOUNTS).createIndex({ updatedAt: -1 }),
-    db.collection(BILLING_PAYMENTS).createIndex({ createdAt: -1 }),
+    billingDb.collection(BILLING_ACCOUNTS).createIndex({ updatedAt: -1 }),
+    billingDb.collection(BILLING_PAYMENTS).createIndex({ createdAt: -1 }),
     db.collection(MARKETING_RECIPIENTS).createIndex({ email: 1 }, { unique: true }),
     db.collection(MARKETING_RECIPIENTS).createIndex({ status: 1, segment: 1 }),
     db.collection(MARKETING_SENDER_PROFILES).createIndex({ name: 1 }),
@@ -368,7 +372,7 @@ export const listCustomers = async ({ search = '', status = '', plan = '', limit
     filter['plan.name'] = plan;
   }
 
-  return db
+  return billingDb
     .collection(BILLING_ACCOUNTS)
     .find(filter)
     .sort({ updatedAt: -1, createdAt: -1 })
@@ -399,7 +403,7 @@ export const listMailboxUsers = async ({ search = '', limit = 50 } = {}) => {
       }
     : {};
 
-  const users = await db
+  const users = await wildduckDb
     .collection(WILDDUCK_USERS)
     .find(filter)
     .sort({ created: -1 })
@@ -418,7 +422,7 @@ export const listMailboxUsers = async ({ search = '', limit = 50 } = {}) => {
 
   const emailAddresses = users.map(user => user.address).filter(Boolean);
   const usernames = users.map(user => user.username).filter(Boolean);
-  const linkedCustomers = await db
+  const linkedCustomers = await billingDb
     .collection(BILLING_ACCOUNTS)
     .find({
       $or: [{ emailAddress: { $in: emailAddresses } }, { username: { $in: usernames } }]
@@ -441,7 +445,7 @@ export const listMailboxUsers = async ({ search = '', limit = 50 } = {}) => {
 };
 
 export const getMailboxUserDetail = async userId => {
-  const user = await db.collection(WILDDUCK_USERS).findOne(
+  const user = await wildduckDb.collection(WILDDUCK_USERS).findOne(
     { _id: typeof userId === 'string' ? new ObjectId(userId) : userId },
     {
       projection: {
@@ -462,7 +466,7 @@ export const getMailboxUserDetail = async userId => {
     return null;
   }
 
-  const linkedCustomer = await db.collection(BILLING_ACCOUNTS).findOne({
+  const linkedCustomer = await billingDb.collection(BILLING_ACCOUNTS).findOne({
     $or: [{ emailAddress: user.address }, { username: user.username }]
   });
 
@@ -513,7 +517,7 @@ export const createOrUpdateCustomerAccount = async account => {
     throw new Error('Email address is required');
   }
 
-  const existing = await db.collection(BILLING_ACCOUNTS).findOne({ emailAddress });
+  const existing = await billingDb.collection(BILLING_ACCOUNTS).findOne({ emailAddress });
   const createdAt = existing ? existing.createdAt : now();
   const document = {
     username: account.username,
@@ -532,8 +536,8 @@ export const createOrUpdateCustomerAccount = async account => {
     updatedAt: now()
   };
 
-  await db.collection(BILLING_ACCOUNTS).updateOne({ emailAddress }, { $set: document }, { upsert: true });
-  return db.collection(BILLING_ACCOUNTS).findOne({ emailAddress });
+  await billingDb.collection(BILLING_ACCOUNTS).updateOne({ emailAddress }, { $set: document }, { upsert: true });
+  return billingDb.collection(BILLING_ACCOUNTS).findOne({ emailAddress });
 };
 
 export const updateCustomerAccount = async ({ accountId, updates }) => {
@@ -554,12 +558,12 @@ export const updateCustomerAccount = async ({ accountId, updates }) => {
     };
   }
 
-  await db.collection(BILLING_ACCOUNTS).updateOne({ _id: new ObjectId(accountId) }, { $set: patch });
+  await billingDb.collection(BILLING_ACCOUNTS).updateOne({ _id: new ObjectId(accountId) }, { $set: patch });
   return getCustomerDetail(accountId);
 };
 
 export const createManualPayment = async ({ accountId, amount, notes, invoiceNumber, status = 'paid', adminId }) => {
-  const account = await db.collection(BILLING_ACCOUNTS).findOne({ _id: new ObjectId(accountId) });
+  const account = await billingDb.collection(BILLING_ACCOUNTS).findOne({ _id: new ObjectId(accountId) });
   if (!account) {
     throw new Error('Customer account not found');
   }
@@ -583,7 +587,7 @@ export const createManualPayment = async ({ accountId, amount, notes, invoiceNum
     createdBy: adminId ? new ObjectId(adminId) : null
   };
 
-  const result = await db.collection(BILLING_PAYMENTS).insertOne(payment);
+  const result = await billingDb.collection(BILLING_PAYMENTS).insertOne(payment);
   return {
     ...payment,
     _id: result.insertedId
@@ -593,8 +597,8 @@ export const createManualPayment = async ({ accountId, amount, notes, invoiceNum
 export const getCustomerDetail = async accountId => {
   const _id = typeof accountId === 'string' ? new ObjectId(accountId) : accountId;
   const [account, payments, notes] = await Promise.all([
-    db.collection(BILLING_ACCOUNTS).findOne({ _id }),
-    db.collection(BILLING_PAYMENTS).find({ accountId: _id }).sort({ createdAt: -1 }).limit(50).toArray(),
+    billingDb.collection(BILLING_ACCOUNTS).findOne({ _id }),
+    billingDb.collection(BILLING_PAYMENTS).find({ accountId: _id }).sort({ createdAt: -1 }).limit(50).toArray(),
     db
       .collection(ADMIN_SUPPORT_NOTES)
       .aggregate([
@@ -645,10 +649,10 @@ export const listRecentPayments = async ({ search = '', limit = 50 } = {}) => {
 
   pipeline.push({ $sort: { createdAt: -1 } }, { $limit: limit });
 
-  return db.collection(BILLING_PAYMENTS).aggregate(pipeline).toArray();
+  return billingDb.collection(BILLING_PAYMENTS).aggregate(pipeline).toArray();
 };
 
-export const getPaymentById = async paymentId => db.collection(BILLING_PAYMENTS).findOne({ _id: new ObjectId(paymentId) });
+export const getPaymentById = async paymentId => billingDb.collection(BILLING_PAYMENTS).findOne({ _id: new ObjectId(paymentId) });
 
 export const listMarketingRecipients = async ({ search = '', status = '', limit = 200 } = {}) => {
   const filter = {};
@@ -911,24 +915,24 @@ export const createSupportNote = async ({ accountId, adminId, body }) => {
 
 export const getDashboardSummary = async () => {
   const [accountsTotal, activeAccounts, paidAccounts, recentAccounts, revenueAgg, recentPayments, revenueTrend, signupTrend, funnelCounts, riskCounts] = await Promise.all([
-    db.collection(BILLING_ACCOUNTS).countDocuments(),
-    db.collection(BILLING_ACCOUNTS).countDocuments({ status: { $in: ['active', 'active-pending-billing', 'payment-captured'] } }),
-    db.collection(BILLING_ACCOUNTS).countDocuments({ 'subscription.status': { $in: ['active', 'pending_activation'] } }),
-    db.collection(BILLING_ACCOUNTS).countDocuments({
+    billingDb.collection(BILLING_ACCOUNTS).countDocuments(),
+    billingDb.collection(BILLING_ACCOUNTS).countDocuments({ status: { $in: ['active', 'active-pending-billing', 'payment-captured'] } }),
+    billingDb.collection(BILLING_ACCOUNTS).countDocuments({ 'subscription.status': { $in: ['active', 'pending_activation'] } }),
+    billingDb.collection(BILLING_ACCOUNTS).countDocuments({
       createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
     }),
-    db
+    billingDb
       .collection(BILLING_PAYMENTS)
       .aggregate([
         { $match: { status: 'paid' } },
         { $group: { _id: null, total: { $sum: '$amount' } } }
       ])
       .toArray(),
-    db.collection(BILLING_PAYMENTS).countDocuments({
+    billingDb.collection(BILLING_PAYMENTS).countDocuments({
       createdAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
       status: 'paid'
     }),
-    db
+    billingDb
       .collection(BILLING_PAYMENTS)
       .aggregate([
         { $match: { createdAt: { $gte: daysAgo(30) }, status: { $in: ['paid', 'pending', 'failed'] } } },
@@ -946,7 +950,7 @@ export const getDashboardSummary = async () => {
         { $sort: { '_id.day': 1 } }
       ])
       .toArray(),
-    db
+    billingDb
       .collection(BILLING_ACCOUNTS)
       .aggregate([
         { $match: { createdAt: { $gte: daysAgo(30) } } },
@@ -964,16 +968,16 @@ export const getDashboardSummary = async () => {
       ])
       .toArray(),
     Promise.all([
-      db.collection(BILLING_ACCOUNTS).countDocuments(),
-      db.collection(BILLING_ACCOUNTS).countDocuments({ status: { $in: ['payment-captured', 'active', 'active-pending-billing', 'manual'] } }),
-      db.collection(BILLING_ACCOUNTS).countDocuments({ 'subscription.status': { $in: ['active', 'pending_activation', 'manual'] } }),
-      db.collection(BILLING_ACCOUNTS).countDocuments({ status: 'canceled' })
+      billingDb.collection(BILLING_ACCOUNTS).countDocuments(),
+      billingDb.collection(BILLING_ACCOUNTS).countDocuments({ status: { $in: ['payment-captured', 'active', 'active-pending-billing', 'manual'] } }),
+      billingDb.collection(BILLING_ACCOUNTS).countDocuments({ 'subscription.status': { $in: ['active', 'pending_activation', 'manual'] } }),
+      billingDb.collection(BILLING_ACCOUNTS).countDocuments({ status: 'canceled' })
     ]),
     Promise.all([
-      db.collection(BILLING_ACCOUNTS).countDocuments({ status: 'active-pending-billing' }),
-      db.collection(BILLING_ACCOUNTS).countDocuments({ createdAt: { $gte: daysAgo(1) } }),
-      db.collection(BILLING_PAYMENTS).countDocuments({ type: 'manual_adjustment', createdAt: { $gte: daysAgo(7) } }),
-      db.collection(BILLING_PAYMENTS).countDocuments({ status: 'failed', createdAt: { $gte: daysAgo(14) } })
+      billingDb.collection(BILLING_ACCOUNTS).countDocuments({ status: 'active-pending-billing' }),
+      billingDb.collection(BILLING_ACCOUNTS).countDocuments({ createdAt: { $gte: daysAgo(1) } }),
+      billingDb.collection(BILLING_PAYMENTS).countDocuments({ type: 'manual_adjustment', createdAt: { $gte: daysAgo(7) } }),
+      billingDb.collection(BILLING_PAYMENTS).countDocuments({ status: 'failed', createdAt: { $gte: daysAgo(14) } })
     ])
   ]);
 
@@ -1092,10 +1096,10 @@ export const getOperationsOverview = async () => {
       getResolvedSetting('SECURITY_ALLOW_TEST_SIGNUP_LINK')
     ]),
     Promise.all([
-      db.collection(BILLING_ACCOUNTS).countDocuments({ status: 'active-pending-billing' }),
-      db.collection(BILLING_ACCOUNTS).countDocuments({ 'subscription.status': 'pending_activation' }),
-      db.collection(BILLING_PAYMENTS).countDocuments({ status: 'failed', createdAt: { $gte: daysAgo(7) } }),
-      db.collection(BILLING_PAYMENTS).countDocuments({ type: 'manual_adjustment', createdAt: { $gte: daysAgo(7) } }),
+      billingDb.collection(BILLING_ACCOUNTS).countDocuments({ status: 'active-pending-billing' }),
+      billingDb.collection(BILLING_ACCOUNTS).countDocuments({ 'subscription.status': 'pending_activation' }),
+      billingDb.collection(BILLING_PAYMENTS).countDocuments({ status: 'failed', createdAt: { $gte: daysAgo(7) } }),
+      billingDb.collection(BILLING_PAYMENTS).countDocuments({ type: 'manual_adjustment', createdAt: { $gte: daysAgo(7) } }),
       db.collection(ADMIN_SUPPORT_NOTES).countDocuments({ createdAt: { $gte: daysAgo(7) } })
     ])
   ]);

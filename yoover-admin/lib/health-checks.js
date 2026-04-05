@@ -33,7 +33,7 @@ export const getSystemHealth = async () => {
     { key: 'wildduck', label: 'WildDuck API', host: 'wildduck', port: 8080 },
     { key: 'smtp_submission', label: 'ZoneMTA Submission', host: 'zonemta', port: 587 },
     { key: 'smtp_inbound', label: 'Haraka SMTP', host: 'haraka', port: 25 },
-    { key: 'rspamd', label: 'Rspamd', host: 'rspamd', port: 11334 }
+    { key: 'rspamd', label: 'Rspamd', host: 'rspamd', port: 11333 }
   ];
 
   const results = await Promise.all(
