@@ -2,28 +2,27 @@
 <input type="hidden" id="message" value="{{message.id}}" />
 <input type="hidden" id="_csrf" value="{{csrfToken}}">
 
-<h2 class="sub-header" style="display: flex;">
-    <div style="flex-grow: 1">
-        <table class="limited">
-            <tr class="messagerow-{{message.mailbox}}-{{message.id}}">
-                <td class="message-subject-line">
-                    <a href="#" class="message-star {{#if message.flagged}}flagged{{else}}unflagged{{/if}}"
-                        data-mailbox="{{mailbox.id}}" data-message="{{message.id}}"><span
-                            class="glyphicon glyphicon-{{#if message.flagged}}star{{else}}star-empty{{/if}}"
-                            aria-hidden="true"></span></a>
+<div class="yoover-mail-view">
+<div class="message-shell">
+    <div class="message-header">
+        <div>
+            <a href="/webmail/{{mailbox.id}}" class="btn btn-default message-back-link">
+                <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+                Back to {{mailbox.name}}
+            </a>
+            <div class="message-subject-row messagerow-{{message.mailbox}}-{{message.id}}">
+                <a href="#" class="message-star {{#if message.flagged}}flagged{{else}}unflagged{{/if}}"
+                    data-mailbox="{{mailbox.id}}" data-message="{{message.id}}">
+                    <span class="glyphicon glyphicon-{{#if message.flagged}}star{{else}}star-empty{{/if}}" aria-hidden="true"></span>
+                </a>
+                <h1 class="message-title">{{message.subject}}</h1>
+            </div>
+        </div>
 
-                    <span>{{message.subject}}</span>
-                </td>
-            </tr>
-        </table>
-    </div>
-
-    <div>
         <div class="btn-group">
             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
                 aria-expanded="false">
-                <span class="glyphicon glyphicon-envelope" aria-hidden="true" style="margin-right: 6px;"></span> Details <span
-                    class="caret" style="margin-left: 3px;"></span>
+                <span class="glyphicon glyphicon-envelope" aria-hidden="true"></span> Details <span class="caret"></span>
             </button>
             <ul class="dropdown-menu dropdown-menu-right">
                 <li><a href="/webmail/{{mailbox.id}}/raw/{{message.id}}.eml"><span
@@ -40,68 +39,53 @@
             </ul>
         </div>
     </div>
-</h2>
 
-<div class="toolbar-container">
-    <div class="toolbar-main">
+    <div class="composer-actions-card">
+        <div class="message-actions-bar">
+            <a href="/webmail/send?action=reply&amp;refMailbox={{mailbox.id}}&amp;refMessage={{message.id}}"
+                class="btn btn-default"><span class="glyphicon glyphicon-send" aria-hidden="true"></span>
+                Reply</a>
+            <a href="/webmail/send?action=replyAll&amp;refMailbox={{mailbox.id}}&amp;refMessage={{message.id}}"
+                class="btn btn-default"><span class="glyphicon glyphicon-send" aria-hidden="true"></span>
+                Reply to all</a>
+            <a href="/webmail/send?action=forward&amp;refMailbox={{mailbox.id}}&amp;refMessage={{message.id}}"
+                class="btn btn-default"><span class="glyphicon glyphicon-share" aria-hidden="true"></span>
+                Forward</a>
+            <button class="btn btn-default bulk-mark-unseen">Mark as unread</button>
+            <button class="btn btn-default bulk-delete" data-toggle="modal" data-target="#deleteModal"><span
+                    class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete</button>
 
-        <fieldset id="action-toolbar">
-            <div class="form-group">
-
-                <a href="/webmail/send?action=reply&amp;refMailbox={{mailbox.id}}&amp;refMessage={{message.id}}"
-                    class="btn btn-default btn-xs" style="margin-right: 12px;"><span class="glyphicon glyphicon-send" aria-hidden="true"></span>
-                    Reply</a>
-                <a href="/webmail/send?action=replyAll&amp;refMailbox={{mailbox.id}}&amp;refMessage={{message.id}}"
-                    class="btn btn-default btn-xs" style="margin-right: 12px;"><span class="glyphicon glyphicon-send" aria-hidden="true"></span>
-                    Reply to all</a>
-                <a href="/webmail/send?action=forward&amp;refMailbox={{mailbox.id}}&amp;refMessage={{message.id}}"
-                    class="btn btn-default btn-xs"><span class="glyphicon glyphicon-share" aria-hidden="true"></span>
-                    Forward</a>
-
-                <span style="display: inline-block; width: 10px;"></span>
-
-                <button class="btn btn-default btn-xs bulk-mark-unseen">Mark as Unseen</button>
-
-                <span style="display: inline-block; width: 10px;"></span>
-
-                <button class="btn btn-default btn-xs bulk-delete" data-toggle="modal" data-target="#deleteModal"><span
-                        class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete</button>
-
-                <div class="btn-group">
-                    <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown"
-                        aria-haspopup="true" aria-expanded="false">
-                        <span class="glyphicon glyphicon-inbox" aria-hidden="true"></span> Move <span
-                            class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu">
-                        {{#each mailboxes}}
-                        {{#if canMoveTo}}
-                        <li><a href="#" class="bulk-move" data-mailbox="{{id}}" data-mailbox-path="{{path}}"
-                                data-toggle="modal" data-target="#moveModal">
-                                {{{prefix}}}
-                                {{#if icon}}
-                                <span class="glyphicon glyphicon-{{icon}}" aria-hidden="true"></span>
-                                {{else}}
-                                <span class="glyphicon glyphicon-triangle-right" aria-hidden="true"></span>
-                                {{/if}}
-                                {{formatted}}
-                                {{{suffix}}}</a></li>
-                        {{/if}}
-                        {{/each}}
-                    </ul>
-                </div>
-
+            <div class="btn-group">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                    aria-haspopup="true" aria-expanded="false">
+                    <span class="glyphicon glyphicon-inbox" aria-hidden="true"></span> Move <span
+                        class="caret"></span>
+                </button>
+                <ul class="dropdown-menu">
+                    {{#each mailboxes}}
+                    {{#if canMoveTo}}
+                    <li><a href="#" class="bulk-move" data-mailbox="{{id}}" data-mailbox-path="{{path}}"
+                            data-toggle="modal" data-target="#moveModal">
+                            {{{prefix}}}
+                            {{#if icon}}
+                            <span class="glyphicon glyphicon-{{icon}}" aria-hidden="true"></span>
+                            {{else}}
+                            <span class="glyphicon glyphicon-triangle-right" aria-hidden="true"></span>
+                            {{/if}}
+                            {{formatted}}
+                            {{{suffix}}}</a></li>
+                    {{/if}}
+                    {{/each}}
+                </ul>
             </div>
-        </fieldset>
+        </div>
     </div>
 
-    <div class="toolbar-search">
+    <div class="composer-actions-card" style="margin-top: 16px;">
         {{>searchfield}}
     </div>
 
-</div>
-
-<div class="clearfix"></div>
+    <div class="message-details-card" style="margin-top: 16px;">
 
 {{#if message.bimi}}
 <div class="bimi" style="background-image: url({{message.bimi.image}});">
@@ -112,8 +96,9 @@
 </div>
 {{/if}}
 
+<div class="message-info-list">
 {{#each message.info}}
-<div>
+<div class="message-info-item">
     <strong>{{key}}:</strong>
     {{#if icon}}
     <span class="glyphicon glyphicon-{{icon}}" aria-hidden="true"></span>
@@ -145,15 +130,15 @@
 </div>
 {{/each}}
 {{#if expires}}
-<div class="text-muted">
+<div class="message-info-item">
     <strong>Message expires:</strong>
     <span class="datestring" title="{{expires}}">
         {{expires}}
     </span>
 </div>
 {{/if}}
-
-<div style="margin-bottom: 5px;"></div>
+</div>
+</div>
 
 {{#if message.encrypted}}
 <div id="encrypted-warning" class="alert alert-warning" role="alert">
@@ -248,15 +233,19 @@
 
 {{else}}
 
+<div class="message-body-card" style="margin-top: 16px;">
 <div id="message-content" class="iframe-box"></div>
+</div>
 
 {{#if message.attachments}}
-<div class="well">
+<div class="message-attachments-card" style="margin-top: 16px;">
+    <div class="message-attachments-list">
     {{#each message.attachments}}
     <a class="btn btn-success btn-sm" href="/webmail/{{../mailbox.id}}/attachment/{{../message.id}}/{{id}}"
         role="button" download="{{filename}}"><span class="glyphicon glyphicon-cloud-download"
             aria-hidden="true"></span> {{filename}}</a>
     {{/each}}
+    </div>
 </div>
 {{/if}}
 
@@ -296,6 +285,8 @@
 </script>
 
 {{/if}}
+</div>
+</div>
 
 
 <!-- Modal -->

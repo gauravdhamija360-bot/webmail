@@ -1,124 +1,160 @@
-<div class="yoover-webmail-container">
-    <header class="webmail-header-gradient">
-        <div class="header-flex">
-            <div class="mailbox-info">
-                <div class="icon-circle">
-                    {{#if mailbox.icon}}
-                    <span class="glyphicon glyphicon-{{mailbox.icon}}" aria-hidden="true"></span>
-                    {{else}}
-                    <span class="glyphicon glyphicon-inbox" aria-hidden="true"></span>
-                    {{/if}}
+<div class="yoover-mail-view">
+    <div class="mail-shell">
+        <section class="mail-hero">
+            <div class="mail-hero-top">
+                <div class="mail-hero-title">
+                    <div class="mail-hero-icon">
+                        {{#if mailbox.icon}}
+                        <span class="glyphicon glyphicon-{{mailbox.icon}}" aria-hidden="true"></span>
+                        {{else}}
+                        <span class="glyphicon glyphicon-inbox" aria-hidden="true"></span>
+                        {{/if}}
+                    </div>
+                    <div class="mail-hero-copy">
+                        <h1>{{mailbox.name}}</h1>
+                        <p>Review conversations, manage folders, and stay on top of what matters from any screen size.</p>
+                    </div>
                 </div>
-                <h2 class="mailbox-name">{{mailbox.name}}</h2>
-            </div>
-            
-            {{#if mailbox.editable}}
-            <div class="header-actions">
+
+                {{#if mailbox.editable}}
                 <a href="/webmail/{{mailbox.id}}/settings" class="btn btn-yoover-outline">
-                    <span class="glyphicon glyphicon-cog"></span> Settings
+                    <span class="glyphicon glyphicon-cog"></span>
+                    <span>Folder settings</span>
                 </a>
+                {{/if}}
             </div>
-            {{/if}}
-        </div>
-    </header>
 
-    <div class="toolbar-wrapper">
-        <div class="toolbar-inner">
-            <div class="toolbar-main-controls">
-                <div class="select-all-box">
-                    <input type="checkbox" class="toggle-all" />
-                </div>
-                
-                <a class="btn-filter-unseen {{#if filterUnseen}}active{{/if}}" title="filter unseen"
-                    href="/webmail/{{mailbox.id}}?query={{query}}&amp;unseen={{#if filterUnseen}}false{{else}}true{{/if}}">
-                    <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
-                </a>
+            <div class="mail-hero-meta">
+                <span class="mail-chip">
+                    <span class="glyphicon glyphicon-list-alt"></span>
+                    {{resultsStr}} total messages
+                </span>
+                <span class="mail-chip">
+                    <span class="glyphicon glyphicon-eye-open"></span>
+                    {{#if filterUnseen}}Unread only{{else}}Showing all mail{{/if}}
+                </span>
+                <span class="mail-chip">
+                    <span class="glyphicon glyphicon-bookmark"></span>
+                    Page {{page}}
+                </span>
+            </div>
+        </section>
 
-                <div class="divider-vertical"></div>
+        <section class="mail-toolbar">
+            <div class="mail-toolbar-row">
+                <div class="mail-toolbar-actions">
+                    <div class="select-all-box">
+                        <input type="checkbox" class="toggle-all" aria-label="Select all messages" />
+                    </div>
 
-                <fieldset id="action-toolbar" disabled>
-                    <div class="btn-group-yoover">
-                        <button class="btn-action-text bulk-mark-seen">Mark Read</button>
-                        <button class="btn-action-text bulk-mark-unseen">Mark Unread</button>
-                        
-                        <button class="btn-action-icon bulk-delete" data-toggle="modal" data-target="#deleteModal" title="Delete">
+                    <a class="btn btn-filter-unseen {{#if filterUnseen}}active{{/if}}" title="Filter unread messages"
+                        href="/webmail/{{mailbox.id}}?query={{query}}&amp;unseen={{#if filterUnseen}}false{{else}}true{{/if}}">
+                        <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                    </a>
+
+                    <button type="button" class="btn btn-action-icon mail-refresh" title="Refresh mailbox">
+                        <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+                    </button>
+
+                    <div class="toolbar-divider"></div>
+
+                    <fieldset id="action-toolbar" disabled>
+                        <button class="btn btn-action-text bulk-mark-seen">Mark read</button>
+                        <button class="btn btn-action-text bulk-mark-unseen">Mark unread</button>
+
+                        <button class="btn btn-action-icon bulk-delete" data-toggle="modal" data-target="#deleteModal" title="Delete">
                             <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
                         </button>
 
                         <div class="btn-group">
-                            <button type="button" class="btn-action-text dropdown-toggle" data-toggle="dropdown">
-                                <span class="glyphicon glyphicon-folder-open"></span> Move <span class="caret"></span>
+                            <button type="button" class="btn btn-action-text dropdown-toggle" data-toggle="dropdown">
+                                <span class="glyphicon glyphicon-folder-open"></span>
+                                Move
+                                <span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu yoover-dropdown">
                                 {{#each mailboxes}}
                                 {{#if canMoveTo}}
-                                <li><a href="#" class="bulk-move" data-mailbox="{{id}}" data-mailbox-path="{{path}}"
+                                <li>
+                                    <a href="#" class="bulk-move" data-mailbox="{{id}}" data-mailbox-path="{{path}}"
                                         data-toggle="modal" data-target="#moveModal">
                                         {{{prefix}}}
                                         {{#if icon}}<span class="glyphicon glyphicon-{{icon}}"></span>{{else}}<span class="glyphicon glyphicon-triangle-right"></span>{{/if}}
                                         {{formatted}}
-                                        {{{suffix}}}</a></li>
+                                        {{{suffix}}}
+                                    </a>
+                                </li>
                                 {{/if}}
                                 {{/each}}
                             </ul>
                         </div>
-                    </div>
-                </fieldset>
+                    </fieldset>
+                </div>
+
+                <div class="mail-search-wrap">
+                    {{>searchfield}}
+                </div>
+            </div>
+        </section>
+
+        {{#if isTrash}}
+        <div class="yoover-alert"><span class="glyphicon glyphicon-info-sign"></span> Messages in Trash are permanently deleted after 30 days.</div>
+        {{/if}}
+        {{#if isJunk}}
+        <div class="yoover-alert"><span class="glyphicon glyphicon-warning-sign"></span> Messages in Junk are permanently deleted after 30 days.</div>
+        {{/if}}
+
+        <section class="mail-list-card">
+            <div class="mail-list-head">
+                <div>
+                    <h2 class="mail-list-title">Message list</h2>
+                    <div class="mail-list-caption">{{startStr}}–{{endStr}} of {{resultsStr}} messages</div>
+                </div>
+                <div class="mail-pagination-status">
+                    {{#if filterUnseen}}Unread filter enabled{{else}}All messages visible{{/if}}
+                </div>
             </div>
 
-            <div class="toolbar-search-box">
-                {{>searchfield}}
+            <div class="table-responsive">
+                <table class="messagelist yoover-table">
+                    <colgroup>
+                        <col class="messagerow-spacer-col" />
+                        <col class="messagerow-checkbox-col" />
+                        <col class="messagerow-star-col" />
+                        <col class="messagerow-from-col" />
+                        <col class="messagerow-subject-col" />
+                        <col class="messagerow-info-col" />
+                        <col class="messagerow-date-col" />
+                        <col class="messagerow-spacer-col" />
+                    </colgroup>
+                    <tbody>
+                        {{#each messages}}
+                        {{>messagerow}}
+                        {{/each}}
+                    </tbody>
+                </table>
             </div>
-        </div>
+
+            <div class="mail-list-footer">
+                <div class="mail-pagination-status">
+                    Page <strong>{{page}}</strong> of the current result set
+                </div>
+                <ul class="pager yoover-pager">
+                    {{#if previousCursor}}
+                    <li class="previous"><a href="/webmail/{{mailbox.id}}?previous={{previousCursor}}&amp;page={{previousPage}}&amp;query={{query}}&amp;unseen={{filterUnseen}}">&larr; Newer</a></li>
+                    {{else}}
+                    <li class="previous disabled"><a href="#">&larr; Newer</a></li>
+                    {{/if}}
+
+                    {{#if nextCursor}}
+                    <li class="next"><a href="/webmail/{{mailbox.id}}?next={{nextCursor}}&amp;page={{nextPage}}&amp;query={{query}}&amp;unseen={{filterUnseen}}">Older &rarr;</a></li>
+                    {{else}}
+                    <li class="next disabled"><a href="#">Older &rarr;</a></li>
+                    {{/if}}
+                </ul>
+            </div>
+        </section>
     </div>
-
-    {{#if isTrash}}
-    <div class="yoover-alert"><span class="glyphicon glyphicon-info-sign"></span> Messages in Trash are permanently deleted after 30 days</div>
-    {{/if}}
-    {{#if isJunk}}
-    <div class="yoover-alert"><span class="glyphicon glyphicon-warning-sign"></span> Messages in Junk are permanently deleted after 30 days</div>
-    {{/if}}
-
-    <div class="mail-body-card">
-        <div class="table-responsive">
-            <table class="messagelist yoover-table">
-                <colgroup>
-                    <col class="messagerow-spacer-col" />
-                    <col class="messagerow-checkbox-col" />
-                    <col class="messagerow-star-col" />
-                    <col class="messagerow-from-col" />
-                    <col class="messagerow-subject-col" />
-                    <col class="messagerow-info-col" />
-                    <col class="messagerow-date-col" />
-                    <col class="messagerow-spacer-col" />
-                </colgroup>
-                <tbody>
-                    {{#each messages}}
-                    {{>messagerow}}
-                    {{/each}}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <footer class="yoover-footer-nav">
-        <div class="status-text">
-            Page <strong>{{page}}</strong> <span class="text-muted">({{startStr}}–{{endStr}} of {{resultsStr}})</span>
-        </div>
-        <ul class="pager yoover-pager">
-            {{#if previousCursor}}
-            <li class="previous"><a href="/webmail/{{mailbox.id}}?previous={{previousCursor}}&amp;page={{previousPage}}&amp;query={{query}}&amp;unseen={{filterUnseen}}">&larr; Newer</a></li>
-            {{else}}
-            <li class="previous disabled"><a href="#">&larr; Newer</a></li>
-            {{/if}}
-
-            {{#if nextCursor}}
-            <li class="next"><a href="/webmail/{{mailbox.id}}?next={{nextCursor}}&amp;page={{nextPage}}&amp;query={{query}}&amp;unseen={{filterUnseen}}">Older &rarr;</a></li>
-            {{else}}
-            <li class="next disabled"><a href="#">Older &rarr;</a></li>
-            {{/if}}
-        </ul>
-    </footer>
 </div>
 
 <input type="hidden" id="_csrf" value="{{csrfToken}}">
@@ -132,55 +168,7 @@
     {{{messageRowTemplate}}}
 </script>
 
-<style>
-    /* YOOVER BRAND THEME */
-    .yoover-webmail-container { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #fff; min-height: 100vh; }
-    
-    /* HEADER GRADIENT - MATCHES YOUR LANDING PAGE */
-    .webmail-header-gradient {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        padding: 40px 5%;
-        border-bottom: 1px solid #e1e8ed;
-    }
-    .header-flex { display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto; }
-    .mailbox-info { display: flex; align-items: center; gap: 15px; }
-    .icon-circle { width: 45px; height: 45px; background: #1A73E8; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; box-shadow: 0 4px 10px rgba(26,115,232,0.3); }
-    .mailbox-name { margin: 0; font-weight: 800; color: #1A73E8; font-size: 28px; letter-spacing: -0.5px; }
-
-    /* TOOLBAR */
-    .toolbar-wrapper { background: white; padding: 15px 5%; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 100; }
-    .toolbar-inner { display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto; }
-    .toolbar-main-controls { display: flex; align-items: center; gap: 10px; }
-    .divider-vertical { width: 1px; height: 30px; background: #eee; margin: 0 10px; }
-
-    /* BUTTONS - MATCHES YOUR LANDING PAGE BUTTONS */
-    .btn-yoover-outline { border: 2px solid #1A73E8; color: #1A73E8; font-weight: 700; border-radius: 25px; padding: 8px 20px; transition: 0.2s; }
-    .btn-yoover-outline:hover { background: #1A73E8; color: white; }
-    
-    .btn-action-text { background: #f8f9fa; border: 1px solid #e1e8ed; padding: 6px 15px; font-weight: 600; font-size: 13px; color: #5f6368; border-radius: 4px; transition: 0.2s; }
-    .btn-action-text:hover:not(:disabled) { background: #fff; border-color: #1A73E8; color: #1A73E8; }
-    .btn-action-icon { background: #f8f9fa; border: 1px solid #e1e8ed; padding: 6px 12px; border-radius: 4px; color: #d93025; }
-    .btn-action-icon:hover:not(:disabled) { background: #feebeb; border-color: #d93025; }
-
-    /* TABLE STYLE */
-    .mail-body-card { max-width: 1400px; margin: 20px auto; background: white; border: 1px solid #eee; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
-    .yoover-table { width: 100%; border-collapse: collapse; }
-    .yoover-table tr { border-bottom: 1px solid #f1f3f4; }
-    .yoover-table tr:hover { background-color: #f7f9fc; }
-
-    /* PAGINATION */
-    .yoover-footer-nav { max-width: 1400px; margin: 20px auto; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; }
-    .yoover-pager { margin: 0; }
-    .yoover-pager li a { border-radius: 50px !important; padding: 8px 25px; font-weight: 700; color: #1A73E8; border: 2px solid #e1e8ed; }
-    .yoover-pager li a:hover { background: #1A73E8; color: white; border-color: #1A73E8; }
-
-    .yoover-alert { background: #fdf6ec; color: #e6a23c; padding: 10px 5%; font-weight: 600; font-size: 13px; border-bottom: 1px solid #faecd8; }
-</style>
-
-
-
 <script>
-
     // star toggle
     (function () {
         var toggleStar = function (e, elm) {
@@ -257,7 +245,7 @@
     document.addEventListener('DOMContentLoaded', function () {
         var checkboxes = document.querySelectorAll('.message-checkbox');
         var toolbarElm = document.querySelector('#action-toolbar');
-        var mailboxType = document.querySelector('#mailbox-type');
+        var mailboxType = document.querySelector('#mailbox-type').value;
         var toggleAllElm = document.querySelector('.toggle-all');
 
         var isInbox = mailboxType === 'INBOX';
@@ -486,6 +474,29 @@
 
         document.querySelector('.toggle-all').addEventListener('click', toggleAll, false);
         document.querySelector('.toggle-all').addEventListener('change', toggleAll, false);
+
+        var pendingRefresh = false;
+        var refreshButton = document.querySelector('.mail-refresh');
+        var refreshMailbox = function () {
+            if (pendingRefresh) {
+                return false;
+            }
+            pendingRefresh = true;
+            if (refreshButton) {
+                refreshButton.disabled = true;
+            }
+            redrawList(function () {
+                pendingRefresh = false;
+                if (refreshButton) {
+                    refreshButton.disabled = false;
+                }
+            });
+        };
+
+        if (refreshButton) {
+            refreshButton.addEventListener('click', refreshMailbox, false);
+            refreshButton.addEventListener('touch', refreshMailbox, false);
+        }
 
         var pendingDeleted = false;
         var deleteMessage = function () {
@@ -766,5 +777,47 @@
 
         toggleToolbar();
     }, false);
-
 </script>
+
+<!-- Modal -->
+<div class="modal" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="deleteModalLabel">Delete messages</h4>
+            </div>
+            <div class="modal-body">
+                {{#if isTrash}}
+                Are you sure you want to permanently delete these messages?
+                {{else}}
+                Are you sure you want to move these messages to the Trash folder?
+                {{/if}}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">No, cancel</button>
+                <button type="button" class="btn btn-danger bulk-delete-confirm" data-loading-text="Deleting...">Yes, delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="moveModal" tabindex="-1" role="dialog" aria-labelledby="moveModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="moveModalLabel">Move messages</h4>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to move these messages to <span class="bulk-move-path">another folder</span>?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">No, cancel</button>
+                <button type="button" class="btn btn-primary bulk-move-confirm" data-loading-text="Moving...">Yes, move</button>
+            </div>
+        </div>
+    </div>
+</div>

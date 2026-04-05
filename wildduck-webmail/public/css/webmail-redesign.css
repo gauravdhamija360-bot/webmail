@@ -1,0 +1,1099 @@
+:root {
+    --yoover-app-bg: #edf2f7;
+    --yoover-surface: #ffffff;
+    --yoover-surface-strong: #f8fbff;
+    --yoover-border: #dbe4ee;
+    --yoover-border-strong: #c8d3e1;
+    --yoover-text: #17324d;
+    --yoover-text-soft: #5f7288;
+    --yoover-text-muted: #7f8ea3;
+    --yoover-brand: #0f766e;
+    --yoover-brand-strong: #0b5d57;
+    --yoover-brand-wash: #dff7f3;
+    --yoover-accent: #ffb84d;
+    --yoover-danger: #c73a4d;
+    --yoover-shadow: 0 20px 45px rgba(15, 39, 68, 0.08);
+    --yoover-radius-xl: 28px;
+    --yoover-radius-lg: 20px;
+    --yoover-radius-md: 14px;
+    --yoover-nav-height: 80px;
+}
+
+body.yoover-body {
+    background:
+        radial-gradient(circle at top left, rgba(15, 118, 110, 0.12), transparent 26%),
+        linear-gradient(180deg, #f8fbfd 0%, #edf2f7 100%);
+    color: var(--yoover-text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.yoover-body .flash-messages-container {
+    padding: 0 24px;
+}
+
+.yoover-dashboard-wrapper {
+    display: grid;
+    grid-template-columns: 292px minmax(0, 1fr);
+    gap: 24px;
+    min-height: calc(100vh - var(--yoover-nav-height));
+    padding: 24px;
+}
+
+.yoover-sidebar {
+    min-width: 0;
+}
+
+.sidebar-inner {
+    position: sticky;
+    top: calc(var(--yoover-nav-height) + 16px);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-height: calc(100vh - var(--yoover-nav-height) - 40px);
+    padding: 22px;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(219, 228, 238, 0.95);
+    border-radius: var(--yoover-radius-xl);
+    box-shadow: var(--yoover-shadow);
+    backdrop-filter: blur(14px);
+}
+
+.sidebar-logo-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.main-logo {
+    height: 34px;
+    width: auto;
+}
+
+.compose-wrapper {
+    display: flex;
+}
+
+.btn-yoover-compose {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 54px;
+    padding: 14px 18px;
+    border: 0;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #0f766e 0%, #0b5d57 100%);
+    color: #fff !important;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    box-shadow: 0 16px 30px rgba(15, 118, 110, 0.22);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-yoover-compose:hover,
+.btn-yoover-compose:focus {
+    transform: translateY(-1px);
+    box-shadow: 0 18px 34px rgba(15, 118, 110, 0.28);
+    text-decoration: none;
+}
+
+.sidebar-nav-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-height: 0;
+}
+
+.sidebar-section-label {
+    margin: 0 0 10px;
+    color: var(--yoover-text-muted);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.sidebar-scroll {
+    overflow: auto;
+    padding-right: 6px;
+}
+
+.yoover-nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-item {
+    margin: 0 0 6px;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 48px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    color: var(--yoover-text-soft);
+    font-weight: 700;
+    text-decoration: none !important;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.nav-link:hover,
+.nav-link:focus {
+    background: #f2f7fb;
+    color: var(--yoover-brand-strong);
+    transform: translateX(2px);
+}
+
+.active-folder .nav-link {
+    background: linear-gradient(135deg, rgba(15, 118, 110, 0.12), rgba(15, 118, 110, 0.06));
+    color: var(--yoover-brand-strong);
+    box-shadow: inset 0 0 0 1px rgba(15, 118, 110, 0.12);
+}
+
+.nav-icon {
+    flex: 0 0 auto;
+    width: 18px;
+    text-align: center;
+    font-size: 16px;
+}
+
+.nav-text {
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.badge-yoover {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: var(--yoover-brand);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.sidebar-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--yoover-border-strong), transparent);
+}
+
+.create-folder-link {
+    background: var(--yoover-surface-strong);
+    border: 1px dashed var(--yoover-border-strong);
+}
+
+.yoover-main-content {
+    min-width: 0;
+    border: 1px solid rgba(219, 228, 238, 0.95);
+    border-radius: 32px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: var(--yoover-shadow);
+    overflow: hidden;
+}
+
+.yoover-system-alert {
+    padding: 14px 22px;
+    background: #fff8e7;
+    border-bottom: 1px solid #f4dfaf;
+    color: #8c5b06;
+}
+
+.alert-inner {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-weight: 600;
+}
+
+.view-render-area {
+    min-height: calc(100vh - var(--yoover-nav-height) - 110px);
+}
+
+.yoover-footer {
+    padding: 20px 24px 28px;
+    color: var(--yoover-text-muted);
+    font-size: 13px;
+    text-align: center;
+}
+
+.yoover-footer a {
+    color: var(--yoover-brand-strong);
+    font-weight: 700;
+}
+
+.webmail-mobile-bar,
+.sidebar-backdrop {
+    display: none;
+}
+
+.yoover-mail-view {
+    padding: 24px;
+}
+
+.mail-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.mail-hero,
+.mail-toolbar,
+.mail-list-card,
+.message-shell,
+.composer-shell {
+    background: var(--yoover-surface);
+    border: 1px solid var(--yoover-border);
+    border-radius: 24px;
+    box-shadow: 0 10px 28px rgba(15, 39, 68, 0.04);
+}
+
+.mail-hero {
+    padding: 24px;
+    background:
+        radial-gradient(circle at top right, rgba(255, 184, 77, 0.22), transparent 28%),
+        linear-gradient(135deg, #f6fcfb 0%, #eef6ff 100%);
+}
+
+.mail-hero-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.mail-hero-title {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.mail-hero-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 54px;
+    height: 54px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--yoover-brand), #16978d);
+    color: #fff;
+    font-size: 22px;
+    box-shadow: 0 14px 28px rgba(15, 118, 110, 0.2);
+}
+
+.mail-hero-copy h1,
+.mail-hero-copy h2 {
+    margin: 0 0 6px;
+    color: var(--yoover-text);
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+}
+
+.mail-hero-copy p {
+    margin: 0;
+    color: var(--yoover-text-soft);
+    font-size: 14px;
+}
+
+.mail-hero-meta {
+    display: inline-flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+}
+
+.mail-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid var(--yoover-border);
+    color: var(--yoover-text-soft);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.btn-yoover-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 10px 16px;
+    border: 1px solid rgba(15, 118, 110, 0.18);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.75);
+    color: var(--yoover-brand-strong);
+    font-weight: 800;
+    text-decoration: none !important;
+}
+
+.btn-yoover-outline:hover,
+.btn-yoover-outline:focus {
+    background: var(--yoover-brand);
+    color: #fff;
+}
+
+.mail-toolbar {
+    padding: 16px 18px;
+}
+
+.mail-toolbar-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.mail-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.mail-toolbar-actions fieldset {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+
+.toolbar-divider {
+    width: 1px;
+    height: 34px;
+    background: var(--yoover-border);
+}
+
+.select-all-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: var(--yoover-surface-strong);
+    border: 1px solid var(--yoover-border);
+}
+
+.btn-filter-unseen,
+.btn-action-text,
+.btn-action-icon,
+.mail-search-form .btn {
+    min-height: 44px;
+    border-radius: 14px;
+    font-weight: 700;
+}
+
+.btn-filter-unseen,
+.btn-action-text,
+.btn-action-icon {
+    border: 1px solid var(--yoover-border);
+    background: var(--yoover-surface-strong);
+    color: var(--yoover-text-soft);
+}
+
+.btn-filter-unseen:hover,
+.btn-filter-unseen:focus,
+.btn-action-text:hover:not(:disabled),
+.btn-action-icon:hover:not(:disabled) {
+    border-color: rgba(15, 118, 110, 0.24);
+    color: var(--yoover-brand-strong);
+    background: #f5fffd;
+    text-decoration: none;
+}
+
+.btn-filter-unseen.active {
+    background: var(--yoover-brand-wash);
+    color: var(--yoover-brand-strong);
+    border-color: rgba(15, 118, 110, 0.18);
+}
+
+.btn-action-text {
+    padding: 10px 14px;
+}
+
+.btn-action-icon {
+    width: 44px;
+    padding: 10px 0;
+    color: var(--yoover-danger);
+}
+
+.yoover-dropdown {
+    min-width: 240px;
+    padding: 8px;
+    border: 1px solid var(--yoover-border);
+    border-radius: 16px;
+    box-shadow: var(--yoover-shadow);
+}
+
+.yoover-dropdown > li > a {
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-weight: 600;
+}
+
+.mail-search-wrap {
+    flex: 1 1 320px;
+    max-width: 420px;
+}
+
+.mail-search-form .input-group {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+}
+
+.mail-search-form .input-group-btn {
+    display: flex;
+    width: auto;
+    white-space: nowrap;
+}
+
+.mail-search-form .form-control {
+    height: 44px;
+    border-radius: 14px 0 0 14px;
+    border: 1px solid var(--yoover-border);
+    box-shadow: none;
+    min-width: 0;
+}
+
+.mail-search-form .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 48px;
+    border-radius: 0 14px 14px 0;
+    border: 1px solid var(--yoover-border);
+    border-left: 0;
+    background: var(--yoover-surface-strong);
+}
+
+.yoover-alert {
+    padding: 12px 16px;
+    border-radius: 16px;
+    background: #fff7e9;
+    border: 1px solid #f5d89f;
+    color: #8c5b06;
+    font-weight: 700;
+}
+
+.mail-list-card {
+    overflow: hidden;
+}
+
+.mail-list-head,
+.mail-list-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 18px;
+    background: #fbfdff;
+}
+
+.mail-list-head {
+    border-bottom: 1px solid var(--yoover-border);
+}
+
+.mail-list-title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.mail-list-caption,
+.mail-pagination-status {
+    color: var(--yoover-text-soft);
+    font-size: 13px;
+}
+
+.table-responsive {
+    margin: 0;
+    border: 0;
+}
+
+.yoover-table {
+    width: 100%;
+    margin: 0;
+    table-layout: fixed;
+}
+
+.yoover-table tr {
+    border-bottom: 1px solid #edf3f8;
+}
+
+.yoover-table tr:last-child {
+    border-bottom: 0;
+}
+
+.messagerow {
+    transition: background-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.messagerow:hover {
+    background: #f7fbff;
+}
+
+.messagerow.message-unseen {
+    background: #fcfefe;
+}
+
+.messagerow td {
+    padding: 16px 10px;
+    vertical-align: top;
+}
+
+.messagerow-spacer {
+    width: 8px;
+    padding: 0 !important;
+}
+
+.messagerow-checkbox,
+.messagerow-star,
+.messagerow-info,
+.messagerow-date {
+    white-space: nowrap;
+}
+
+.messagerow-checkbox {
+    width: 42px;
+    padding-left: 18px !important;
+}
+
+.messagerow-checkbox input {
+    width: 16px;
+    height: 16px;
+}
+
+.message-star {
+    color: #c2ccd8;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 12px;
+}
+
+.message-star.flagged {
+    color: #f0ab23;
+}
+
+.message-star:hover,
+.message-star:focus {
+    text-decoration: none;
+    background: #fff4d8;
+}
+
+.messagerow-link {
+    color: inherit;
+    text-decoration: none !important;
+}
+
+.messagerow-from {
+    width: 24%;
+    font-weight: 800;
+    color: var(--yoover-text);
+}
+
+.messagerow-subject {
+    width: 52%;
+}
+
+.messagerow-subject-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.messagerow-subject-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.messagerow-subject-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 700;
+    color: var(--yoover-text);
+}
+
+.messagerow-intro {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--yoover-text-soft);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.messagerow-meta-mobile {
+    display: none;
+    gap: 10px;
+    flex-wrap: wrap;
+    color: var(--yoover-text-muted);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.messagerow-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.messagerow-date {
+    width: 108px;
+    text-align: right;
+    color: var(--yoover-text-soft);
+    font-size: 12px;
+    font-weight: 700;
+    padding-right: 18px !important;
+}
+
+.label.label-default {
+    align-self: flex-start;
+    border-radius: 999px;
+    background: #e8eff8;
+    color: var(--yoover-text-soft);
+    font-size: 11px;
+    font-weight: 800;
+    padding: 5px 8px;
+}
+
+.yoover-pager {
+    display: flex;
+    gap: 10px;
+    margin: 0;
+}
+
+.yoover-pager li > a,
+.yoover-pager li > span {
+    border-radius: 999px !important;
+    border: 1px solid var(--yoover-border);
+    background: var(--yoover-surface);
+    color: var(--yoover-brand-strong);
+    font-weight: 800;
+}
+
+.message-shell,
+.composer-shell {
+    padding: 24px;
+}
+
+.message-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 18px;
+}
+
+.message-title {
+    margin: 0 0 10px;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+}
+
+.message-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+.message-subject-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.message-details-card,
+.message-attachments-card,
+.message-body-card,
+.composer-card,
+.composer-actions-card {
+    border: 1px solid var(--yoover-border);
+    border-radius: 20px;
+    background: #fff;
+}
+
+.message-details-card,
+.message-attachments-card,
+.composer-actions-card {
+    padding: 18px;
+}
+
+.message-security-list,
+.message-info-list {
+    display: grid;
+    gap: 12px;
+}
+
+.message-info-item {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    color: var(--yoover-text-soft);
+}
+
+.message-info-item strong {
+    color: var(--yoover-text);
+}
+
+.message-actions-bar,
+.composer-actions-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.message-actions-bar .btn,
+.composer-actions-row .btn {
+    min-height: 44px;
+    border-radius: 14px;
+    font-weight: 700;
+}
+
+.message-body-card {
+    overflow: hidden;
+}
+
+.message-body-card .iframe-box {
+    min-height: 280px;
+}
+
+.message-body-card iframe {
+    width: 100%;
+    border: 0;
+}
+
+.message-attachments-list {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.message-attachments-list .btn {
+    border-radius: 14px;
+    font-weight: 700;
+}
+
+.composer-shell form {
+    margin: 0;
+}
+
+.composer-card {
+    padding: 22px;
+}
+
+.composer-grid {
+    display: grid;
+    gap: 16px;
+}
+
+.composer-field label,
+.composer-row-label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--yoover-text-soft);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.composer-shell .form-control,
+.composer-shell .note-editor.note-frame {
+    border-color: var(--yoover-border);
+    border-radius: 16px;
+    box-shadow: none;
+}
+
+.composer-shell .form-control {
+    min-height: 48px;
+}
+
+.composer-inline-links {
+    display: flex;
+    justify-content: flex-end;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.composer-inline-links a {
+    color: var(--yoover-brand-strong);
+    font-weight: 700;
+}
+
+.composer-shell .note-editor.note-frame {
+    overflow: hidden;
+}
+
+.composer-shell .note-toolbar {
+    background: #f8fbff;
+    border-bottom: 1px solid var(--yoover-border);
+}
+
+.composer-shell .note-editing-area .note-editable {
+    min-height: 320px;
+    background: #fff;
+}
+
+.composer-shell .file-input,
+.composer-shell input[type="file"] {
+    padding: 12px;
+}
+
+.sidebar-toggle,
+.sidebar-close {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--yoover-text);
+}
+
+@media (max-width: 1199px) {
+    .yoover-dashboard-wrapper {
+        grid-template-columns: 260px minmax(0, 1fr);
+        padding: 18px;
+        gap: 18px;
+    }
+
+    .messagerow-from {
+        width: 28%;
+    }
+
+    .messagerow-subject {
+        width: 46%;
+    }
+}
+
+@media (max-width: 991px) {
+    .yoover-dashboard-wrapper {
+        display: block;
+        padding: 14px;
+    }
+
+    .webmail-mobile-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 14px;
+        margin-bottom: 14px;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid var(--yoover-border);
+        border-radius: 20px;
+        box-shadow: var(--yoover-shadow);
+    }
+
+    .webmail-mobile-title {
+        min-width: 0;
+    }
+
+    .webmail-mobile-title strong {
+        display: block;
+        font-size: 15px;
+    }
+
+    .webmail-mobile-title span {
+        display: block;
+        color: var(--yoover-text-soft);
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .sidebar-toggle,
+    .sidebar-close {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        background: var(--yoover-surface-strong);
+        border: 1px solid var(--yoover-border);
+    }
+
+    .yoover-sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: min(84vw, 320px);
+        z-index: 1200;
+        transform: translateX(-110%);
+        transition: transform 0.24s ease;
+    }
+
+    .yoover-sidebar.is-open {
+        transform: translateX(0);
+    }
+
+    .sidebar-inner {
+        top: 0;
+        min-height: 100vh;
+        border-radius: 0 24px 24px 0;
+        padding-top: 20px;
+    }
+
+    .sidebar-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 1100;
+        background: rgba(9, 24, 41, 0.45);
+        backdrop-filter: blur(3px);
+    }
+
+    .sidebar-backdrop.is-open {
+        display: block;
+    }
+
+    .yoover-main-content {
+        border-radius: 24px;
+    }
+
+    .yoover-mail-view,
+    .message-shell,
+    .composer-shell {
+        padding: 16px;
+    }
+
+    .mail-hero-top,
+    .mail-toolbar-row,
+    .mail-list-head,
+    .mail-list-footer,
+    .message-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .mail-search-wrap {
+        max-width: none;
+    }
+
+    .yoover-table colgroup {
+        display: none;
+    }
+
+    .yoover-table,
+    .yoover-table tbody,
+    .yoover-table tr,
+    .yoover-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .messagerow {
+        position: relative;
+        padding: 14px 14px 14px 96px;
+    }
+
+    .messagerow td {
+        padding: 0;
+        border: 0;
+    }
+
+    .messagerow-spacer,
+    .messagerow-date,
+    .messagerow-info {
+        display: none !important;
+    }
+
+    .messagerow-checkbox,
+    .messagerow-star {
+        position: absolute;
+        top: 18px;
+    }
+
+    .messagerow-checkbox {
+        left: 16px;
+        width: auto;
+    }
+
+    .messagerow-star {
+        left: 48px;
+        width: auto;
+    }
+
+    .messagerow-from,
+    .messagerow-subject {
+        width: 100%;
+    }
+
+    .messagerow-from {
+        margin-bottom: 8px;
+    }
+
+    .messagerow-subject-line {
+        display: block;
+    }
+
+    .messagerow-subject-text,
+    .messagerow-intro {
+        white-space: normal;
+    }
+
+    .messagerow-meta-mobile {
+        display: flex;
+        margin-top: 10px;
+    }
+
+    .composer-shell .note-editing-area .note-editable {
+        min-height: 240px;
+    }
+}
+
+@media (max-width: 575px) {
+    .yoover-body .flash-messages-container,
+    .yoover-dashboard-wrapper,
+    .yoover-footer {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .mail-hero,
+    .mail-toolbar,
+    .message-shell,
+    .composer-shell,
+    .mail-list-card {
+        border-radius: 20px;
+    }
+
+    .mail-hero-copy h1,
+    .mail-hero-copy h2,
+    .message-title {
+        font-size: 24px;
+    }
+
+    .mail-chip {
+        width: 100%;
+        justify-content: center;
+    }
+}

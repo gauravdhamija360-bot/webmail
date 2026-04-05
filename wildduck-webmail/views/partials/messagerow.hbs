@@ -22,7 +22,30 @@
                     <span class="label label-default">{{mailboxName}}</span>
                 {{/if}}
 
-                {{subject}}{{#if intro}} <span class="text-muted" style="font-weight: normal;">– {{intro}}</span>{{/if}}
+                <span class="messagerow-subject-line">
+                    <span class="messagerow-subject-text">{{subject}}</span>
+                </span>
+                {{#if intro}}
+                    <span class="messagerow-intro">{{intro}}</span>
+                {{/if}}
+                <span class="messagerow-meta-mobile">
+                    <span class="messagerow-badge">
+                        {{#if encrypted}}
+                            <span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+                            Encrypted
+                        {{else}}
+                            {{#if attachments}}
+                                <span class="glyphicon glyphicon-paperclip" aria-hidden="true"></span>
+                                Attachments
+                            {{/if}}
+                        {{/if}}
+                    </span>
+                    <span class="messagerow-badge">
+                        <span class="datestring-fixed" title="{{date}}">
+                            {{date}}
+                        </span>
+                    </span>
+                </span>
             </span>
         </a>
     </td>
