@@ -41,7 +41,7 @@
                             {{/if}}
 
                             <div class="pricing-page-actions">
-                                <a href="/purchase/{{code}}" class="pricing-page-btn {{#if featured}}primary{{else}}secondary{{/if}}">Choose {{name}}</a>
+                                <a href="/purchase/{{code}}" class="pricing-page-btn {{#if featured}}primary{{else}}secondary{{/if}}" data-analytics-event="start_checkout" data-analytics-category="conversion" data-analytics-label="pricing_plan_{{code}}">Choose {{name}}</a>
                             </div>
                         </article>
                     {{/each}}
@@ -52,7 +52,7 @@
                             <p>The live pricing catalog is not available right now. Please check again shortly.</p>
                         </div>
                         <div class="pricing-page-actions">
-                            <a href="/" class="pricing-page-btn secondary">Return Home</a>
+                            <a href="/" class="pricing-page-btn secondary" data-analytics-event="return_home" data-analytics-category="engagement" data-analytics-label="pricing_return_home">Return Home</a>
                         </div>
                     </article>
                 {{/if}}

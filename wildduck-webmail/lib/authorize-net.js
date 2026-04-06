@@ -1,13 +1,14 @@
 'use strict';
 
 const authorizenet = require('authorizenet');
+const { getAuthorizeConfig } = require('./authorize-config');
 
 const SDK = authorizenet.APIContracts;
 const SDKController = authorizenet.APIControllers;
 const SDKConstants = authorizenet.Constants;
 
 const getEnvironment = () => {
-    if (process.env.AUTHORIZE_ENV === 'production') {
+    if (getAuthorizeConfig().environment === 'production') {
         return SDKConstants.endpoint.production;
     }
 
@@ -15,9 +16,10 @@ const getEnvironment = () => {
 };
 
 const createMerchantAuthentication = () => {
+    const authorizeConfig = getAuthorizeConfig();
     const merchantAuthenticationType = new SDK.MerchantAuthenticationType();
-    merchantAuthenticationType.setName(process.env.AUTHORIZE_API_LOGIN_ID);
-    merchantAuthenticationType.setTransactionKey(process.env.AUTHORIZE_TRANSACTION_KEY);
+    merchantAuthenticationType.setName(authorizeConfig.apiLoginId);
+    merchantAuthenticationType.setTransactionKey(authorizeConfig.transactionKey);
     return merchantAuthenticationType;
 };
 

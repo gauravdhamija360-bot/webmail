@@ -3,28 +3,82 @@ import path from 'path';
 
 const WEBMAIL_ENV_DEFINITIONS = [
   {
+    key: 'AUTHORIZE_MODE',
+    label: 'Authorize.Net Gateway Mode',
+    description: 'Select whether wildduck-webmail should use sandbox testing credentials or live production credentials.',
+    sensitive: false
+  },
+  {
     key: 'AUTHORIZE_API_LOGIN_ID',
-    label: 'Authorize.Net API Login ID',
-    description: 'Primary Authorize.Net login identifier used by webmail checkout.',
-    sensitive: true
+    label: 'Authorize.Net API Login ID (Legacy Active)',
+    description: 'Legacy fallback login identifier used if mode-specific Authorize.Net credentials are not configured.',
+    sensitive: false
   },
   {
     key: 'AUTHORIZE_TRANSACTION_KEY',
-    label: 'Authorize.Net Transaction Key',
-    description: 'Authorize.Net transaction secret.',
-    sensitive: true
+    label: 'Authorize.Net Transaction Key (Legacy Active)',
+    description: 'Legacy fallback transaction key used if mode-specific Authorize.Net credentials are not configured.',
+    sensitive: false
   },
   {
     key: 'AUTHORIZE_CLIENT_KEY',
-    label: 'Authorize.Net Client Key',
-    description: 'Client key used in the hosted payment form flow.',
-    sensitive: true
+    label: 'Authorize.Net Client Key (Legacy Active)',
+    description: 'Legacy fallback public client key used if mode-specific Authorize.Net credentials are not configured.',
+    sensitive: false
   },
   {
     key: 'AUTHORIZE_SIGNATURE_KEY',
-    label: 'Authorize.Net Signature Key',
-    description: 'Signature validation key for callbacks and verification.',
-    sensitive: true
+    label: 'Authorize.Net Signature Key (Legacy Active)',
+    description: 'Legacy fallback signature validation key used if mode-specific Authorize.Net credentials are not configured.',
+    sensitive: false
+  },
+  {
+    key: 'AUTHORIZE_SANDBOX_API_LOGIN_ID',
+    label: 'Authorize.Net Sandbox API Login ID',
+    description: 'Sandbox login identifier used when gateway mode is set to sandbox.',
+    sensitive: false
+  },
+  {
+    key: 'AUTHORIZE_SANDBOX_TRANSACTION_KEY',
+    label: 'Authorize.Net Sandbox Transaction Key',
+    description: 'Sandbox transaction secret used when gateway mode is set to sandbox.',
+    sensitive: false
+  },
+  {
+    key: 'AUTHORIZE_SANDBOX_CLIENT_KEY',
+    label: 'Authorize.Net Sandbox Client Key',
+    description: 'Sandbox public client key used by Accept.js when gateway mode is set to sandbox.',
+    sensitive: false
+  },
+  {
+    key: 'AUTHORIZE_SANDBOX_SIGNATURE_KEY',
+    label: 'Authorize.Net Sandbox Signature Key',
+    description: 'Sandbox signature key used when gateway mode is set to sandbox.',
+    sensitive: false
+  },
+  {
+    key: 'AUTHORIZE_PRODUCTION_API_LOGIN_ID',
+    label: 'Authorize.Net Production API Login ID',
+    description: 'Live production login identifier used when gateway mode is set to production.',
+    sensitive: false
+  },
+  {
+    key: 'AUTHORIZE_PRODUCTION_TRANSACTION_KEY',
+    label: 'Authorize.Net Production Transaction Key',
+    description: 'Live production transaction secret used when gateway mode is set to production.',
+    sensitive: false
+  },
+  {
+    key: 'AUTHORIZE_PRODUCTION_CLIENT_KEY',
+    label: 'Authorize.Net Production Client Key',
+    description: 'Live production public client key used by Accept.js when gateway mode is set to production.',
+    sensitive: false
+  },
+  {
+    key: 'AUTHORIZE_PRODUCTION_SIGNATURE_KEY',
+    label: 'Authorize.Net Production Signature Key',
+    description: 'Live production signature key used when gateway mode is set to production.',
+    sensitive: false
   },
   {
     key: 'MONGO_INITDB_ROOT_USERNAME',
@@ -79,6 +133,12 @@ const WEBMAIL_ENV_DEFINITIONS = [
     label: 'Notification SMTP Password',
     description: 'Password for the notification mailbox.',
     sensitive: true
+  },
+  {
+    key: 'SECURITY_ALLOW_TEST_SIGNUP_LINK',
+    label: 'Allow Test Signup Link',
+    description: 'Controls whether the public test-signup page and navigation link are visible in wildduck-webmail.',
+    sensitive: false
   }
 ];
 
@@ -144,16 +204,27 @@ const writeWebmailEnvFile = async (filePath, lines) => {
 
 export const listWebmailEnvEntries = async () => {
   const { filePath, entries } = await readWebmailEnvFile();
+  const existingKeys = new Set(entries.map(entry => entry.key));
+  const missingDefinedEntries = WEBMAIL_ENV_DEFINITIONS.filter(definition => !existingKeys.has(definition.key)).map(definition => ({
+    key: definition.key,
+    value: '',
+    label: definition.label,
+    description: definition.description,
+    sensitive: definition.sensitive
+  }));
 
   return {
     filePath,
-    entries: entries.map(entry => ({
-      key: entry.key,
-      value: entry.value,
-      label: entry.label,
-      description: entry.description,
-      sensitive: entry.sensitive
-    }))
+    entries: [
+      ...entries.map(entry => ({
+        key: entry.key,
+        value: entry.value,
+        label: entry.label,
+        description: entry.description,
+        sensitive: entry.sensitive
+      })),
+      ...missingDefinedEntries
+    ]
   };
 };
 

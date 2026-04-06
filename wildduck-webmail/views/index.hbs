@@ -187,21 +187,23 @@
         border: none;
         outline: none;
         background: transparent;
-        font-size: 1.3rem;
-        font-weight: 700;
+        font-size: 1.7rem;
+        font-weight: 800;
+        line-height: 1.2;
         color: var(--landing-ink);
         padding: 0 18px;
     }
 
     .domain-search input::placeholder {
         color: #9aa8ba;
-        font-weight: 600;
+        font-weight: 700;
     }
 
     .domain-ext {
         color: #8393a8;
-        font-size: 1.15rem;
-        font-weight: 700;
+        font-size: 1.45rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
         white-space: nowrap;
     }
 
@@ -929,6 +931,14 @@
             text-align: center;
         }
 
+        .domain-search input {
+            font-size: 1.45rem;
+        }
+
+        .domain-ext {
+            font-size: 1.24rem;
+        }
+
         .check-result {
             min-height: 76px;
         }
@@ -976,7 +986,7 @@
                     <div class="domain-search">
                         <input type="text" id="usernameInput" placeholder="choose.your.name" autocomplete="off">
                         <span class="domain-ext">@{{serviceDomain}}</span>
-                        <button id="checkBtn" class="btn-search">Check Availability</button>
+                        <button id="checkBtn" class="btn-search" data-analytics-event="check_username" data-analytics-category="conversion" data-analytics-label="hero_username_check">Check Availability</button>
                     </div>
                     <div id="checkResult" class="check-result">
                         <div class="availability-neutral">
@@ -986,8 +996,8 @@
                     </div>
 
                     <div class="hero-actions">
-                        <a href="#plans" class="hero-action primary">See Plans <i class="fa-solid fa-arrow-right"></i></a>
-                        <a href="#setup-details" class="hero-action secondary">View Setup Guide</a>
+                        <a href="#plans" class="hero-action primary" data-analytics-event="view_pricing" data-analytics-category="conversion" data-analytics-label="home_hero_plans">See Plans <i class="fa-solid fa-arrow-right"></i></a>
+                        <a href="#setup-details" class="hero-action secondary" data-analytics-event="view_setup_guide" data-analytics-category="engagement" data-analytics-label="home_hero_setup">View Setup Guide</a>
                     </div>
 
                     <div class="hero-microproof">
@@ -1227,7 +1237,7 @@
                                     {{/each}}
                                 </ul>
                             {{/if}}
-                            <a href="/purchase/{{code}}" class="pricing-action {{#if featured}}primary{{else}}secondary{{/if}}">Choose {{name}}</a>
+                            <a href="/purchase/{{code}}" class="pricing-action {{#if featured}}primary{{else}}secondary{{/if}}" data-analytics-event="start_checkout" data-analytics-category="conversion" data-analytics-label="home_plan_{{code}}">Choose {{name}}</a>
                         </div>
                     {{/each}}
                 {{else}}
@@ -1359,8 +1369,8 @@
                     Claim your address, continue into the structured checkout, and manage your identity from one account area instead of jumping across disconnected pages.
                 </p>
                 <div class="landing-cta-links">
-                    <a href="#top" class="hero-action primary">Check a Username</a>
-                    <a href="/help" class="hero-action secondary" style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.12);color:#fff;">Read Help</a>
+                    <a href="#top" class="hero-action primary" data-analytics-event="return_to_username_check" data-analytics-category="conversion" data-analytics-label="home_footer_username_check">Check a Username</a>
+                    <a href="/help" class="hero-action secondary" style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.12);color:#fff;" data-analytics-event="open_help" data-analytics-category="engagement" data-analytics-label="home_footer_help">Read Help</a>
                 </div>
             </div>
         </div>
@@ -1413,7 +1423,7 @@ async function checkUsernameAvailability() {
         if (data.available) {
             renderResult(
                 'success',
-                `<i class="fa-solid fa-circle-check"></i><span><strong>${username}@{{serviceDomain}}</strong> is available and ready to claim.</span><a class="claim-link" href="/purchase?username=${encodeURIComponent(username)}">Continue <i class="fa-solid fa-arrow-right"></i></a>`
+                `<i class="fa-solid fa-circle-check"></i><span><strong>${username}@{{serviceDomain}}</strong> is available and ready to claim.</span><a class="claim-link" href="/purchase?username=${encodeURIComponent(username)}" data-analytics-event="start_checkout" data-analytics-category="conversion" data-analytics-label="username_available_continue">Continue <i class="fa-solid fa-arrow-right"></i></a>`
             );
             return;
         }

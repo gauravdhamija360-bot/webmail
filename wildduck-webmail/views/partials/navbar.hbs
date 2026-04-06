@@ -42,9 +42,11 @@
                     <a href="/help">HELP</a>
                 </li>
 
+                {{#if allowTestSignupLink}}
                 <li class="nav-link-hover {{#if activeTestSignup}}active{{/if}}">
                     <a href="/test-signup">TEST SIGNUP</a>
                 </li>
+                {{/if}}
 
                 {{/unless}}
 

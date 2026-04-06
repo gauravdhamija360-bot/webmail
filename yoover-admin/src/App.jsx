@@ -1109,11 +1109,16 @@ export default function App() {
     setError('');
 
     try {
+      const nextValue =
+        entry.key === 'AUTHORIZE_MODE'
+          ? webmailEnvDrafts[entry.key] ?? entry.value ?? 'sandbox'
+          : webmailEnvDrafts[entry.key] ?? '';
+
       const data = await api('/api/settings/webmail-env', {
         method: 'POST',
         body: JSON.stringify({
           key: entry.key,
-          value: webmailEnvDrafts[entry.key] ?? ''
+          value: nextValue
         })
       });
       setSettings(current => ({ ...current, webmailEnv: data.webmailEnv }));
@@ -2475,12 +2480,22 @@ export default function App() {
                         <small>{entry.key}</small>
                       </div>
                       <div className="settings-actions env-row-actions">
-                        <input
-                          type={entry.sensitive ? 'password' : 'text'}
-                          value={webmailEnvDrafts[entry.key] ?? ''}
-                          placeholder="Enter value"
-                          onChange={event => setWebmailEnvDrafts(current => ({ ...current, [entry.key]: event.target.value }))}
-                        />
+                        {entry.key === 'AUTHORIZE_MODE' ? (
+                          <select
+                            value={webmailEnvDrafts[entry.key] ?? entry.value ?? 'sandbox'}
+                            onChange={event => setWebmailEnvDrafts(current => ({ ...current, [entry.key]: event.target.value }))}
+                          >
+                            <option value="sandbox">Sandbox / Test</option>
+                            <option value="production">Production / Live</option>
+                          </select>
+                        ) : (
+                          <input
+                            type={entry.sensitive ? 'password' : 'text'}
+                            value={webmailEnvDrafts[entry.key] ?? ''}
+                            placeholder="Enter value"
+                            onChange={event => setWebmailEnvDrafts(current => ({ ...current, [entry.key]: event.target.value }))}
+                          />
+                        )}
                         <button type="button" onClick={() => handleWebmailEnvSave(entry)} disabled={webmailEnvSavingKey === entry.key}>
                           {webmailEnvSavingKey === entry.key ? 'Saving...' : 'Save'}
                         </button>

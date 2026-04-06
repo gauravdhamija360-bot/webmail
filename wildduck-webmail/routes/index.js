@@ -10,6 +10,8 @@ const authorizeNet = require('../lib/authorize-net');
 const adminNotifier = require('../lib/admin-notifier');
 const db = require('../lib/db');
 const { getDefaultPlan, getPlan, listPlans } = require('../lib/billing-plans');
+const { getAuthorizeConfig } = require('../lib/authorize-config');
+const { isTestSignupLinkAllowed } = require('../lib/public-settings');
 const roleBasedAddresses = require('role-based-email-addresses');
 /* ------------------------------
    SAFE STRIPE INITIALIZATION
@@ -21,6 +23,95 @@ const reservedUsernames = new Set(['abuse', 'admin', 'administrator', 'hostmaste
 const usernamePattern = /^[a-z0-9][a-z0-9.-]*$/i;
 
 const getServiceDomain = () => (config.service && config.service.domain) || config.serviceDomain || 'yoover.com';
+const getConfiguredSiteUrl = () =>
+    String(process.env.PUBLIC_BASE_URL || (config.service && config.service.publicUrl) || config.www.publicUrl || '')
+        .trim()
+        .replace(/\/+$/, '');
+const getRequestOrigin = req => {
+    const configuredSiteUrl = getConfiguredSiteUrl();
+
+    if (configuredSiteUrl) {
+        return configuredSiteUrl;
+    }
+
+    const forwardedProto = String(req.get('x-forwarded-proto') || req.protocol || 'https')
+        .split(',')[0]
+        .trim();
+    const host = String(req.get('x-forwarded-host') || req.get('host') || '').split(',')[0].trim();
+
+    if (host) {
+        return `${forwardedProto}://${host}`;
+    }
+
+    return `https://${getServiceDomain()}`;
+};
+const buildAbsoluteUrl = (req, pathname) => new URL(pathname || '/', `${getRequestOrigin(req)}/`).toString();
+const escapeJsonLd = value => JSON.stringify(value).replace(/</g, '\\u003c');
+const escapeXml = value =>
+    String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+const buildSeo = (req, options = {}) => {
+    const siteName = config.name;
+    const path = options.path || req.path || '/';
+    const canonicalUrl = buildAbsoluteUrl(req, path);
+    const description =
+        options.description ||
+        `Secure, private, and professional email hosting services at ${getServiceDomain()}. Get your @${getServiceDomain()} address today.`;
+    const title = options.title || siteName;
+    const robots = options.robots || 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1';
+    const ogImage = buildAbsoluteUrl(req, options.ogImage || '/images/duck.png');
+    const structuredData = options.structuredData
+        ? escapeJsonLd(Array.isArray(options.structuredData) ? options.structuredData : [options.structuredData])
+        : '';
+
+    return {
+        title,
+        description,
+        canonicalUrl,
+        robots,
+        ogTitle: options.ogTitle || title,
+        ogDescription: options.ogDescription || description,
+        ogType: options.ogType || 'website',
+        ogImage,
+        twitterCard: options.twitterCard || 'summary_large_image',
+        twitterTitle: options.twitterTitle || title,
+        twitterDescription: options.twitterDescription || description,
+        twitterImage: ogImage,
+        noIndex: /^noindex/i.test(robots),
+        structuredData
+    };
+};
+const buildOrganizationSchema = req => ({
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: config.name,
+    url: buildAbsoluteUrl(req, '/'),
+    logo: buildAbsoluteUrl(req, '/images/yoover-logo.svg'),
+    email: `support@${getServiceDomain()}`
+});
+const buildWebsiteSchema = req => ({
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: config.name,
+    url: buildAbsoluteUrl(req, '/'),
+    description: `Private email hosting and secure webmail on @${getServiceDomain()}.`
+});
+const buildFaqSchema = faqItems => ({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map(item => ({
+        '@type': 'Question',
+        name: item.question,
+        acceptedAnswer: {
+            '@type': 'Answer',
+            text: item.answer
+        }
+    }))
+});
 
 const checkoutSchema = Joi.object({
     requestedUsername: Joi.string().trim().lowercase().required(),
@@ -371,8 +462,15 @@ const renderCheckout = async (req, res, values, options) =>
     res.render('authorize-signup', {
         title: 'Complete Your Registration',
         activePurchase: true,
-        authorizeApiLoginID: process.env.AUTHORIZE_API_LOGIN_ID,
-        authorizeClientKey: process.env.AUTHORIZE_CLIENT_KEY,
+        seo: buildSeo(req, {
+            title: `Create your @${getServiceDomain()} mailbox`,
+            description: `Reserve your @${getServiceDomain()} address, pick a plan, and complete secure checkout.`,
+            path: '/purchase',
+            robots: 'noindex,nofollow,noarchive'
+        }),
+        authorizeApiLoginID: getAuthorizeConfig().apiLoginId,
+        authorizeClientKey: getAuthorizeConfig().clientKey,
+        authorizeAcceptJsUrl: getAuthorizeConfig().acceptJsUrl,
         requestedUsername: values.requestedUsername,
         values,
         errors: options.errors || {},
@@ -386,6 +484,12 @@ const renderTestSignup = (req, res, values, options) =>
         title: 'Create Test Mailbox',
         activePurchase: true,
         activeTestSignup: true,
+        seo: buildSeo(req, {
+            title: `Create a test mailbox on @${getServiceDomain()}`,
+            description: `Provision a test mailbox on @${getServiceDomain()} for onboarding and QA.`,
+            path: '/test-signup',
+            robots: 'noindex,nofollow,noarchive'
+        }),
         requestedUsername: values.requestedUsername,
         values,
         errors: options.errors || {},
@@ -470,6 +574,37 @@ router.get('/', (req, res) => {
         res.render('index', {
         isHome: true,
         title: 'Home',
+        seo: buildSeo(req, {
+            title: `Private Email Hosting on @${getServiceDomain()} | ${config.name}`,
+            description: `Create a professional @${getServiceDomain()} address with private email hosting, secure webmail, and guided setup across Outlook, Apple Mail, Android, and iPhone.`,
+            path: '/',
+            structuredData: [
+                buildOrganizationSchema(req),
+                buildWebsiteSchema(req),
+                buildFaqSchema([
+                    {
+                        question: 'Can I use my mailbox in Outlook or Apple Mail?',
+                        answer:
+                            'Yes. The setup section includes the IMAP, POP3, and SMTP settings needed for Outlook, Apple Mail, and other common clients.'
+                    },
+                    {
+                        question: 'What happens after I choose a plan?',
+                        answer:
+                            'You continue into the guided purchase flow, confirm the address, choose billing, enter payment details, and finish account setup.'
+                    },
+                    {
+                        question: 'Can I manage renewal details later?',
+                        answer:
+                            'Yes. The account billing area is where plan status, payment method controls, and subscription visibility are managed.'
+                    },
+                    {
+                        question: 'Where do I go if I need help?',
+                        answer:
+                            `Use the Help page for setup and support guidance or Contact for direct assistance with your @${getServiceDomain()} mailbox.`
+                    }
+                ])
+            ]
+        }),
         pricingPlans: await listPlans(),
         serviceDomain: getServiceDomain()
     });
@@ -479,6 +614,11 @@ router.get('/', (req, res) => {
         res.render('index', {
             isHome: true,
             title: 'Home',
+            seo: buildSeo(req, {
+                title: `Private Email Hosting on @${getServiceDomain()} | ${config.name}`,
+                description: `Create a professional @${getServiceDomain()} address with private email hosting, secure webmail, and guided setup across Outlook, Apple Mail, Android, and iPhone.`,
+                path: '/'
+            }),
             pricingPlans: [],
             serviceDomain: getServiceDomain()
         });
@@ -545,35 +685,50 @@ router.get('/purchase/:plan', (req, res) => {
 });
 
 router.get('/test-signup', (req, res) => {
-    const requestedUsername = (req.query.username || '').trim().toLowerCase();
-    const formState = req.session.testSignupFormState;
-    delete req.session.testSignupFormState;
-
-    return renderTestSignup(
-        req,
-        res,
-        Object.assign(
-            {
-                requestedUsername,
-                fullName: '',
-                recoveryEmail: '',
-                password: '',
-                password2: ''
-            },
-            formState && formState.values ? formState.values : {},
-            {
-                requestedUsername,
-                password: '',
-                password2: ''
-            }
-        ),
-        {
-            errors: (formState && formState.errors) || {}
+    const handler = async () => {
+        if (!(await isTestSignupLinkAllowed())) {
+            return res.redirect('/');
         }
-    );
+
+        const requestedUsername = (req.query.username || '').trim().toLowerCase();
+        const formState = req.session.testSignupFormState;
+        delete req.session.testSignupFormState;
+
+        return renderTestSignup(
+            req,
+            res,
+            Object.assign(
+                {
+                    requestedUsername,
+                    fullName: '',
+                    recoveryEmail: '',
+                    password: '',
+                    password2: ''
+                },
+                formState && formState.values ? formState.values : {},
+                {
+                    requestedUsername,
+                    password: '',
+                    password2: ''
+                }
+            ),
+            {
+                errors: (formState && formState.errors) || {}
+            }
+        );
+    };
+
+    return handler().catch(err => {
+        console.error('Test Signup Page Error:', err);
+        return res.redirect('/');
+    });
 });
 
 router.post('/execute-test-signup', async (req, res) => {
+    if (!(await isTestSignupLinkAllowed())) {
+        return res.redirect('/');
+    }
+
     const payload = Object.assign({}, req.body);
     delete payload._csrf;
 
@@ -651,6 +806,12 @@ router.post('/execute-test-signup', async (req, res) => {
 
         return res.render('test-signup-success', {
             title: 'Test Mailbox Created',
+            seo: buildSeo(req, {
+                title: 'Test mailbox created',
+                description: `Your test @${getServiceDomain()} mailbox has been created.`,
+                path: '/test-signup-success',
+                robots: 'noindex,nofollow,noarchive'
+            }),
             customerName: values.fullName,
             newEmail: `${values.requestedUsername}@${getServiceDomain()}`,
             recoveryEmail: values.recoveryEmail,
@@ -696,6 +857,12 @@ router.get('/success', async (req, res) => {
 
         return res.render('success', {
             title: 'Payment Successful',
+            seo: buildSeo(req, {
+                title: 'Payment successful',
+                description: `Your new @${getServiceDomain()} mailbox is being prepared.`,
+                path: '/success',
+                robots: 'noindex,nofollow,noarchive'
+            }),
             customerName: billingAccount.fullName,
             newEmail: billingAccount.emailAddress,
             selectedPlan: billingAccount.plan && billingAccount.plan.name,
@@ -722,6 +889,12 @@ router.get('/success', async (req, res) => {
 
         res.render('success', {
             title: 'Payment Successful',
+            seo: buildSeo(req, {
+                title: 'Payment successful',
+                description: `Your new @${getServiceDomain()} mailbox is being prepared.`,
+                path: '/success',
+                robots: 'noindex,nofollow,noarchive'
+            }),
             customerName: session.metadata.fullName,
             newEmail: `${session.metadata.username}@${getServiceDomain()}`,
             serviceDomain: getServiceDomain()
@@ -738,6 +911,12 @@ router.get('/purchase-email-subscription', (req, res) => {
     res.render('stripe-test', {
         title: 'Stripe Purchase',
         activePurchase: true,
+        seo: buildSeo(req, {
+            title: 'Stripe checkout',
+            description: `Securely complete checkout for your @${getServiceDomain()} mailbox.`,
+            path: '/purchase-email-subscription',
+            robots: 'noindex,nofollow,noarchive'
+        }),
         testUsername: 'tester' + Math.floor(Math.random() * 100),
         serviceDomain: getServiceDomain(),
         stripePublicKey: process.env.STRIPE_PUBLISHABLE_KEY,
@@ -804,6 +983,19 @@ router.get('/contact', (req, res) => {
     res.render('contact', {
         title: 'Contact Us',
         activeContact: true,
+        seo: buildSeo(req, {
+            title: `Contact ${config.name} support`,
+            description: `Contact ${config.name} for mailbox setup help, billing support, product questions, and secure email assistance on @${getServiceDomain()}.`,
+            path: '/contact',
+            structuredData: {
+                '@context': 'https://schema.org',
+                '@type': 'ContactPage',
+                name: `${config.name} Contact`,
+                url: buildAbsoluteUrl(req, '/contact'),
+                description: `Support and contact page for ${config.name}.`,
+                mainEntity: buildOrganizationSchema(req)
+            }
+        }),
         serviceDomain: getServiceDomain()
     });
 
@@ -825,6 +1017,11 @@ router.get('/pricing', (req, res) => {
         res.render('pricing', {
         title: 'Pricing',
         activePurchase: true,
+        seo: buildSeo(req, {
+            title: `${config.name} pricing and plans`,
+            description: `Compare live ${config.name} pricing plans for secure email hosting, billing options, and mailbox setup on @${getServiceDomain()}.`,
+            path: '/pricing'
+        }),
         plans: await listPlans(),
         serviceDomain: getServiceDomain()
     });
@@ -834,6 +1031,11 @@ router.get('/pricing', (req, res) => {
         res.render('pricing', {
             title: 'Pricing',
             activePurchase: true,
+            seo: buildSeo(req, {
+                title: `${config.name} pricing and plans`,
+                description: `Compare live ${config.name} pricing plans for secure email hosting, billing options, and mailbox setup on @${getServiceDomain()}.`,
+                path: '/pricing'
+            }),
             plans: [],
             serviceDomain: getServiceDomain()
         });
@@ -845,6 +1047,11 @@ router.get('/terms', (req, res) => {
 
     res.render('terms', {
         title: 'Terms of Service',
+        seo: buildSeo(req, {
+            title: `${config.name} terms of service`,
+            description: `Read the ${config.name} terms of service for secure email hosting, billing, acceptable use, and account policies.`,
+            path: '/terms'
+        }),
         serviceDomain: getServiceDomain()
     });
 
@@ -854,6 +1061,11 @@ router.get('/privacy', (req, res) => {
 
     res.render('policy', {
         title: 'Privacy Policy',
+        seo: buildSeo(req, {
+            title: `${config.name} privacy policy`,
+            description: `Read the ${config.name} privacy policy to understand how account, billing, and support data is handled for your secure mailbox.`,
+            path: '/privacy'
+        }),
         serviceDomain: getServiceDomain()
     });
 
@@ -864,6 +1076,11 @@ router.get('/help', (req, res) => {
     res.render('help', {
         title: 'Help',
         activeHelp: true,
+        seo: buildSeo(req, {
+            title: `${config.name} help and setup guide`,
+            description: `Get IMAP, POP3, SMTP, password, security, and setup help for your @${getServiceDomain()} mailbox across desktop and mobile clients.`,
+            path: '/help'
+        }),
         setup: config.setup,
         serviceDomain: getServiceDomain(),
         use2fa:
@@ -875,6 +1092,50 @@ router.get('/help', (req, res) => {
 });
 
 /* --- 4. API PROXIES --- */
+
+router.get('/robots.txt', (req, res) => {
+    const origin = getRequestOrigin(req);
+
+    res.type('text/plain');
+    return res.send(
+        [
+            'User-agent: *',
+            'Allow: /',
+            'Disallow: /account/',
+            'Disallow: /webmail/',
+            'Disallow: /api/',
+            'Disallow: /purchase',
+            'Disallow: /purchase-authorize',
+            'Disallow: /purchase-email-subscription',
+            'Disallow: /success',
+            'Disallow: /test-signup',
+            'Disallow: /execute-authorize-payment',
+            'Disallow: /execute-test-signup',
+            `Sitemap: ${origin}/sitemap.xml`
+        ].join('\n')
+    );
+});
+
+router.get('/sitemap.xml', async (req, res) => {
+    const lastmod = new Date().toISOString().slice(0, 10);
+    const urls = ['/', '/pricing', '/help', '/contact', '/terms', '/privacy'].map(path => ({
+        loc: buildAbsoluteUrl(req, path),
+        lastmod
+    }));
+
+    const xml = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+        ...urls.map(
+            entry =>
+                `<url><loc>${escapeXml(entry.loc)}</loc><lastmod>${entry.lastmod}</lastmod></url>`
+        ),
+        '</urlset>'
+    ].join('');
+
+    res.type('application/xml');
+    return res.send(xml);
+});
 
 router.get('/check-username', async (req, res) => {
     const username = (req.query.username || '').trim().toLowerCase();

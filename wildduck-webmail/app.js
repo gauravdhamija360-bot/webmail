@@ -15,6 +15,7 @@ const passport = require('./lib/passport');
 const httpSso = require('./lib/http-sso');
 const db = require('./lib/db');
 const multer = require('multer');
+const { isTestSignupLinkAllowed } = require('./lib/public-settings');
 
 const routesIndex = require('./routes/index');
 const routesAccount = require('./routes/account');
@@ -25,6 +26,31 @@ const uploader = multer({ storage: multer.memoryStorage() });
 
 const app = express();
 
+const getConfiguredSiteUrl = () =>
+    String(process.env.PUBLIC_BASE_URL || (config.service && config.service.publicUrl) || config.www.publicUrl || '')
+        .trim()
+        .replace(/\/+$/, '');
+
+const getRequestOrigin = req => {
+    const configuredSiteUrl = getConfiguredSiteUrl();
+
+    if (configuredSiteUrl) {
+        return configuredSiteUrl;
+    }
+
+    const forwardedProto = String(req.get('x-forwarded-proto') || req.protocol || 'https')
+        .split(',')[0]
+        .trim();
+    const host = String(req.get('x-forwarded-host') || req.get('host') || '').split(',')[0].trim();
+
+    if (host) {
+        return `${forwardedProto}://${host}`;
+    }
+
+    return `https://${config.service.domain}`;
+};
+
+const buildAbsoluteUrl = (origin, pathname) => new URL(pathname || '/', `${origin}/`).toString();
 
 // setup extra hbs tags
 require('./lib/hbs-helpers');
@@ -102,31 +128,67 @@ if (config.service.sso.http.enabled) {
     passport.setup(app);
 }
 
-app.use((req, res, next) => {
-    // make sure flash messages are available
-    res.locals.flash = req.flash.bind(req);
+app.use(async (req, res, next) => {
+    try {
+        // make sure flash messages are available
+        res.locals.flash = req.flash.bind(req);
 
-    // userdata
-    res.locals.user = req.user;
+        // userdata
+        res.locals.user = req.user;
 
-    // recaptcha
-    if (config.recaptcha.enabled) {
-        res.locals.recaptcha = config.recaptcha.siteKey;
+        // recaptcha
+        if (config.recaptcha.enabled) {
+            res.locals.recaptcha = config.recaptcha.siteKey;
+        }
+
+        // values needed to show unseen messages counter
+        res.locals.inboxId = req.user ? req.user.inbox.id : false;
+        res.locals.inboxUnseen = req.user ? req.user.inbox.unseen : false;
+
+        res.locals.allowJoin = config.service.allowJoin;
+        res.locals.allowTestSignupLink = await isTestSignupLinkAllowed();
+        res.locals.u2fEnabled = config.u2f.enabled;
+
+        res.locals.serviceName = config.name;
+        res.locals.serviceDomain = config.service.domain;
+
+        res.locals.generalNotification = config.service.generalNotification;
+
+        const origin = getRequestOrigin(req);
+        const canonicalPath = req.path || '/';
+        const isPrivateUtilityPage = canonicalPath.startsWith('/account') || canonicalPath.startsWith('/webmail') || canonicalPath.startsWith('/api');
+        const gaMeasurementId = String(process.env.GA4_MEASUREMENT_ID || process.env.GOOGLE_ANALYTICS_ID || '').trim();
+        const siteTitle = config.name;
+        const siteDescription = `Secure, private, and professional email hosting services at ${config.service.domain}. Get your @${config.service.domain} address today.`;
+
+        res.locals.siteOrigin = origin;
+        res.locals.currentUrl = buildAbsoluteUrl(origin, req.originalUrl || canonicalPath);
+        res.locals.seo = {
+            title: siteTitle,
+            description: siteDescription,
+            canonicalUrl: buildAbsoluteUrl(origin, canonicalPath),
+            robots: isPrivateUtilityPage ? 'noindex,nofollow,noarchive' : 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1',
+            ogTitle: siteTitle,
+            ogDescription: siteDescription,
+            ogType: 'website',
+            ogImage: buildAbsoluteUrl(origin, '/images/duck.png'),
+            twitterCard: 'summary_large_image',
+            twitterTitle: siteTitle,
+            twitterDescription: siteDescription,
+            twitterImage: buildAbsoluteUrl(origin, '/images/duck.png'),
+            noIndex: isPrivateUtilityPage,
+            structuredData: ''
+        };
+        res.locals.analytics = {
+            gaMeasurementId,
+            enabled: Boolean(gaMeasurementId) && !isPrivateUtilityPage
+        };
+        res.locals.googleSiteVerification = String(process.env.GOOGLE_SITE_VERIFICATION || '').trim();
+
+        next();
+    } catch (err) {
+        next(err);
     }
-
-    // values needed to show unseen messages counter
-    res.locals.inboxId = req.user ? req.user.inbox.id : false;
-    res.locals.inboxUnseen = req.user ? req.user.inbox.unseen : false;
-
-    res.locals.allowJoin = config.service.allowJoin;
-    res.locals.u2fEnabled = config.u2f.enabled;
-
-    res.locals.serviceName = config.name;
-    res.locals.serviceDomain = config.service.domain;
-
-    res.locals.generalNotification = config.service.generalNotification;
-
-    next();
 });
 
 // force 2fa prompt if user is logged in and 2fa is enabled

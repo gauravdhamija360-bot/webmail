@@ -7,6 +7,7 @@ const config = require('wild-config');
 const passport = require('../../lib/passport');
 const billingStore = require('../../lib/billing-store');
 const authorizeNet = require('../../lib/authorize-net');
+const { getAuthorizeConfig } = require('../../lib/authorize-config');
 const { getPlan } = require('../../lib/billing-plans');
 
 const getServiceDomain = () => (config.service && config.service.domain) || config.serviceDomain || 'yoover.com';
@@ -140,6 +141,8 @@ const renderBilling = async (req, res, billingAccount, options) => {
           })
         : null;
 
+    const authorizeConfig = getAuthorizeConfig();
+
     return res.render('account/billing', {
         title: 'Billing',
         activeHome: true,
@@ -172,8 +175,9 @@ const renderBilling = async (req, res, billingAccount, options) => {
             zip: '',
             country: 'US'
         },
-        authorizeApiLoginID: process.env.AUTHORIZE_API_LOGIN_ID,
-        authorizeClientKey: process.env.AUTHORIZE_CLIENT_KEY,
+        authorizeApiLoginID: authorizeConfig.apiLoginId,
+        authorizeClientKey: authorizeConfig.clientKey,
+        authorizeAcceptJsUrl: authorizeConfig.acceptJsUrl,
         csrfToken: req.csrfToken()
     });
 };

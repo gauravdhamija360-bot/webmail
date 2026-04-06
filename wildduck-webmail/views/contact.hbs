@@ -389,8 +389,8 @@
                     Use this page when you need help that goes beyond self-service setup instructions. Whether the issue is onboarding, billing, app passwords, mailbox behavior, or general product questions, this is the cleanest way to reach the right Yoover support path.
                 </p>
                 <div class="contact-actions">
-                    <a href="#contact-form" class="contact-btn primary">Send a Message</a>
-                    <a href="/help" class="contact-btn secondary">Read Help Center</a>
+                    <a href="#contact-form" class="contact-btn primary" data-analytics-event="open_contact_form" data-analytics-category="conversion" data-analytics-label="contact_hero_message">Send a Message</a>
+                    <a href="/help" class="contact-btn secondary" data-analytics-event="open_help" data-analytics-category="engagement" data-analytics-label="contact_hero_help">Read Help Center</a>
                 </div>
             </section>
 
@@ -412,7 +412,7 @@
                     The more specific your message is, the faster we can help. Include the email app, device type, and the kind of issue you are seeing whenever possible.
                 </p>
 
-                <form action="/contact" method="POST">
+                <form action="/contact" method="POST" data-analytics-form="contact_submit" data-analytics-category="conversion">
                     <div class="contact-form-grid">
                         <div class="contact-field">
                             <label for="contactName">Full Name</label>
@@ -457,7 +457,7 @@
                             <span class="contact-channel-icon"><i class="fa-solid fa-envelope"></i></span>
                             <div>
                                 <strong>Direct support email</strong>
-                                <span><a href="mailto:support@{{serviceDomain}}">support@{{serviceDomain}}</a></span>
+                                <span><a href="mailto:support@{{serviceDomain}}" data-analytics-event="contact_email_click" data-analytics-category="conversion" data-analytics-label="contact_support_email">support@{{serviceDomain}}</a></span>
                                 <p>Best for account issues, billing questions, and mailbox setup help.</p>
                             </div>
                         </div>
@@ -466,7 +466,7 @@
                             <span class="contact-channel-icon"><i class="fa-solid fa-book-open"></i></span>
                             <div>
                                 <strong>Help center</strong>
-                                <span><a href="/help">Open setup and troubleshooting docs</a></span>
+                                <span><a href="/help" data-analytics-event="open_help" data-analytics-category="engagement" data-analytics-label="contact_support_help">Open setup and troubleshooting docs</a></span>
                                 <p>Useful when you need server names, ports, or app-password guidance quickly.</p>
                             </div>
                         </div>

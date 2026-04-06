@@ -2,9 +2,27 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
-<title>{{serviceName}}{{#if title}} | {{title}}{{/if}}</title>
-<meta name="description" content="Secure, private, and professional email hosting services at {{serviceDomain}}. Get your @{{serviceDomain}} address today.">
+<title>{{#if seo.title}}{{seo.title}}{{else}}{{serviceName}}{{#if title}} | {{title}}{{/if}}{{/if}}</title>
+<meta name="description" content="{{seo.description}}">
 <meta name="author" content="Yoover Email Services">
+<meta name="robots" content="{{seo.robots}}">
+<meta name="application-name" content="{{serviceName}}">
+<meta property="og:site_name" content="{{serviceName}}">
+<meta property="og:title" content="{{seo.ogTitle}}">
+<meta property="og:description" content="{{seo.ogDescription}}">
+<meta property="og:type" content="{{seo.ogType}}">
+<meta property="og:url" content="{{seo.canonicalUrl}}">
+<meta property="og:image" content="{{seo.ogImage}}">
+<meta property="og:image:alt" content="{{serviceName}} secure email by Yoover">
+<meta name="twitter:card" content="{{seo.twitterCard}}">
+<meta name="twitter:title" content="{{seo.twitterTitle}}">
+<meta name="twitter:description" content="{{seo.twitterDescription}}">
+<meta name="twitter:image" content="{{seo.twitterImage}}">
+<link rel="canonical" href="{{seo.canonicalUrl}}">
+{{#if googleSiteVerification}}<meta name="google-site-verification" content="{{googleSiteVerification}}">{{/if}}
+{{#if seo.structuredData}}
+<script type="application/ld+json">{{{seo.structuredData}}}</script>
+{{/if}}
 
 <link rel="icon" type="image/svg+xml" href="/images/yoover-logo.svg">
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
@@ -52,3 +70,44 @@
         background: #1A73E8;
     }
 </style>
+
+{{#if analytics.enabled}}
+<script async src="https://www.googletagmanager.com/gtag/js?id={{analytics.gaMeasurementId}}"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+        dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+    gtag('config', '{{analytics.gaMeasurementId}}', {
+        page_location: '{{seo.canonicalUrl}}',
+        anonymize_ip: true,
+        allow_google_signals: false
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.body.addEventListener('click', function (event) {
+            var trackedElement = event.target.closest('[data-analytics-event]');
+
+            if (!trackedElement) {
+                return;
+            }
+
+            gtag('event', trackedElement.getAttribute('data-analytics-event'), {
+                event_category: trackedElement.getAttribute('data-analytics-category') || 'engagement',
+                event_label: trackedElement.getAttribute('data-analytics-label') || trackedElement.getAttribute('href') || trackedElement.textContent.trim()
+            });
+        });
+
+        document.querySelectorAll('form[data-analytics-form]').forEach(function (form) {
+            form.addEventListener('submit', function () {
+                gtag('event', form.getAttribute('data-analytics-form'), {
+                    event_category: form.getAttribute('data-analytics-category') || 'form',
+                    event_label: form.getAttribute('action') || window.location.pathname
+                });
+            });
+        });
+    });
+</script>
+{{/if}}

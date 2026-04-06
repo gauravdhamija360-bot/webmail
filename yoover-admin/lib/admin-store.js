@@ -93,12 +93,6 @@ const SETTINGS_DEFINITIONS = [
     sensitive: false
   },
   {
-    key: 'SECURITY_ALLOW_TEST_SIGNUP_LINK',
-    label: 'Allow Test Signup Link',
-    description: 'Operational switch for the public test-signup experience.',
-    sensitive: false
-  },
-  {
     key: 'MAILBOX_DEFAULT_QUOTA_MB',
     label: 'Default Mailbox Quota (MB)',
     description: 'Default quota applied to newly created mailbox users and customer mailboxes.',
@@ -302,7 +296,6 @@ const getDefaultSettingValue = key => {
     SECURITY_PASSWORD_MIN_LENGTH: '12',
     SECURITY_REQUIRE_STRONG_PASSWORDS: 'true',
     SECURITY_REQUIRE_2FA_FOR_ADMINS: 'false',
-    SECURITY_ALLOW_TEST_SIGNUP_LINK: 'true',
     MAILBOX_DEFAULT_QUOTA_MB: String(process.env.ADMIN_PANEL_DEFAULT_QUOTA_MB || '1024'),
     MAILBOX_DEFAULT_DAILY_EMAIL_LIMIT: String(process.env.ADMIN_PANEL_DEFAULT_RECIPIENTS || '2000')
   };
@@ -1381,6 +1374,7 @@ export const getResolvedSetting = async key => {
 };
 
 export const getOperationsOverview = async () => {
+  const sharedWebmailEnvMap = await getSharedWebmailEnvMap();
   const [domainSettings, notificationSettings, securitySettings, queueInsight] = await Promise.all([
     Promise.all([
       getResolvedSetting('OPS_PRIMARY_DOMAIN'),
@@ -1401,8 +1395,7 @@ export const getOperationsOverview = async () => {
       getResolvedSetting('SECURITY_SESSION_HOURS'),
       getResolvedSetting('SECURITY_PASSWORD_MIN_LENGTH'),
       getResolvedSetting('SECURITY_REQUIRE_STRONG_PASSWORDS'),
-      getResolvedSetting('SECURITY_REQUIRE_2FA_FOR_ADMINS'),
-      getResolvedSetting('SECURITY_ALLOW_TEST_SIGNUP_LINK')
+      getResolvedSetting('SECURITY_REQUIRE_2FA_FOR_ADMINS')
     ]),
     Promise.all([
       billingDb.collection(BILLING_ACCOUNTS).countDocuments({ status: 'active-pending-billing' }),
@@ -1434,7 +1427,7 @@ export const getOperationsOverview = async () => {
       passwordMinLength: securitySettings[1],
       requireStrongPasswords: securitySettings[2],
       require2faForAdmins: securitySettings[3],
-      allowTestSignupLink: securitySettings[4]
+      allowTestSignupLink: sharedWebmailEnvMap.get('SECURITY_ALLOW_TEST_SIGNUP_LINK') || process.env.SECURITY_ALLOW_TEST_SIGNUP_LINK || 'true'
     },
     queueInsight: {
       pendingBilling: queueInsight[0],
