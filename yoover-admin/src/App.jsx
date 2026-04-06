@@ -7,10 +7,16 @@ const sections = [
   { id: 'mailbox-users', label: 'Mailbox Users' },
   { id: 'customers', label: 'Customers' },
   { id: 'billing', label: 'Billing' },
+  { id: 'plans', label: 'Plans' },
   { id: 'settings', label: 'Settings' },
   { id: 'admins', label: 'Admin Users' },
   { id: 'audit', label: 'Audit Logs' }
 ];
+
+const defaultSectionId = sections[0].id;
+const validSectionIds = new Set(sections.map(section => section.id));
+const normalizeSectionId = value => (validSectionIds.has(value) ? value : defaultSectionId);
+const getSectionFromHash = () => normalizeSectionId(String(window.location.hash || '').replace(/^#/, ''));
 
 const roleOptions = [
   { value: 'super_admin', label: 'Super Admin' },
@@ -102,7 +108,7 @@ const SimpleBarChart = ({ title, rows, valueFormatter = value => value }) => {
 export default function App() {
   const [admin, setAdmin] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState('dashboard');
+  const [activeSection, setActiveSection] = useState(() => getSectionFromHash());
   const [error, setError] = useState('');
   const [login, setLogin] = useState({ email: '', password: '' });
   const [dashboard, setDashboard] = useState(null);
@@ -143,8 +149,21 @@ export default function App() {
   const [mailboxUserDetail, setMailboxUserDetail] = useState(null);
   const [selectedMailboxUserId, setSelectedMailboxUserId] = useState('');
   const [mailboxSearch, setMailboxSearch] = useState('');
+  const [mailboxCreateForm, setMailboxCreateForm] = useState({
+    fullName: '',
+    username: '',
+    password: ''
+  });
+  const [mailboxEditForm, setMailboxEditForm] = useState({
+    fullName: '',
+    status: 'active',
+    password: '',
+    quotaMb: '1024',
+    dailyEmails: '2000'
+  });
   const [customers, setCustomers] = useState([]);
   const [payments, setPayments] = useState([]);
+  const [plans, setPlans] = useState([]);
   const [admins, setAdmins] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
   const [settings, setSettings] = useState({ settings: [], envPreview: [], webmailEnv: { entries: [], filePath: '' } });
@@ -183,7 +202,26 @@ export default function App() {
     notes: '',
     status: 'paid'
   });
+  const [planForm, setPlanForm] = useState({
+    planId: '',
+    code: '',
+    name: '',
+    summary: '',
+    description: '',
+    price: '',
+    currency: 'USD',
+    intervalLength: '1',
+    intervalUnit: 'months',
+    featured: false,
+    active: true,
+    checkoutEnabled: true,
+    highlightTag: '',
+    benefits: '',
+    sortOrder: '10'
+  });
   const [adminSaving, setAdminSaving] = useState(false);
+  const [planSaving, setPlanSaving] = useState(false);
+  const [plansActionStatus, setPlansActionStatus] = useState('');
   const [settingsDrafts, setSettingsDrafts] = useState({});
   const [webmailEnvDrafts, setWebmailEnvDrafts] = useState({});
   const [webmailEnvForm, setWebmailEnvForm] = useState({ key: '', value: '' });
@@ -191,6 +229,7 @@ export default function App() {
   const [webmailEnvSavingKey, setWebmailEnvSavingKey] = useState('');
   const [testNotificationRecipient, setTestNotificationRecipient] = useState('');
   const [testNotificationStatus, setTestNotificationStatus] = useState('');
+  const [mailboxDefaultsStatus, setMailboxDefaultsStatus] = useState('');
   const [sectionLoading, setSectionLoading] = useState({});
 
   const loadSession = async () => {
@@ -269,6 +308,10 @@ export default function App() {
         const data = await api(`/api/billing/payments?search=${encodeURIComponent(billingSearch)}`);
         setPayments(data.payments);
       },
+      plans: async () => {
+        const data = await api('/api/billing/plans');
+        setPlans(data.plans || []);
+      },
       settings: async () => setSettings(await api('/api/settings')),
       admins: async () => setAdmins((await api('/api/admin-users')).admins),
       audit: async () => setAuditLogs((await api('/api/audit-logs')).auditLogs)
@@ -286,6 +329,27 @@ export default function App() {
   useEffect(() => {
     loadSession();
   }, []);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const nextSection = getSectionFromHash();
+      setActiveSection(current => (current === nextSection ? current : nextSection));
+    };
+
+    handleHashChange();
+    window.addEventListener('hashchange', handleHashChange);
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    const nextHash = `#${activeSection}`;
+    if (window.location.hash !== nextHash) {
+      window.location.hash = nextHash;
+    }
+  }, [activeSection]);
 
   useEffect(() => {
     if (!admin) {
@@ -342,6 +406,27 @@ export default function App() {
     });
     setWebmailEnvDrafts(nextDrafts);
   }, [settings.webmailEnv]);
+
+  useEffect(() => {
+    if (!mailboxUserDetail || !mailboxUserDetail.user) {
+      setMailboxEditForm({
+        fullName: '',
+        status: 'active',
+        password: '',
+        quotaMb: '1024',
+        dailyEmails: '2000'
+      });
+      return;
+    }
+
+    setMailboxEditForm({
+      fullName: mailboxUserDetail.user.name || '',
+      status: mailboxUserDetail.user.disabled ? 'disabled' : 'active',
+      password: '',
+      quotaMb: String(Math.max(1, Math.round((Number(mailboxUserDetail.user.quota || 0) || 0) / (1024 * 1024)) || 1024)),
+      dailyEmails: String(Number(mailboxUserDetail.user.recipients || 0) || 2000)
+    });
+  }, [mailboxUserDetail]);
 
   useEffect(() => {
     if (!selectedMailboxUserId || activeSection !== 'mailbox-users') {
@@ -405,6 +490,29 @@ export default function App() {
       accountId: String(account._id || '')
     }));
   }, [customerDetail]);
+
+  useEffect(() => {
+    if (!plans.length) {
+      setPlanForm({
+        planId: '',
+        code: '',
+        name: '',
+        summary: '',
+        description: '',
+        price: '',
+        currency: 'USD',
+        intervalLength: '1',
+        intervalUnit: 'months',
+        featured: false,
+        active: true,
+        checkoutEnabled: true,
+        highlightTag: '',
+        benefits: '',
+        sortOrder: '10'
+      });
+      return;
+    }
+  }, [plans]);
 
   const handleLogin = async event => {
     event.preventDefault();
@@ -481,6 +589,27 @@ export default function App() {
       setError(err.message);
     } finally {
       setSettingsSavingKey('');
+    }
+  };
+
+  const handleApplyMailboxDefaultsToExisting = async () => {
+    setError('');
+    setMailboxDefaultsStatus('');
+
+    try {
+      const data = await api('/api/settings/mailbox-defaults/apply', {
+        method: 'POST',
+        body: JSON.stringify({
+          quotaMb: settingsDrafts.MAILBOX_DEFAULT_QUOTA_MB || '',
+          dailyEmails: settingsDrafts.MAILBOX_DEFAULT_DAILY_EMAIL_LIMIT || ''
+        })
+      });
+      setMailboxDefaultsStatus(`Updated ${data.updated || 0} existing mailbox users.`);
+      if (activeSection === 'mailbox-users') {
+        await loadSectionData('mailbox-users');
+      }
+    } catch (err) {
+      setError(err.message);
     }
   };
 
@@ -570,6 +699,98 @@ export default function App() {
     }
   };
 
+  const getEmptyPlanForm = () => ({
+    planId: '',
+    code: '',
+    name: '',
+    summary: '',
+    description: '',
+    price: '',
+    currency: 'USD',
+    intervalLength: '1',
+    intervalUnit: 'months',
+    featured: false,
+    active: true,
+    checkoutEnabled: true,
+    highlightTag: '',
+    benefits: '',
+    sortOrder: '10'
+  });
+
+  const handlePlanSave = async event => {
+    event.preventDefault();
+    setPlanSaving(true);
+    setPlansActionStatus('');
+    setError('');
+
+    try {
+      const data = await api('/api/billing/plans', {
+        method: 'POST',
+        body: JSON.stringify({
+          ...planForm,
+          benefits: String(planForm.benefits || '')
+            .split(/\r?\n/)
+            .map(item => item.trim())
+            .filter(Boolean)
+        })
+      });
+      setPlans(data.plans || []);
+      setPlanForm(getEmptyPlanForm());
+      setPlansActionStatus(planForm.planId ? 'Plan updated successfully.' : 'Plan created successfully.');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setPlanSaving(false);
+    }
+  };
+
+  const handlePlanEdit = plan => {
+    setPlansActionStatus('');
+    setPlanForm({
+      planId: String(plan._id || ''),
+      code: plan.code || '',
+      name: plan.name || '',
+      summary: plan.summary || '',
+      description: plan.description || '',
+      price: String(plan.price ?? ''),
+      currency: plan.currency || 'USD',
+      intervalLength: String(plan.displayIntervalLength || plan.intervalLength || 1),
+      intervalUnit: plan.cadence || plan.intervalUnit || 'months',
+      featured: Boolean(plan.featured),
+      active: plan.active !== false,
+      checkoutEnabled: plan.checkoutEnabled !== false,
+      highlightTag: plan.highlightTag || '',
+      benefits: (plan.benefits || []).join('\n'),
+      sortOrder: String(plan.sortOrder || 0)
+    });
+  };
+
+  const handlePlanDelete = async planId => {
+    setPlanSaving(true);
+    setPlansActionStatus('');
+    setError('');
+
+    try {
+      const data = await api(`/api/billing/plans/${planId}`, {
+        method: 'DELETE'
+      });
+      setPlans(data.plans || []);
+      if (planForm.planId === String(planId)) {
+        setPlanForm(getEmptyPlanForm());
+      }
+      setPlansActionStatus('Plan removed successfully.');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setPlanSaving(false);
+    }
+  };
+
+  const handlePlanCreateNew = () => {
+    setPlansActionStatus('');
+    setPlanForm(getEmptyPlanForm());
+  };
+
   const handleMailboxImport = async userId => {
     setError('');
     try {
@@ -581,6 +802,75 @@ export default function App() {
       if (data && data.account && data.account._id) {
         setSelectedCustomerId(String(data.account._id));
       }
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleMailboxCreate = async event => {
+    event.preventDefault();
+    setError('');
+    try {
+      const data = await api('/api/mailbox-users', {
+        method: 'POST',
+        body: JSON.stringify(mailboxCreateForm)
+      });
+      setMailboxCreateForm({
+        fullName: '',
+        username: '',
+        password: ''
+      });
+      await loadSectionData('mailbox-users');
+      const nextId = String((data && data.mailboxUser && data.mailboxUser.id) || '');
+      if (nextId) {
+        setSelectedMailboxUserId(nextId);
+      }
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleMailboxUpdate = async event => {
+    event.preventDefault();
+    if (!selectedMailboxUserId) {
+      return;
+    }
+
+    setError('');
+    try {
+      const data = await api(`/api/mailbox-users/${selectedMailboxUserId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(mailboxEditForm)
+      });
+      setMailboxUserDetail(data);
+      setMailboxEditForm(current => ({ ...current, password: '' }));
+      await loadSectionData('mailbox-users');
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleMailboxDelete = async () => {
+    if (!selectedMailboxUserId || !mailboxUserDetail || !mailboxUserDetail.user) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Delete mailbox ${mailboxUserDetail.user.address || mailboxUserDetail.user.username}? This removes the mailbox from WildDuck.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setError('');
+    try {
+      await api(`/api/mailbox-users/${selectedMailboxUserId}`, {
+        method: 'DELETE'
+      });
+      setMailboxUserDetail(null);
+      setSelectedMailboxUserId('');
+      await loadSectionData('mailbox-users');
     } catch (err) {
       setError(err.message);
     }
@@ -1413,6 +1703,28 @@ export default function App() {
             <div className="detail-stack">
               <section className="panel-card">
                 <div className="panel-card-header">
+                  <h3>Create Mailbox User</h3>
+                  <span>Mailbox only</span>
+                </div>
+                <form className="stack-form" onSubmit={handleMailboxCreate}>
+                  <label>
+                    <span>Full Name</span>
+                    <input value={mailboxCreateForm.fullName} onChange={event => setMailboxCreateForm(current => ({ ...current, fullName: event.target.value }))} required />
+                  </label>
+                  <label>
+                    <span>Username</span>
+                    <input value={mailboxCreateForm.username} onChange={event => setMailboxCreateForm(current => ({ ...current, username: event.target.value.toLowerCase() }))} placeholder="username only" required />
+                  </label>
+                  <label>
+                    <span>Password</span>
+                    <input type="password" value={mailboxCreateForm.password} onChange={event => setMailboxCreateForm(current => ({ ...current, password: event.target.value }))} required />
+                  </label>
+                  <button type="submit">Create Mailbox User</button>
+                </form>
+              </section>
+
+              <section className="panel-card">
+                <div className="panel-card-header">
                   <h3>Mailbox Directory</h3>
                   <span>{mailboxUsers.length} loaded</span>
                 </div>
@@ -1468,7 +1780,11 @@ export default function App() {
                       </div>
                       <div className="detail-item">
                         <strong>Quota</strong>
-                        <span>{Number(mailboxUserDetail.user.quota || 0).toLocaleString()} bytes</span>
+                        <span>{Math.round((Number(mailboxUserDetail.user.quota || 0) || 0) / (1024 * 1024)).toLocaleString()} MB</span>
+                      </div>
+                      <div className="detail-item">
+                        <strong>Daily Emails</strong>
+                        <span>{Number(mailboxUserDetail.user.recipients || 0).toLocaleString()}</span>
                       </div>
                       <div className="detail-item">
                         <strong>Storage Used</strong>
@@ -1487,8 +1803,49 @@ export default function App() {
 
                   <section className="panel-card">
                     <div className="panel-card-header">
-                      <h3>Admin Actions</h3>
+                      <h3>Edit Mailbox User</h3>
                       <span>Mailbox operations</span>
+                    </div>
+                    <form className="stack-form" onSubmit={handleMailboxUpdate}>
+                      <label>
+                        <span>Full Name</span>
+                        <input value={mailboxEditForm.fullName} onChange={event => setMailboxEditForm(current => ({ ...current, fullName: event.target.value }))} required />
+                      </label>
+                      <label>
+                        <span>Status</span>
+                        <select value={mailboxEditForm.status} onChange={event => setMailboxEditForm(current => ({ ...current, status: event.target.value }))}>
+                          <option value="active">Active</option>
+                          <option value="disabled">Disabled</option>
+                        </select>
+                      </label>
+                      <label>
+                        <span>New Password</span>
+                        <input type="password" value={mailboxEditForm.password} onChange={event => setMailboxEditForm(current => ({ ...current, password: event.target.value }))} placeholder="Leave blank to keep current password" />
+                      </label>
+                      <label>
+                        <span>Quota (MB)</span>
+                        <input type="number" min="1" step="1" value={mailboxEditForm.quotaMb} onChange={event => setMailboxEditForm(current => ({ ...current, quotaMb: event.target.value }))} required />
+                      </label>
+                      <label>
+                        <span>Daily Emails</span>
+                        <input type="number" min="1" step="1" value={mailboxEditForm.dailyEmails} onChange={event => setMailboxEditForm(current => ({ ...current, dailyEmails: event.target.value }))} required />
+                      </label>
+                      <div className="action-row">
+                        <button type="submit">Save Mailbox Changes</button>
+                        <button type="button" className="secondary-button" onClick={handleMailboxDelete}>
+                          Delete Mailbox
+                        </button>
+                      </div>
+                    </form>
+                    <p className="section-note">
+                      This section manages the actual WildDuck mailbox. Customer records stay separate.
+                    </p>
+                  </section>
+
+                  <section className="panel-card">
+                    <div className="panel-card-header">
+                      <h3>Customer Link</h3>
+                      <span>{mailboxUserDetail.linkedCustomer ? 'Connected' : 'Not connected'}</span>
                     </div>
                     <div className="action-row">
                       <button type="button" onClick={() => handleMailboxImport(String(mailboxUserDetail.user._id))}>
@@ -1499,16 +1856,6 @@ export default function App() {
                           Open Linked Customer
                         </button>
                       ) : null}
-                    </div>
-                    <p className="section-note">
-                      Use this workspace for mailbox-first accounts that exist in WildDuck but are not yet fully represented in the billing/customer layer.
-                    </p>
-                  </section>
-
-                  <section className="panel-card">
-                    <div className="panel-card-header">
-                      <h3>Customer Link</h3>
-                      <span>{mailboxUserDetail.linkedCustomer ? 'Connected' : 'Not connected'}</span>
                     </div>
                     {mailboxUserDetail.linkedCustomer ? (
                       <div className="detail-grid">
@@ -1829,6 +2176,161 @@ export default function App() {
           </section>
         ) : null}
 
+        {activeSection === 'plans' ? (
+          <>
+            <section className="panel-grid">
+              <StatCard label="Total Plans" value={plans.length} hint="All saved billing plans" />
+              <StatCard label="Checkout Enabled" value={plans.filter(plan => plan.checkoutEnabled && plan.active).length} hint="Available in live purchase flow" />
+              <StatCard label="Featured" value={plans.filter(plan => plan.featured).length} hint="Highlighted plan cards" />
+            </section>
+
+            {plansActionStatus ? <div className="success-box">{plansActionStatus}</div> : null}
+
+            <section className="panel-grid settings-grid">
+              <section className="panel-card">
+                <div className="panel-card-header">
+                  <h3>{planForm.planId ? 'Edit Subscription Plan' : 'Create Subscription Plan'}</h3>
+                  <span>Directly powers webmail pricing and checkout</span>
+                </div>
+                <form className="stack-form" onSubmit={handlePlanSave}>
+                  <div className="toolbar-grid">
+                    <label>
+                      <span>Plan Code</span>
+                      <input value={planForm.code} onChange={event => setPlanForm(current => ({ ...current, code: event.target.value.toLowerCase() }))} placeholder="weekly" required />
+                    </label>
+                    <label>
+                      <span>Plan Name</span>
+                      <input value={planForm.name} onChange={event => setPlanForm(current => ({ ...current, name: event.target.value }))} placeholder="Weekly" required />
+                    </label>
+                  </div>
+                  <div className="toolbar-grid">
+                    <label>
+                      <span>Price</span>
+                      <input value={planForm.price} onChange={event => setPlanForm(current => ({ ...current, price: event.target.value }))} placeholder="9.99" required />
+                    </label>
+                    <label>
+                      <span>Currency</span>
+                      <input value={planForm.currency} onChange={event => setPlanForm(current => ({ ...current, currency: event.target.value.toUpperCase() }))} placeholder="USD" />
+                    </label>
+                  </div>
+                  <div className="toolbar-grid plan-interval-grid">
+                    <label>
+                      <span>Billing Length</span>
+                      <input
+                        value={planForm.intervalLength}
+                        onChange={event => setPlanForm(current => ({ ...current, intervalLength: event.target.value }))}
+                        placeholder="1"
+                        required
+                      />
+                    </label>
+                    <label>
+                      <span>Billing Unit</span>
+                      <select value={planForm.intervalUnit} onChange={event => setPlanForm(current => ({ ...current, intervalUnit: event.target.value }))}>
+                        <option value="days">Days</option>
+                        <option value="weeks">Weeks</option>
+                        <option value="months">Months</option>
+                        <option value="years">Years</option>
+                      </select>
+                    </label>
+                    <label>
+                      <span>Sort Order</span>
+                      <input value={planForm.sortOrder} onChange={event => setPlanForm(current => ({ ...current, sortOrder: event.target.value }))} placeholder="10" />
+                    </label>
+                  </div>
+                  <label>
+                    <span>Highlight Tag</span>
+                    <input value={planForm.highlightTag} onChange={event => setPlanForm(current => ({ ...current, highlightTag: event.target.value }))} placeholder="Best value" />
+                  </label>
+                  <label>
+                    <span>Summary</span>
+                    <input value={planForm.summary} onChange={event => setPlanForm(current => ({ ...current, summary: event.target.value }))} placeholder="Short checkout-friendly summary" />
+                  </label>
+                  <label>
+                    <span>Description</span>
+                    <textarea value={planForm.description} onChange={event => setPlanForm(current => ({ ...current, description: event.target.value }))} rows="4" placeholder="Longer public-facing description for pricing pages." />
+                  </label>
+                  <label>
+                    <span>Benefits</span>
+                    <textarea value={planForm.benefits} onChange={event => setPlanForm(current => ({ ...current, benefits: event.target.value }))} rows="6" placeholder={'One benefit per line\nProfessional email address\nSecure webmail access'} />
+                  </label>
+                  <div className="toggle-grid">
+                    <label className="toggle-card">
+                      <input type="checkbox" checked={planForm.featured} onChange={event => setPlanForm(current => ({ ...current, featured: event.target.checked }))} />
+                      <span>Featured plan</span>
+                    </label>
+                    <label className="toggle-card">
+                      <input type="checkbox" checked={planForm.active} onChange={event => setPlanForm(current => ({ ...current, active: event.target.checked }))} />
+                      <span>Active</span>
+                    </label>
+                    <label className="toggle-card">
+                      <input type="checkbox" checked={planForm.checkoutEnabled} onChange={event => setPlanForm(current => ({ ...current, checkoutEnabled: event.target.checked }))} />
+                      <span>Checkout enabled</span>
+                    </label>
+                  </div>
+                  <div className="action-row">
+                    <button type="submit" disabled={planSaving}>
+                      {planSaving ? 'Saving...' : planForm.planId ? 'Update Plan' : 'Create Plan'}
+                    </button>
+                    <button type="button" className="secondary-button" onClick={handlePlanCreateNew}>
+                      New Plan
+                    </button>
+                  </div>
+                </form>
+              </section>
+
+              <section className="panel-card">
+                <div className="panel-card-header">
+                  <h3>Live Plan Catalog</h3>
+                  <span>{plans.length} plans available</span>
+                </div>
+                <div className="list-stack">
+                  {plans.length ? (
+                    plans.map(plan => (
+                      <div className="list-card static-card plan-card-admin" key={plan._id}>
+                        <div className="plan-card-admin-top">
+                          <div>
+                            <strong>{plan.name}</strong>
+                            <span>
+                              {plan.formattedPrice} / {plan.billingLabel}
+                            </span>
+                          </div>
+                          <div className="plan-status-row">
+                            {plan.featured ? <span className="settings-badge source-database">featured</span> : null}
+                            <span className={`settings-badge ${plan.active && plan.checkoutEnabled ? 'source-environment' : 'source-unset'}`}>
+                              {plan.active && plan.checkoutEnabled ? 'live' : 'hidden'}
+                            </span>
+                          </div>
+                        </div>
+                        <small>
+                          {plan.code} · {plan.billingLabel} cadence · sort {plan.sortOrder}
+                        </small>
+                        <p>{plan.summary || plan.description || 'No summary added yet.'}</p>
+                        {plan.benefits?.length ? (
+                          <ul className="plan-benefit-list">
+                            {plan.benefits.map(item => (
+                              <li key={`${plan._id}-${item}`}>{item}</li>
+                            ))}
+                          </ul>
+                        ) : null}
+                        <div className="action-row">
+                          <button type="button" className="secondary-button" onClick={() => handlePlanEdit(plan)}>
+                            Edit
+                          </button>
+                          <button type="button" className="danger-button compact-button" onClick={() => handlePlanDelete(plan._id)} disabled={planSaving}>
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <EmptyState title="No billing plans yet" copy="Create the first subscription plan and it will appear in webmail pricing and checkout automatically." />
+                  )}
+                </div>
+              </section>
+            </section>
+          </>
+        ) : null}
+
         {activeSection === 'admins' ? (
           <section className="panel-grid settings-grid">
             <div className="panel-card">
@@ -2032,6 +2534,24 @@ export default function App() {
                 <EmptyState title="No environment preview" copy="Bootstrap configuration preview will appear here." />
               )}
             </div>
+
+            <div className="panel-card">
+              <div className="panel-card-header">
+                <h3>Mailbox Limits Rollout</h3>
+                <span>Future and existing users</span>
+              </div>
+              <div className="settings-file-note">
+                <strong>Defaults for new mailboxes</strong>
+                <span>Save `MAILBOX_DEFAULT_QUOTA_MB` and `MAILBOX_DEFAULT_DAILY_EMAIL_LIMIT` in Admin Operational Settings to control all upcoming mailbox users and customer-created mailboxes.</span>
+                <small>When you are ready, apply those same saved values to all existing mailbox users with one action below.</small>
+              </div>
+              {mailboxDefaultsStatus ? <div className="success-box">{mailboxDefaultsStatus}</div> : null}
+              <div className="action-row">
+                <button type="button" onClick={handleApplyMailboxDefaultsToExisting}>
+                  Apply Saved Defaults To Existing Mailboxes
+                </button>
+              </div>
+            </div>
           </section>
         ) : null}
 
@@ -2065,6 +2585,7 @@ export default function App() {
         {activeSection === 'mailbox-users' && isSectionLoading && !mailboxUsers.length ? <div className="section-loading">Loading mailbox users...</div> : null}
         {activeSection === 'customers' && isSectionLoading && !customers.length ? <div className="section-loading">Loading customer data...</div> : null}
         {activeSection === 'billing' && isSectionLoading && !payments.length ? <div className="section-loading">Loading payment data...</div> : null}
+        {activeSection === 'plans' && isSectionLoading && !plans.length ? <div className="section-loading">Loading subscription plans...</div> : null}
         {activeSection === 'admins' && isSectionLoading && !admins.length ? <div className="section-loading">Loading admin users...</div> : null}
         {activeSection === 'audit' && isSectionLoading && !auditLogs.length ? <div className="section-loading">Loading audit activity...</div> : null}
       </main>

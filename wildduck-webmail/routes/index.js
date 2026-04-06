@@ -8,7 +8,8 @@ const apiClient = require('../lib/api-client');
 const billingStore = require('../lib/billing-store');
 const authorizeNet = require('../lib/authorize-net');
 const adminNotifier = require('../lib/admin-notifier');
-const { getPlan, listPlans } = require('../lib/billing-plans');
+const db = require('../lib/db');
+const { getDefaultPlan, getPlan, listPlans } = require('../lib/billing-plans');
 const roleBasedAddresses = require('role-based-email-addresses');
 /* ------------------------------
    SAFE STRIPE INITIALIZATION
@@ -28,7 +29,7 @@ const checkoutSchema = Joi.object({
     billingEmail: Joi.string().trim().email().required(),
     password: Joi.string().min(8).max(256).required(),
     password2: Joi.string().valid(Joi.ref('password')).required(),
-    selectedPlan: Joi.string().valid('monthly', 'yearly').required(),
+    selectedPlan: Joi.string().trim().lowercase().required(),
     company: Joi.string().trim().allow('').max(120).default(''),
     addressLine1: Joi.string().trim().min(3).max(120).required(),
     addressLine2: Joi.string().trim().allow('').max(120).default(''),
@@ -73,14 +74,78 @@ const validateRequestedUsername = username => {
     return false;
 };
 
-const getPlanOptions = selectedPlan =>
-    listPlans().map(plan => ({
+const resolveUser = (username, req) =>
+    new Promise((resolve, reject) => {
+        apiClient.users.resolve(
+            {
+                username,
+                ip: req.ip,
+                sess: req.session.id
+            },
+            (err, result) => {
+                if (!err) {
+                    return resolve(result || null);
+                }
+
+                if (err.statusCode === 404) {
+                    return resolve(null);
+                }
+
+                return reject(err);
+            }
+        );
+    });
+
+const findClaimedIdentity = async (requestedUsername, req) => {
+    const normalizedUsername = String(requestedUsername || '').trim().toLowerCase();
+    const emailAddress = `${normalizedUsername}@${getServiceDomain()}`;
+
+    const [billingByEmail, billingByUsername] = await Promise.all([
+        billingStore.getAccountByEmail(emailAddress),
+        billingStore.getAccountByUsername(normalizedUsername)
+    ]);
+
+    const activeBillingAccount = [billingByEmail, billingByUsername].find(
+        account => account && account.status !== 'canceled'
+    );
+
+    if (activeBillingAccount) {
+        return activeBillingAccount;
+    }
+
+    if (db.mongo) {
+        const mailboxUser = await db.collection('users').findOne({
+            $or: [{ address: emailAddress }, { username: normalizedUsername }, { username: emailAddress }]
+        });
+
+        if (mailboxUser) {
+            return mailboxUser;
+        }
+    }
+
+    return (
+        (await resolveUser(emailAddress, req)) ||
+        (normalizedUsername !== emailAddress ? await resolveUser(normalizedUsername, req) : null)
+    );
+};
+
+const isUsernameAvailable = async (requestedUsername, req) => !(await findClaimedIdentity(requestedUsername, req));
+
+const getPlanOptions = async selectedPlan => {
+    const plans = await listPlans();
+    const defaultPlan = plans.find(plan => plan.featured) || plans[0];
+    const selectedCode = selectedPlan || (defaultPlan && defaultPlan.code);
+
+    return plans.map(plan => ({
         code: plan.code,
         name: plan.name,
         price: plan.formattedPrice,
+        billingLabel: plan.billingLabel,
         summary: plan.summary,
-        selected: plan.code === (selectedPlan || 'monthly')
+        benefits: plan.benefits || [],
+        selected: plan.code === selectedCode
     }));
+};
 
 const splitName = fullName => {
     const parts = (fullName || '').trim().split(/\s+/).filter(Boolean);
@@ -92,7 +157,15 @@ const splitName = fullName => {
 
 const addBillingCycle = (date, plan) => {
     const nextDate = new Date(date);
-    nextDate.setUTCMonth(nextDate.getUTCMonth() + plan.intervalLength);
+    const intervalLength = Number(plan && plan.intervalLength) || 1;
+    const intervalUnit = String((plan && plan.intervalUnit) || 'months').toLowerCase();
+
+    if (intervalUnit === 'days') {
+        nextDate.setUTCDate(nextDate.getUTCDate() + intervalLength);
+        return nextDate;
+    }
+
+    nextDate.setUTCMonth(nextDate.getUTCMonth() + intervalLength);
     return nextDate;
 };
 
@@ -210,7 +283,7 @@ const recoverPendingSubscriptionForAccount = async emailAddress => {
             return null;
         }
 
-        const plan = getPlan(billingAccount.plan.code || billingAccount.plan);
+        const plan = (await getPlan(billingAccount.plan.code || billingAccount.plan)) || billingAccount.plan;
         const expectedName = buildAuthorizeSubscriptionName(billingAccount.username, plan.name);
         const baseDate =
             (billingAccount.subscription && billingAccount.subscription.startedAt) || billingAccount.createdAt || new Date();
@@ -294,7 +367,7 @@ const schedulePendingSubscriptionRecovery = (emailAddress, delayMs) => {
     }, delayMs);
 };
 
-const renderCheckout = (req, res, values, options) =>
+const renderCheckout = async (req, res, values, options) =>
     res.render('authorize-signup', {
         title: 'Complete Your Registration',
         activePurchase: true,
@@ -303,7 +376,7 @@ const renderCheckout = (req, res, values, options) =>
         requestedUsername: values.requestedUsername,
         values,
         errors: options.errors || {},
-        plans: getPlanOptions(values.selectedPlan),
+        plans: await getPlanOptions(values.selectedPlan),
         csrfToken: req.csrfToken(),
         serviceDomain: getServiceDomain()
     });
@@ -388,17 +461,37 @@ if (process.env.STRIPE_SECRET_KEY) {
 
 // Home
 router.get('/', (req, res) => {
-    res.render('index', {
+    const hostname = String(req.hostname || '').toLowerCase();
+    if (hostname === 'mail.yoover.com') {
+        return res.redirect('/account/login');
+    }
+
+    const handler = async () =>
+        res.render('index', {
         isHome: true,
         title: 'Home',
+        pricingPlans: await listPlans(),
         serviceDomain: getServiceDomain()
+    });
+
+    return handler().catch(err => {
+        console.error('Homepage Plans Error:', err);
+        res.render('index', {
+            isHome: true,
+            title: 'Home',
+            pricingPlans: [],
+            serviceDomain: getServiceDomain()
+        });
     });
 });
 
 // Purchase Page
-router.get('/purchase', (req, res) => {
+router.get('/purchase', async (req, res) => {
     const requestedUsername = (req.query.username || '').trim().toLowerCase();
-    const selectedPlan = req.query.plan === 'yearly' ? 'yearly' : 'monthly';
+    const defaultPlan = await getDefaultPlan();
+    const requestedPlan = (req.query.plan || '').trim().toLowerCase();
+    const resolvedPlan = await getPlan(requestedPlan || (defaultPlan && defaultPlan.code));
+    const selectedPlan = (resolvedPlan && resolvedPlan.code) || (defaultPlan && defaultPlan.code) || 'monthly';
     const checkoutFormState = req.session.checkoutFormState;
     delete req.session.checkoutFormState;
 
@@ -437,10 +530,18 @@ router.get('/purchase', (req, res) => {
 });
 
 router.get('/purchase/:plan', (req, res) => {
-    const plan = getPlan(req.params.plan);
-    const username = (req.query.username || '').trim().toLowerCase();
+    const handler = async () => {
+        const plan = await getPlan(req.params.plan);
+        const username = (req.query.username || '').trim().toLowerCase();
+        const defaultPlan = await getDefaultPlan();
 
-    return res.redirect(`/purchase?username=${encodeURIComponent(username)}&plan=${plan.code}`);
+        return res.redirect(`/purchase?username=${encodeURIComponent(username)}&plan=${encodeURIComponent((plan && plan.code) || (defaultPlan && defaultPlan.code) || 'monthly')}`);
+    };
+
+    return handler().catch(err => {
+        console.error('Purchase Plan Redirect Error:', err);
+        return res.redirect(`/purchase?username=${encodeURIComponent((req.query.username || '').trim().toLowerCase())}`);
+    });
 });
 
 router.get('/test-signup', (req, res) => {
@@ -519,26 +620,7 @@ router.post('/execute-test-signup', async (req, res) => {
             return res.redirect(`/test-signup?username=${encodeURIComponent(values.requestedUsername)}`);
         }
 
-        const usernameAvailable = await new Promise((resolve, reject) => {
-            apiClient.users.resolve(
-                {
-                    username: `${values.requestedUsername}@${getServiceDomain()}`,
-                    ip: req.ip,
-                    sess: req.session.id
-                },
-                err => {
-                    if (!err) {
-                        return resolve(false);
-                    }
-
-                    if (err.statusCode === 404) {
-                        return resolve(true);
-                    }
-
-                    return reject(err);
-                }
-            );
-        });
+        const usernameAvailable = await isUsernameAvailable(values.requestedUsername, req);
 
         if (!usernameAvailable) {
             req.session.testSignupFormState = {
@@ -739,11 +821,22 @@ router.post('/contact', (req, res) => {
 });
 
 router.get('/pricing', (req, res) => {
-
-    res.render('pricing', {
+    const handler = async () =>
+        res.render('pricing', {
         title: 'Pricing',
         activePurchase: true,
+        plans: await listPlans(),
         serviceDomain: getServiceDomain()
+    });
+
+    return handler().catch(err => {
+        console.error('Pricing Plans Error:', err);
+        res.render('pricing', {
+            title: 'Pricing',
+            activePurchase: true,
+            plans: [],
+            serviceDomain: getServiceDomain()
+        });
     });
 
 });
@@ -786,7 +879,6 @@ router.get('/help', (req, res) => {
 router.get('/check-username', async (req, res) => {
     const username = (req.query.username || '').trim().toLowerCase();
     const validationError = validateRequestedUsername(username);
-    const emailAddress = `${username}@${getServiceDomain()}`;
 
     if (validationError) {
         return res.status(400).json({
@@ -795,33 +887,7 @@ router.get('/check-username', async (req, res) => {
     }
 
     try {
-        const existingBillingAccount = await billingStore.getAccountByEmail(emailAddress);
-
-        if (existingBillingAccount && existingBillingAccount.status !== 'canceled') {
-            return res.json({ available: false });
-        }
-
-        return apiClient.users.resolve(
-            {
-                username: emailAddress,
-                ip: req.ip,
-                sess: req.session.id
-            },
-            err => {
-                if (!err) {
-                    return res.json({ available: false });
-                }
-
-                if (err.statusCode === 404) {
-                    return res.json({ available: true });
-                }
-
-                console.error('WildDuck Check Error:', err);
-                return res.status(500).json({
-                    error: 'API Connection Failed'
-                });
-            }
-        );
+        return res.json({ available: await isUsernameAvailable(username, req) });
     } catch (err) {
         console.error('WildDuck Check Error:', err);
         res.status(500).json({
@@ -832,9 +898,11 @@ router.get('/check-username', async (req, res) => {
 
 
 
-router.get('/purchase-authorize', (req, res) => {
+router.get('/purchase-authorize', async (req, res) => {
     const username = (req.query.username || '').trim().toLowerCase();
-    const plan = req.query.plan === 'yearly' ? 'yearly' : 'monthly';
+    const defaultPlan = await getDefaultPlan();
+    const resolvedPlan = await getPlan((req.query.plan || '').trim().toLowerCase() || (defaultPlan && defaultPlan.code));
+    const plan = (resolvedPlan && resolvedPlan.code) || (defaultPlan && defaultPlan.code) || 'monthly';
 
     if (!username) {
         return res.redirect(`/purchase?plan=${encodeURIComponent(plan)}`);
@@ -872,6 +940,17 @@ router.post('/execute-authorize-payment', async (req, res) => {
         }
 
         const values = result.value;
+        const availablePlans = await listPlans();
+        const selectedPlan = availablePlans.find(plan => plan.code === values.selectedPlan);
+
+        if (!selectedPlan) {
+            return redirectCheckout(req, res, values, {
+                errors: {
+                    selectedPlan: 'Please choose one of the active subscription plans.'
+                }
+            });
+        }
+
         const validationError = validateRequestedUsername(values.requestedUsername);
         if (validationError) {
             return redirectCheckout(req, res, values, {
@@ -881,26 +960,7 @@ router.post('/execute-authorize-payment', async (req, res) => {
             });
         }
 
-        const usernameAvailable = await new Promise((resolve, reject) => {
-            apiClient.users.resolve(
-                {
-                    username: `${values.requestedUsername}@${getServiceDomain()}`,
-                    ip: req.ip,
-                    sess: req.session.id
-                },
-                err => {
-                    if (!err) {
-                        return resolve(false);
-                    }
-
-                    if (err.statusCode === 404) {
-                        return resolve(true);
-                    }
-
-                    return reject(err);
-                }
-            );
-        });
+        const usernameAvailable = await isUsernameAvailable(values.requestedUsername, req);
 
         if (!usernameAvailable) {
             return redirectCheckout(req, res, values, {
@@ -919,7 +979,7 @@ router.post('/execute-authorize-payment', async (req, res) => {
             });
         }
 
-        const plan = getPlan(values.selectedPlan);
+        const plan = selectedPlan;
         const name = splitName(values.fullName);
         const initialChargeDate = new Date();
         const nextBillingAt = addBillingCycle(initialChargeDate, plan);

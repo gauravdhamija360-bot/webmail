@@ -59,7 +59,15 @@ const addBillingCycle = (date, plan) => {
         return null;
     }
 
-    nextDate.setUTCMonth(nextDate.getUTCMonth() + plan.intervalLength);
+    const intervalLength = Number(plan.intervalLength) || 1;
+    const intervalUnit = String(plan.intervalUnit || 'months').toLowerCase();
+
+    if (intervalUnit === 'days') {
+        nextDate.setUTCDate(nextDate.getUTCDate() + intervalLength);
+        return nextDate;
+    }
+
+    nextDate.setUTCMonth(nextDate.getUTCMonth() + intervalLength);
     return nextDate;
 };
 
@@ -240,7 +248,7 @@ router.post('/sync', passport.checkLogin, async (req, res) => {
         let note = '';
 
         if (!billingAccount.authorizeNet.subscriptionId) {
-            const plan = getPlan(billingAccount.plan && billingAccount.plan.code);
+            const plan = (await getPlan(billingAccount.plan && billingAccount.plan.code)) || billingAccount.plan;
             const baseDate = subscriptionState.startedAt || billingAccount.createdAt || new Date();
             const nextBillingAt = addBillingCycle(baseDate, plan);
             const recoveredSubscription = await authorizeNet.findSubscriptionByCustomerProfile({

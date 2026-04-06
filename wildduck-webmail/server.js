@@ -11,6 +11,7 @@ const http = require('http');
 const pem = require('pem');
 const db = require('./lib/db');
 const billingStore = require('./lib/billing-store');
+const billingPlans = require('./lib/billing-plans');
 
 const port = config.www.port;
 const host = config.www.host;
@@ -30,6 +31,9 @@ db.connect(err => {
 
     billingStore
         .init()
+        .then(() => {
+            return billingPlans.init();
+        })
         .then(() => {
             const app = require('./app'); // eslint-disable-line global-require
             app.set('port', port);
@@ -105,7 +109,7 @@ db.connect(err => {
             });
         })
         .catch(initErr => {
-            log.error('Db', 'Failed to initialize billing indexes: %s', initErr.message);
+            log.error('Db', 'Failed to initialize billing data: %s', initErr.message);
             return process.exit(1);
         });
 });

@@ -10,6 +10,7 @@ const ADMIN_SETTINGS = 'admin_settings';
 const ADMIN_SUPPORT_NOTES = 'admin_support_notes';
 const BILLING_ACCOUNTS = 'billing_accounts';
 const BILLING_PAYMENTS = 'billing_payments';
+const BILLING_PLANS = 'billing_plans';
 const MARKETING_RECIPIENTS = 'marketing_recipients';
 const MARKETING_SENDER_PROFILES = 'marketing_sender_profiles';
 const MARKETING_CAMPAIGNS = 'marketing_campaigns';
@@ -96,6 +97,18 @@ const SETTINGS_DEFINITIONS = [
     label: 'Allow Test Signup Link',
     description: 'Operational switch for the public test-signup experience.',
     sensitive: false
+  },
+  {
+    key: 'MAILBOX_DEFAULT_QUOTA_MB',
+    label: 'Default Mailbox Quota (MB)',
+    description: 'Default quota applied to newly created mailbox users and customer mailboxes.',
+    sensitive: false
+  },
+  {
+    key: 'MAILBOX_DEFAULT_DAILY_EMAIL_LIMIT',
+    label: 'Default Daily Email Limit',
+    description: 'Default daily sending limit applied to newly created mailbox users and customer mailboxes.',
+    sensitive: false
   }
 ];
 
@@ -105,6 +118,177 @@ let wildduckDb;
 
 const now = () => new Date();
 const daysAgo = days => new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+const BILLING_PLAN_DEFAULTS = [
+  {
+    code: 'yearly',
+    name: 'Yearly',
+    summary: 'Best value annual plan billed once per year.',
+    description: 'Lower effective cost for customers who want a long-term mailbox identity.',
+    price: 39.9,
+    currency: 'USD',
+    intervalLength: 12,
+    intervalUnit: 'months',
+    featured: true,
+    active: true,
+    checkoutEnabled: true,
+    highlightTag: 'Best value',
+    benefits: ['Lower effective cost than monthly billing', 'Same mailbox experience and account controls', 'Built for long-term personal identity'],
+    sortOrder: 10
+  },
+  {
+    code: 'monthly',
+    name: 'Monthly',
+    summary: 'Flexible monthly plan billed once every month.',
+    description: 'Ideal when you want to get started quickly with lower commitment.',
+    price: 9,
+    currency: 'USD',
+    intervalLength: 1,
+    intervalUnit: 'months',
+    featured: false,
+    active: true,
+    checkoutEnabled: true,
+    highlightTag: 'Flexible',
+    benefits: ['Professional address on @yoover.com', 'Responsive webmail and mobile setup', 'In-account billing management'],
+    sortOrder: 20
+  }
+];
+
+const normalizeBenefits = benefits =>
+  []
+    .concat(benefits || [])
+    .map(item => String(item || '').trim())
+    .filter(Boolean);
+
+const resolvePlanCadence = (intervalLength, intervalUnit) => {
+  const length = Math.max(1, Number(intervalLength) || 1);
+  const unit = String(intervalUnit || 'months').toLowerCase();
+
+  if (unit === 'weeks' || unit === 'weekly') {
+    return {
+      intervalLength: length * 7,
+      intervalUnit: 'days',
+      cadence: 'weeks',
+      displayLength: length
+    };
+  }
+
+  if (unit === 'years' || unit === 'yearly' || unit === 'year') {
+    return {
+      intervalLength: length * 12,
+      intervalUnit: 'months',
+      cadence: 'years',
+      displayLength: length
+    };
+  }
+
+  if (unit === 'months' && length % 12 === 0 && length >= 12) {
+    return {
+      intervalLength: length,
+      intervalUnit: 'months',
+      cadence: 'years',
+      displayLength: length / 12
+    };
+  }
+
+  if (unit === 'months' || unit === 'monthly' || unit === 'month') {
+    return {
+      intervalLength: length,
+      intervalUnit: 'months',
+      cadence: 'months',
+      displayLength: length
+    };
+  }
+
+  if (unit === 'days' && length % 7 === 0 && length >= 7) {
+    return {
+      intervalLength: length,
+      intervalUnit: 'days',
+      cadence: 'weeks',
+      displayLength: length / 7
+    };
+  }
+
+  return {
+    intervalLength: length,
+    intervalUnit: 'days',
+    cadence: 'days',
+    displayLength: length
+  };
+};
+
+const formatPlanIntervalLabel = (intervalLength, intervalUnit) => {
+  const resolved = resolvePlanCadence(intervalLength, intervalUnit);
+  const length = resolved.displayLength;
+
+  if (resolved.cadence === 'weeks') {
+    return length === 1 ? 'week' : `${length} weeks`;
+  }
+
+  if (resolved.cadence === 'months') {
+    return length === 1 ? 'month' : `${length} months`;
+  }
+
+  if (resolved.cadence === 'years') {
+    return length === 1 ? 'year' : `${length} years`;
+  }
+
+  return length === 1 ? 'day' : `${length} days`;
+};
+
+const formatPlanPrice = (price, currency = 'USD') =>
+  new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(Number(price) || 0);
+
+const normalizePlanDocument = plan => {
+  const resolvedCadence = resolvePlanCadence(plan.intervalLength, plan.intervalUnit);
+  const intervalLength = resolvedCadence.intervalLength;
+  const intervalUnit = resolvedCadence.intervalUnit;
+  const price = Number(plan.price) || 0;
+  const currency = String(plan.currency || 'USD').trim().toUpperCase() || 'USD';
+
+  return {
+    _id: plan._id,
+    code: String(plan.code || '').trim().toLowerCase(),
+    name: String(plan.name || '').trim(),
+    summary: String(plan.summary || '').trim(),
+    description: String(plan.description || '').trim(),
+    price,
+    currency,
+    formattedPrice: formatPlanPrice(price, currency),
+    intervalLength,
+    intervalUnit,
+    cadence: resolvedCadence.cadence,
+    displayIntervalLength: resolvedCadence.displayLength,
+    billingLabel: formatPlanIntervalLabel(intervalLength, intervalUnit),
+    featured: Boolean(plan.featured),
+    active: plan.active !== false,
+    checkoutEnabled: plan.checkoutEnabled !== false,
+    highlightTag: String(plan.highlightTag || '').trim(),
+    benefits: normalizeBenefits(plan.benefits),
+    sortOrder: Number(plan.sortOrder || 0),
+    createdAt: plan.createdAt || null,
+    updatedAt: plan.updatedAt || null
+  };
+};
+
+const ensureDefaultBillingPlans = async () => {
+  const count = await billingDb.collection(BILLING_PLANS).countDocuments();
+  if (count) {
+    return;
+  }
+
+  await billingDb.collection(BILLING_PLANS).insertMany(
+    BILLING_PLAN_DEFAULTS.map(plan => ({
+      ...plan,
+      createdAt: now(),
+      updatedAt: now()
+    }))
+  );
+};
 
 const getDefaultSettingValue = key => {
   const defaults = {
@@ -118,7 +302,9 @@ const getDefaultSettingValue = key => {
     SECURITY_PASSWORD_MIN_LENGTH: '12',
     SECURITY_REQUIRE_STRONG_PASSWORDS: 'true',
     SECURITY_REQUIRE_2FA_FOR_ADMINS: 'false',
-    SECURITY_ALLOW_TEST_SIGNUP_LINK: 'true'
+    SECURITY_ALLOW_TEST_SIGNUP_LINK: 'true',
+    MAILBOX_DEFAULT_QUOTA_MB: String(process.env.ADMIN_PANEL_DEFAULT_QUOTA_MB || '1024'),
+    MAILBOX_DEFAULT_DAILY_EMAIL_LIMIT: String(process.env.ADMIN_PANEL_DEFAULT_RECIPIENTS || '2000')
   };
 
   return defaults[key] || '';
@@ -216,11 +402,15 @@ export const connectStore = async mongoUri => {
     db.collection(ADMIN_SUPPORT_NOTES).createIndex({ accountId: 1, createdAt: -1 }),
     billingDb.collection(BILLING_ACCOUNTS).createIndex({ updatedAt: -1 }),
     billingDb.collection(BILLING_PAYMENTS).createIndex({ createdAt: -1 }),
+    billingDb.collection(BILLING_PLANS).createIndex({ code: 1 }, { unique: true }),
+    billingDb.collection(BILLING_PLANS).createIndex({ active: 1, checkoutEnabled: 1, sortOrder: 1 }),
     db.collection(MARKETING_RECIPIENTS).createIndex({ email: 1 }, { unique: true }),
     db.collection(MARKETING_RECIPIENTS).createIndex({ status: 1, segment: 1 }),
     db.collection(MARKETING_SENDER_PROFILES).createIndex({ name: 1 }),
     db.collection(MARKETING_CAMPAIGNS).createIndex({ updatedAt: -1 })
   ]);
+
+  await ensureDefaultBillingPlans();
 
   return db;
 };
@@ -444,6 +634,21 @@ export const listMailboxUsers = async ({ search = '', limit = 50 } = {}) => {
   }));
 };
 
+export const listAllMailboxUsersForAdminUpdate = async () =>
+  wildduckDb
+    .collection(WILDDUCK_USERS)
+    .find({})
+    .project({
+      _id: 1,
+      username: 1,
+      address: 1,
+      name: 1,
+      disabled: 1,
+      quota: 1,
+      recipients: 1
+    })
+    .toArray();
+
 export const getMailboxUserDetail = async userId => {
   const user = await wildduckDb.collection(WILDDUCK_USERS).findOne(
     { _id: typeof userId === 'string' ? new ObjectId(userId) : userId },
@@ -454,6 +659,7 @@ export const getMailboxUserDetail = async userId => {
         name: 1,
         disabled: 1,
         quota: 1,
+        recipients: 1,
         storageUsed: 1,
         created: 1,
         targets: 1,
@@ -653,6 +859,109 @@ export const listRecentPayments = async ({ search = '', limit = 50 } = {}) => {
 };
 
 export const getPaymentById = async paymentId => billingDb.collection(BILLING_PAYMENTS).findOne({ _id: new ObjectId(paymentId) });
+
+export const listBillingPlans = async ({ includeInactive = true } = {}) => {
+  const filter = includeInactive ? {} : { active: true, checkoutEnabled: true };
+  const plans = await billingDb
+    .collection(BILLING_PLANS)
+    .find(filter)
+    .sort({ sortOrder: 1, price: 1, createdAt: 1 })
+    .toArray();
+
+  return plans.map(normalizePlanDocument);
+};
+
+export const getBillingPlanById = async planId => {
+  const plan = await billingDb.collection(BILLING_PLANS).findOne({ _id: new ObjectId(planId) });
+  return plan ? normalizePlanDocument(plan) : null;
+};
+
+export const upsertBillingPlan = async ({ planId, code, name, summary, description, price, currency, intervalLength, intervalUnit, featured, active, checkoutEnabled, highlightTag, benefits, sortOrder, adminId }) => {
+  const normalizedCode = String(code || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+
+  if (!normalizedCode || !name) {
+    throw new Error('Plan code and plan name are required');
+  }
+
+  const resolvedCadence = resolvePlanCadence(intervalLength, intervalUnit);
+  const nextIntervalUnit = resolvedCadence.intervalUnit;
+  const nextIntervalLength = resolvedCadence.intervalLength;
+  if (resolvedCadence.cadence === 'days' && nextIntervalLength > 365) {
+    throw new Error('Day-based billing interval length must be between 1 and 365');
+  }
+
+  if (resolvedCadence.cadence === 'weeks' && resolvedCadence.displayLength > 52) {
+    throw new Error('Week-based billing interval length must be between 1 and 52');
+  }
+
+  if (resolvedCadence.cadence === 'months' && resolvedCadence.displayLength > 24) {
+    throw new Error('Month-based billing interval length must be between 1 and 24');
+  }
+
+  if (resolvedCadence.cadence === 'years' && resolvedCadence.displayLength > 10) {
+    throw new Error('Year-based billing interval length must be between 1 and 10');
+  }
+
+  const nextPlan = {
+    code: normalizedCode,
+    name: String(name || '').trim(),
+    summary: String(summary || '').trim(),
+    description: String(description || '').trim(),
+    price: Number(price) || 0,
+    currency: String(currency || 'USD').trim().toUpperCase() || 'USD',
+    intervalLength: nextIntervalLength,
+    intervalUnit: nextIntervalUnit,
+    featured: Boolean(featured),
+    active: active !== false,
+    checkoutEnabled: checkoutEnabled !== false,
+    highlightTag: String(highlightTag || '').trim(),
+    benefits: normalizeBenefits(Array.isArray(benefits) ? benefits : String(benefits || '').split(/\r?\n/)),
+    sortOrder: Number(sortOrder || 0),
+    updatedAt: now(),
+    updatedBy: adminId ? new ObjectId(adminId) : null
+  };
+
+  const existingByCode = await billingDb.collection(BILLING_PLANS).findOne({ code: normalizedCode });
+  if (existingByCode && (!planId || String(existingByCode._id) !== String(planId))) {
+    throw new Error('A plan with this code already exists');
+  }
+
+  if (nextPlan.featured) {
+    await billingDb.collection(BILLING_PLANS).updateMany({}, { $set: { featured: false, updatedAt: now() } });
+  }
+
+  if (planId) {
+    await billingDb.collection(BILLING_PLANS).updateOne({ _id: new ObjectId(planId) }, { $set: nextPlan });
+    return getBillingPlanById(planId);
+  }
+
+  nextPlan.createdAt = now();
+  const result = await billingDb.collection(BILLING_PLANS).insertOne(nextPlan);
+  return getBillingPlanById(result.insertedId);
+};
+
+export const removeBillingPlan = async planId => {
+  const plan = await billingDb.collection(BILLING_PLANS).findOne({ _id: new ObjectId(planId) });
+  if (!plan) {
+    throw new Error('Plan not found');
+  }
+
+  const usageCount = await billingDb.collection(BILLING_ACCOUNTS).countDocuments({
+    $or: [{ 'plan.code': plan.code }, { 'plan.name': plan.name }]
+  });
+
+  if (usageCount > 0) {
+    throw new Error('This plan is already attached to customer records. Disable it instead of deleting it.');
+  }
+
+  await billingDb.collection(BILLING_PLANS).deleteOne({ _id: plan._id });
+  return normalizePlanDocument(plan);
+};
 
 export const listMarketingRecipients = async ({ search = '', status = '', limit = 200 } = {}) => {
   const filter = {};

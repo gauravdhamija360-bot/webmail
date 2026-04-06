@@ -44,6 +44,14 @@ module.exports.getAccountByEmail = async emailAddress => {
     return getAccounts().findOne({ emailAddress });
 };
 
+module.exports.getAccountByUsername = async username => {
+    if (!db.mongo) {
+        return null;
+    }
+
+    return getAccounts().findOne({ username });
+};
+
 module.exports.getAccountForUser = async user => {
     if (!db.mongo || !user) {
         return null;

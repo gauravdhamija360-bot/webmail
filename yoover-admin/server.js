@@ -14,6 +14,7 @@ import {
   exportMarketingRecipientsCsv,
   findAdminByEmail,
   findAdminById,
+  getBillingPlanById,
   getDashboardSummary,
   getCustomerDetail,
   getMailboxUserDetail,
@@ -23,21 +24,26 @@ import {
   importMarketingRecipients,
   listMarketingCampaigns,
   listCustomers,
+  listAllMailboxUsersForAdminUpdate,
   listMailboxUsers,
   listMarketingRecipients,
   listMarketingSenderProfiles,
   listAdminUsers,
   listAuditLogs,
+  listBillingPlans,
   listRecentPayments,
   markMarketingCampaignSent,
   importMailboxUserToCustomer,
   removeMarketingRecipient,
   removeMarketingSenderProfile,
+  removeBillingPlan,
   getSettingsSnapshot,
+  getResolvedSetting,
   recordAuditLog,
   updateMarketingRecipient,
   updateCustomerAccount,
   updateAdminUser,
+  upsertBillingPlan,
   upsertMarketingCampaign,
   upsertMarketingSenderProfile,
   upsertAdminSetting
@@ -49,7 +55,7 @@ import { sendMarketingCampaign } from './lib/marketing-mailer.js';
 import { listWebmailEnvEntries, removeWebmailEnvEntry, upsertWebmailEnvEntry } from './lib/env-file-manager.js';
 import { hasPermission, PERMISSIONS, ROLE_LABELS, ROLES } from './lib/permissions.js';
 import { listManagedServices, restartManagedService } from './lib/service-control.js';
-import { createMailbox, getServiceDomain } from './lib/wildduck-service.js';
+import { createMailbox, deleteMailbox, getServiceDomain, updateMailbox } from './lib/wildduck-service.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -426,6 +432,137 @@ app.get('/api/mailbox-users/:userId', requireAdmin, requirePermission(PERMISSION
   res.json(detail);
 });
 
+app.post('/api/mailbox-users', requireAdmin, requirePermission(PERMISSIONS.CUSTOMERS_EDIT), async (req, res) => {
+  try {
+    const username = String(req.body.username || '').trim().toLowerCase();
+    const password = String(req.body.password || '');
+    const fullName = String(req.body.fullName || '').trim();
+
+    if (!username || !password || !fullName) {
+      return res.status(400).json({ error: 'Full name, username, and password are required' });
+    }
+
+    const [defaultQuotaMb, defaultDailyLimit] = await Promise.all([
+      getResolvedSetting('MAILBOX_DEFAULT_QUOTA_MB'),
+      getResolvedSetting('MAILBOX_DEFAULT_DAILY_EMAIL_LIMIT')
+    ]);
+
+    const wildduckUser = await createMailbox({
+      fullName,
+      username,
+      password,
+      quotaMb: Number(defaultQuotaMb) || undefined,
+      recipients: Number(defaultDailyLimit) || undefined,
+      sessionId: req.session.id,
+      ip: req.ip
+    });
+
+    await recordAuditLog({
+      adminId: req.admin._id,
+      action: 'mailbox_user.create',
+      targetType: 'mailbox_user',
+      targetId: String((wildduckUser && wildduckUser.id) || username),
+      details: {
+        username,
+        emailAddress: `${username}@${getServiceDomain()}`
+      }
+    });
+
+    return res.status(201).json({
+      mailboxUser: wildduckUser
+    });
+  } catch (err) {
+    console.error('Mailbox User Create Error:', err);
+    return res.status(400).json({ error: err.message || 'Unable to create mailbox user' });
+  }
+});
+
+app.patch('/api/mailbox-users/:userId', requireAdmin, requirePermission(PERMISSIONS.CUSTOMERS_EDIT), async (req, res) => {
+  const fullName = String(req.body.fullName || '').trim();
+  const password = String(req.body.password || '');
+  const status = String(req.body.status || '').trim().toLowerCase();
+  const quotaMb = Number(req.body.quotaMb);
+  const dailyEmails = Number(req.body.dailyEmails);
+
+  if (!fullName) {
+    return res.status(400).json({ error: 'Full name is required' });
+  }
+
+  if (status && !['active', 'disabled'].includes(status)) {
+    return res.status(400).json({ error: 'Status must be active or disabled' });
+  }
+
+  if (!Number.isFinite(quotaMb) || quotaMb <= 0) {
+    return res.status(400).json({ error: 'Quota must be greater than 0 MB' });
+  }
+
+  if (!Number.isFinite(dailyEmails) || dailyEmails <= 0) {
+    return res.status(400).json({ error: 'Daily emails must be greater than 0' });
+  }
+
+  await updateMailbox({
+    userId: req.params.userId,
+    fullName,
+    password,
+    disabled: status ? status === 'disabled' : undefined,
+    quotaMb,
+    recipients: dailyEmails,
+    sessionId: req.session.id,
+    ip: req.ip
+  });
+
+  const detail = await getMailboxUserDetail(req.params.userId);
+
+  await recordAuditLog({
+    adminId: req.admin._id,
+    action: 'mailbox_user.update',
+    targetType: 'mailbox_user',
+    targetId: req.params.userId,
+    details: {
+      fullName,
+      status: status || 'unchanged',
+      passwordUpdated: Boolean(password),
+      quotaMb,
+      dailyEmails
+    }
+  });
+
+  res.json(detail);
+});
+
+app.delete('/api/mailbox-users/:userId', requireAdmin, requirePermission(PERMISSIONS.CUSTOMERS_EDIT), async (req, res) => {
+  const detail = await getMailboxUserDetail(req.params.userId);
+  if (!detail || !detail.user) {
+    return res.status(404).json({ error: 'Mailbox user not found' });
+  }
+
+  await deleteMailbox({
+    userId: req.params.userId,
+    sessionId: req.session.id,
+    ip: req.ip
+  });
+
+  await recordAuditLog({
+    adminId: req.admin._id,
+    action: 'mailbox_user.delete',
+    targetType: 'mailbox_user',
+    targetId: req.params.userId,
+    details: {
+      emailAddress: detail.user.address,
+      linkedCustomerId: detail.linkedCustomer ? String(detail.linkedCustomer._id || '') : ''
+    }
+  });
+
+  res.json({
+    success: true,
+    deletedMailbox: {
+      id: req.params.userId,
+      address: detail.user.address || '',
+      linkedCustomerId: detail.linkedCustomer ? String(detail.linkedCustomer._id || '') : ''
+    }
+  });
+});
+
 app.post('/api/mailbox-users/:userId/import-customer', requireAdmin, requirePermission(PERMISSIONS.CUSTOMERS_EDIT), async (req, res) => {
   const result = await importMailboxUserToCustomer(req.params.userId);
 
@@ -447,55 +584,67 @@ app.post('/api/mailbox-users/:userId/import-customer', requireAdmin, requirePerm
 });
 
 app.post('/api/customers/manual-provision', requireAdmin, requirePermission(PERMISSIONS.CUSTOMERS_EDIT), async (req, res) => {
-  const username = String(req.body.username || '').trim().toLowerCase();
-  const password = String(req.body.password || '');
-  const fullName = String(req.body.fullName || '').trim();
-  const billingEmail = String(req.body.billingEmail || '').trim().toLowerCase();
-  const recoveryEmail = String(req.body.recoveryEmail || '').trim().toLowerCase();
+  try {
+    const username = String(req.body.username || '').trim().toLowerCase();
+    const password = String(req.body.password || '');
+    const fullName = String(req.body.fullName || '').trim();
+    const billingEmail = String(req.body.billingEmail || '').trim().toLowerCase();
+    const recoveryEmail = String(req.body.recoveryEmail || '').trim().toLowerCase();
 
-  if (!username || !password || !fullName) {
-    return res.status(400).json({ error: 'Full name, username, and password are required' });
-  }
-
-  const wildduckUser = await createMailbox({
-    fullName,
-    username,
-    password,
-    sessionId: req.session.id,
-    ip: req.ip
-  });
-
-  const account = await createOrUpdateCustomerAccount({
-    username,
-    emailAddress: `${username}@${getServiceDomain()}`,
-    fullName,
-    billingEmail,
-    recoveryEmail,
-    wildduckUserId: wildduckUser && wildduckUser.id,
-    status: 'active',
-    plan: {
-      name: 'Admin Provisioned',
-      price: 0
-    },
-    subscription: {
-      id: null,
-      status: 'manual'
-    },
-    meta: {
-      provisionedByAdmin: true,
-      provisionedAt: new Date().toISOString()
+    if (!username || !password || !fullName) {
+      return res.status(400).json({ error: 'Full name, username, and password are required' });
     }
-  });
 
-  await recordAuditLog({
-    adminId: req.admin._id,
-    action: 'customer.manual_provision',
-    targetType: 'billing_account',
-    targetId: String(account._id),
-    details: { emailAddress: account.emailAddress }
-  });
+    const [defaultQuotaMb, defaultDailyLimit] = await Promise.all([
+      getResolvedSetting('MAILBOX_DEFAULT_QUOTA_MB'),
+      getResolvedSetting('MAILBOX_DEFAULT_DAILY_EMAIL_LIMIT')
+    ]);
 
-  res.status(201).json(await getCustomerDetail(account._id));
+    const wildduckUser = await createMailbox({
+      fullName,
+      username,
+      password,
+      quotaMb: Number(defaultQuotaMb) || undefined,
+      recipients: Number(defaultDailyLimit) || undefined,
+      sessionId: req.session.id,
+      ip: req.ip
+    });
+
+    const account = await createOrUpdateCustomerAccount({
+      username,
+      emailAddress: `${username}@${getServiceDomain()}`,
+      fullName,
+      billingEmail,
+      recoveryEmail,
+      wildduckUserId: wildduckUser && wildduckUser.id,
+      status: 'active',
+      plan: {
+        name: 'Admin Provisioned',
+        price: 0
+      },
+      subscription: {
+        id: null,
+        status: 'manual'
+      },
+      meta: {
+        provisionedByAdmin: true,
+        provisionedAt: new Date().toISOString()
+      }
+    });
+
+    await recordAuditLog({
+      adminId: req.admin._id,
+      action: 'customer.manual_provision',
+      targetType: 'billing_account',
+      targetId: String(account._id),
+      details: { emailAddress: account.emailAddress }
+    });
+
+    return res.status(201).json(await getCustomerDetail(account._id));
+  } catch (err) {
+    console.error('Customer Manual Provision Error:', err);
+    return res.status(400).json({ error: err.message || 'Unable to provision customer mailbox' });
+  }
 });
 
 app.patch('/api/customers/:accountId', requireAdmin, requirePermission(PERMISSIONS.CUSTOMERS_EDIT), async (req, res) => {
@@ -584,6 +733,70 @@ app.get('/api/billing/payments', requireAdmin, requirePermission(PERMISSIONS.BIL
   const search = String(req.query.search || '').trim();
   const limit = Math.min(Number(req.query.limit || 50) || 50, 200);
   res.json({ payments: await listRecentPayments({ search, limit }) });
+});
+
+app.get('/api/billing/plans', requireAdmin, requirePermission(PERMISSIONS.BILLING_VIEW), async (req, res) => {
+  res.json({ plans: await listBillingPlans({ includeInactive: true }) });
+});
+
+app.get('/api/billing/plans/:planId', requireAdmin, requirePermission(PERMISSIONS.BILLING_VIEW), async (req, res) => {
+  const plan = await getBillingPlanById(req.params.planId);
+  if (!plan) {
+    return res.status(404).json({ error: 'Plan not found' });
+  }
+
+  res.json({ plan });
+});
+
+app.post('/api/billing/plans', requireAdmin, requirePermission(PERMISSIONS.BILLING_EDIT), async (req, res) => {
+  const plan = await upsertBillingPlan({
+    planId: req.body && req.body.planId,
+    code: req.body && req.body.code,
+    name: req.body && req.body.name,
+    summary: req.body && req.body.summary,
+    description: req.body && req.body.description,
+    price: req.body && req.body.price,
+    currency: req.body && req.body.currency,
+    intervalLength: req.body && req.body.intervalLength,
+    intervalUnit: req.body && req.body.intervalUnit,
+    featured: req.body && req.body.featured,
+    active: req.body && req.body.active,
+    checkoutEnabled: req.body && req.body.checkoutEnabled,
+    highlightTag: req.body && req.body.highlightTag,
+    benefits: req.body && req.body.benefits,
+    sortOrder: req.body && req.body.sortOrder,
+    adminId: req.admin._id
+  });
+
+  await recordAuditLog({
+    adminId: req.admin._id,
+    action: req.body && req.body.planId ? 'billing.plan.update' : 'billing.plan.create',
+    targetType: 'billing_plan',
+    targetId: String(plan._id || ''),
+    details: {
+      code: plan.code,
+      name: plan.name
+    }
+  });
+
+  res.json({ success: true, plan, plans: await listBillingPlans({ includeInactive: true }) });
+});
+
+app.delete('/api/billing/plans/:planId', requireAdmin, requirePermission(PERMISSIONS.BILLING_EDIT), async (req, res) => {
+  const removedPlan = await removeBillingPlan(req.params.planId);
+
+  await recordAuditLog({
+    adminId: req.admin._id,
+    action: 'billing.plan.delete',
+    targetType: 'billing_plan',
+    targetId: String(req.params.planId),
+    details: {
+      code: removedPlan.code,
+      name: removedPlan.name
+    }
+  });
+
+  res.json({ success: true, removedPlan, plans: await listBillingPlans({ includeInactive: true }) });
 });
 
 app.post('/api/billing/adjustments', requireAdmin, requirePermission(PERMISSIONS.BILLING_EDIT), async (req, res) => {
@@ -697,6 +910,49 @@ app.post('/api/settings', requireAdmin, requirePermission(PERMISSIONS.SETTINGS_E
   res.json({
     settings: await getSettingsSnapshot()
   });
+});
+
+app.post('/api/settings/mailbox-defaults/apply', requireAdmin, requirePermission(PERMISSIONS.SETTINGS_EDIT), async (req, res) => {
+  const quotaMb = Number(req.body && req.body.quotaMb);
+  const dailyEmails = Number(req.body && req.body.dailyEmails);
+
+  if (!Number.isFinite(quotaMb) || quotaMb <= 0) {
+    return res.status(400).json({ error: 'Quota must be greater than 0 MB' });
+  }
+
+  if (!Number.isFinite(dailyEmails) || dailyEmails <= 0) {
+    return res.status(400).json({ error: 'Daily emails must be greater than 0' });
+  }
+
+  const mailboxUsers = await listAllMailboxUsersForAdminUpdate();
+  let updated = 0;
+
+  for (const user of mailboxUsers) {
+    await updateMailbox({
+      userId: String(user._id),
+      fullName: user.name || user.address || user.username || 'Mailbox User',
+      disabled: typeof user.disabled === 'boolean' ? user.disabled : undefined,
+      quotaMb,
+      recipients: dailyEmails,
+      sessionId: req.session.id,
+      ip: req.ip
+    });
+    updated += 1;
+  }
+
+  await recordAuditLog({
+    adminId: req.admin._id,
+    action: 'mailbox_defaults.apply_existing',
+    targetType: 'mailbox_user',
+    targetId: 'all',
+    details: {
+      quotaMb,
+      dailyEmails,
+      updated
+    }
+  });
+
+  res.json({ updated });
 });
 
 app.use(express.static(path.join(__dirname, 'dist')));

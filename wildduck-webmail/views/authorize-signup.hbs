@@ -17,7 +17,7 @@
             {{#each plans}}
             <button type="button" class="plan-preview-card {{#if selected}}selected{{/if}}" data-plan-preview="{{code}}">
                 <strong>{{name}}</strong>
-                <span>{{price}}</span>
+                <span>{{price}} / {{billingLabel}}</span>
                 <p>{{summary}}</p>
             </button>
             {{/each}}
@@ -65,8 +65,11 @@
                     <label class="plan-card {{#if selected}}selected{{/if}}">
                         <input type="radio" name="selectedPlan" value="{{code}}" {{#if selected}}checked{{/if}}>
                         <span class="plan-name">{{name}}</span>
-                        <span class="plan-price">{{price}}</span>
+                        <span class="plan-price">{{price}} / {{billingLabel}}</span>
                         <span class="plan-copy">{{summary}}</span>
+                        {{#if benefits.length}}
+                            <span class="plan-copy">{{benefits.[0]}}</span>
+                        {{/if}}
                     </label>
                     {{/each}}
                 </div>

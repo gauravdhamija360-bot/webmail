@@ -1203,44 +1203,44 @@
         <div class="container">
             <div class="text-center">
                 <div class="landing-eyebrow">Plans</div>
-                <h2 class="landing-section-title">Simple pricing that matches the purchase flow.</h2>
+                <h2 class="landing-section-title">Subscription plans managed directly from Yoover.</h2>
                 <p class="landing-section-copy">
-                    The plan section now mirrors the real checkout structure: monthly for flexibility, yearly for lower cost over time.
+                    Pricing here is connected to the same live plan catalog used by checkout, so billing cadence, benefits, and featured offers stay in sync.
                 </p>
             </div>
 
             <div class="pricing-grid">
-                <div class="pricing-card">
-                    <span class="pricing-tag">Flexible</span>
-                    <h3>Monthly</h3>
-                    <div class="price-line">
-                        <strong>$9</strong>
-                        <span>/ month</span>
+                {{#if pricingPlans.length}}
+                    {{#each pricingPlans}}
+                        <div class="pricing-card {{#if featured}}featured{{/if}}">
+                            {{#if highlightTag}}<span class="pricing-tag">{{highlightTag}}</span>{{/if}}
+                            <h3>{{name}}</h3>
+                            <div class="price-line">
+                                <strong>{{formattedPrice}}</strong>
+                                <span>/ {{billingLabel}}</span>
+                            </div>
+                            <p>{{summary}}</p>
+                            {{#if benefits.length}}
+                                <ul class="pricing-list">
+                                    {{#each benefits}}
+                                        <li><i class="fa-solid fa-check-circle"></i><span>{{this}}</span></li>
+                                    {{/each}}
+                                </ul>
+                            {{/if}}
+                            <a href="/purchase/{{code}}" class="pricing-action {{#if featured}}primary{{else}}secondary{{/if}}">Choose {{name}}</a>
+                        </div>
+                    {{/each}}
+                {{else}}
+                    <div class="pricing-card">
+                        <h3>Plans updating</h3>
+                        <div class="price-line">
+                            <strong>Live</strong>
+                            <span>catalog</span>
+                        </div>
+                        <p>Subscription options are being refreshed right now. Please check back in a moment.</p>
+                        <a href="#top" class="pricing-action secondary">Search Your Username</a>
                     </div>
-                    <p>Best when you want to claim your address quickly and keep billing month-to-month.</p>
-                    <ul class="pricing-list">
-                        <li><i class="fa-solid fa-check-circle"></i><span>Professional address on @{{serviceDomain}}</span></li>
-                        <li><i class="fa-solid fa-check-circle"></i><span>Responsive webmail and mail app setup</span></li>
-                        <li><i class="fa-solid fa-check-circle"></i><span>In-account billing management</span></li>
-                    </ul>
-                    <a href="#top" class="pricing-action secondary">Search Your Username</a>
-                </div>
-
-                <div class="pricing-card featured">
-                    <span class="pricing-tag">Best value</span>
-                    <h3>Yearly</h3>
-                    <div class="price-line">
-                        <strong>$39.9</strong>
-                        <span>/ year</span>
-                    </div>
-                    <p>Lower annual cost with the same guided setup flow and subscription visibility inside your account.</p>
-                    <ul class="pricing-list">
-                        <li><i class="fa-solid fa-check-circle"></i><span>Lower effective cost than monthly billing</span></li>
-                        <li><i class="fa-solid fa-check-circle"></i><span>Same mailbox experience and account controls</span></li>
-                        <li><i class="fa-solid fa-check-circle"></i><span>Built for long-term personal identity</span></li>
-                    </ul>
-                    <a href="#top" class="pricing-action primary">Claim Your Address</a>
-                </div>
+                {{/if}}
             </div>
         </div>
     </section>

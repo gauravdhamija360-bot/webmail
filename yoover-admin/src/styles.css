@@ -727,6 +727,30 @@ select {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.toggle-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.toggle-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid #d9e6ee;
+  background: #f7fbfd;
+  color: #244255;
+  font-weight: 700;
+}
+
+.toggle-card input {
+  width: 18px;
+  height: 18px;
+}
+
 .toolbar-row input,
 textarea {
   width: 100%;
@@ -870,6 +894,44 @@ th {
 .list-card span,
 .list-card small {
   color: #62798f;
+}
+
+.plan-card-admin {
+  gap: 12px;
+}
+
+.plan-card-admin-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.plan-card-admin-top > div {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.plan-status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.plan-card-admin p {
+  margin: 0;
+  color: #4f6578;
+  line-height: 1.7;
+}
+
+.plan-benefit-list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 8px;
+  color: #53697d;
 }
 
 .marketing-list-stack {
@@ -1058,6 +1120,10 @@ th {
     grid-template-columns: 1fr;
   }
 
+  .toggle-grid {
+    grid-template-columns: 1fr;
+  }
+
   .health-grid {
     grid-template-columns: 1fr;
   }
@@ -1117,6 +1183,14 @@ th {
 
   .service-card-top {
     flex-direction: column;
+  }
+
+  .plan-card-admin-top {
+    flex-direction: column;
+  }
+
+  .plan-status-row {
+    justify-content: flex-start;
   }
 
   .detail-grid {
