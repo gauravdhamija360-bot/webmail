@@ -870,6 +870,36 @@ body.is-logged-in .webmail-container {
         margin: 4px 0;
     }
 
+    .navbar-default .navbar-collapse {
+        border-color: transparent;
+        box-shadow: none;
+    }
+
+    .dropdown-menu {
+        max-width: 100%;
+        white-space: normal;
+    }
+
+    .input-group,
+    .mail-search-form .input-group {
+        display: block;
+    }
+
+    .input-group .form-control,
+    .mail-search-form .form-control {
+        width: 100%;
+        border-radius: 14px;
+        border-right: 1px solid var(--wd-border);
+    }
+
+    .input-group .btn,
+    .mail-search-form .btn {
+        width: 100%;
+        margin-top: 8px;
+        border-radius: 14px;
+        border-left: 1px solid var(--wd-border);
+    }
+
     .webmail-main {
         padding: 16px;
     }
@@ -885,5 +915,9 @@ body.is-logged-in .webmail-container {
     .flash-messages {
         top: 64px;
         padding: 0 12px;
+    }
+
+    .table-responsive {
+        border-radius: 14px;
     }
 }

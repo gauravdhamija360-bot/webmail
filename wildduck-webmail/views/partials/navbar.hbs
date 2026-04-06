@@ -5,6 +5,7 @@
             <button type="button" class="navbar-toggle collapsed"
                 data-toggle="collapse"
                 data-target="#yoover-nav-collapse"
+                aria-controls="yoover-nav-collapse"
                 aria-expanded="false">
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
@@ -315,9 +316,88 @@
     }
 
     @media (max-width: 767px) {
-        .nav-flex-container { display: block !important; }
-        .navbar-header { height: 80px; display: flex; align-items: center; justify-content: space-between; }
-        .navbar-collapse { background: white; border-top: 1px solid #eee; }
+        .yoover-navbar-full {
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            overflow-x: clip;
+        }
+        .nav-flex-container {
+            display: block !important;
+            padding: 0 12px !important;
+            overflow-x: clip;
+        }
+        .navbar-header {
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 0 !important;
+        }
+        .yoover-brand-animate {
+            height: 72px;
+            gap: 10px;
+            max-width: calc(100% - 72px);
+        }
+        .nav-logo {
+            height: 34px;
+            width: 34px;
+        }
+        .navbar-toggle {
+            margin-right: 0 !important;
+        }
+        #yoover-nav-collapse,
+        #yoover-nav-collapse.navbar-collapse,
+        #yoover-nav-collapse.navbar-collapse.in,
+        #yoover-nav-collapse.navbar-collapse.collapsing {
+            width: 100% !important;
+            margin: 0 0 12px !important;
+            padding: 8px 0 12px !important;
+            background: rgba(255, 255, 255, 0.98);
+            border-top: 1px solid #eef2f6;
+            border-radius: 20px;
+            box-shadow: 0 18px 36px rgba(11, 34, 64, 0.08);
+            max-height: calc(100vh - 96px);
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            -webkit-overflow-scrolling: touch;
+        }
+        #yoover-nav-collapse::before,
+        #yoover-nav-collapse::after {
+            display: none;
+        }
+        .flex-nav-list,
+        .navbar-nav,
+        .navbar-right {
+            display: block;
+            float: none !important;
+            width: 100%;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        .flex-nav-list > li,
+        .navbar-nav > li,
+        .navbar-right > li {
+            display: block;
+            width: 100%;
+            float: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        .nav-link-hover a,
+        .profile-zone > .dropdown-toggle,
+        .btn-ultra-sharp {
+            display: flex !important;
+            align-items: center;
+            min-height: 46px;
+            padding: 12px 16px !important;
+            letter-spacing: 0.1em;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        .nav-link-hover a::before {
+            left: 16px;
+        }
         .nav-brand-text {
             font-size: 21px;
         }
@@ -556,35 +636,123 @@
 /* Mobile stacking */
 @media (max-width: 767px) {
     .cta-section { 
-        padding: 10px 15px 18px !important; 
+        padding: 10px 16px 18px !important; 
         width: 100%;
+        margin: 0;
     }
     .btn-ultra-sharp {
         display: inline-flex;
         justify-content: center;
         text-align: center;
         width: 100%;
+        white-space: normal;
+        line-height: 1.4;
     }
 
     .profile-zone > .dropdown-toggle {
         width: 100%;
         justify-content: flex-start;
-        margin: 8px 15px 12px;
+        margin: 8px 0 12px;
+        gap: 10px;
+    }
+
+    .user-label-yoover {
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: none;
     }
 
     .profile-zone .dropdown-menu {
         position: static;
-        width: calc(100% - 30px);
-        margin: 0 15px 12px;
+        width: 100%;
+        margin: 0 0 12px;
         box-shadow: 0 14px 28px rgba(11, 34, 64, 0.1);
+        min-width: 0;
+        left: 0;
+        right: 0;
+        overflow-x: hidden;
+        box-sizing: border-box;
+    }
+
+    .profile-menu-link {
+        white-space: normal;
+    }
+
+    .profile-menu-link > span,
+    .profile-menu-copy {
+        min-width: 0;
+        overflow-wrap: anywhere;
     }
 }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    var navToggle = document.querySelector('.navbar-toggle');
+    var navCollapse = document.getElementById('yoover-nav-collapse');
     var profileZone = document.querySelector('.profile-zone');
     var profileToggle = document.getElementById('profileMenuToggle');
+    var mobileBreakpoint = 767;
+
+    var syncNavExpanded = function (isOpen) {
+        if (!navToggle || !navCollapse) {
+            return;
+        }
+
+        navToggle.classList.toggle('collapsed', !isOpen);
+        navToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        navCollapse.classList.toggle('in', isOpen);
+        navCollapse.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    };
+
+    var closeNavMenu = function () {
+        syncNavExpanded(false);
+    };
+
+    var isMobileNav = function () {
+        return window.innerWidth <= mobileBreakpoint;
+    };
+
+    if (navToggle && navCollapse) {
+        syncNavExpanded(navCollapse.classList.contains('in'));
+
+        navToggle.addEventListener('click', function (event) {
+            if (!isMobileNav()) {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopPropagation();
+            syncNavExpanded(!navCollapse.classList.contains('in'));
+        });
+
+        navCollapse.querySelectorAll('a').forEach(function (link) {
+            link.addEventListener('click', function () {
+                if (isMobileNav()) {
+                    closeNavMenu();
+                }
+            });
+        });
+
+        window.addEventListener('resize', function () {
+            if (!isMobileNav()) {
+                navCollapse.classList.remove('in');
+                navToggle.classList.add('collapsed');
+                navToggle.setAttribute('aria-expanded', 'false');
+                navCollapse.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!isMobileNav()) {
+                return;
+            }
+
+            if (!navCollapse.contains(event.target) && !navToggle.contains(event.target)) {
+                closeNavMenu();
+            }
+        });
+    }
 
     if (!profileZone || !profileToggle) {
         return;

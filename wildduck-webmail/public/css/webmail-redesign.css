@@ -912,6 +912,9 @@ body.yoover-body {
         border: 1px solid var(--yoover-border);
         border-radius: 20px;
         box-shadow: var(--yoover-shadow);
+        position: sticky;
+        top: calc(var(--yoover-nav-height) + 8px);
+        z-index: 15;
     }
 
     .webmail-mobile-title {
@@ -996,6 +999,22 @@ body.yoover-body {
 
     .mail-search-wrap {
         max-width: none;
+    }
+
+    .mail-toolbar-actions,
+    .mail-toolbar-actions fieldset {
+        width: 100%;
+    }
+
+    .mail-toolbar-actions .btn,
+    .mail-toolbar-actions .btn-group,
+    .mail-toolbar-actions .dropdown {
+        width: 100%;
+    }
+
+    .mail-toolbar-actions .btn-group > .btn,
+    .mail-toolbar-actions .dropdown > .btn {
+        width: 100%;
     }
 
     .yoover-table colgroup {
@@ -1095,5 +1114,24 @@ body.yoover-body {
     .mail-chip {
         width: 100%;
         justify-content: center;
+    }
+
+    .webmail-mobile-bar {
+        grid-template-columns: 42px minmax(0, 1fr);
+        display: grid;
+        align-items: center;
+    }
+
+    .webmail-mobile-title span {
+        display: none;
+    }
+
+    .webmail-mobile-bar .btn-yoover-compose {
+        grid-column: 1 / -1;
+        width: 100%;
+    }
+
+    .yoover-main-content {
+        border-radius: 20px;
     }
 }
