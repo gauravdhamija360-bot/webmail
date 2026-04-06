@@ -11,7 +11,8 @@ const parseRecipients = value =>
 
 const getRecipients = () => parseRecipients(process.env.ADMIN_NOTIFICATION_EMAILS || process.env.ADMIN_ALERT_EMAILS);
 
-const isEnabled = () => getRecipients().length > 0;
+const hasAdminRecipients = () => getRecipients().length > 0;
+const shouldRejectUnauthorized = () => !['false', '0', 'no'].includes(String(process.env.ADMIN_NOTIFICATION_SMTP_TLS_REJECT_UNAUTHORIZED || '').toLowerCase());
 
 const createTransport = () => {
     if (process.env.ADMIN_NOTIFICATION_SMTP_JSON) {
@@ -22,6 +23,9 @@ const createTransport = () => {
     const port = Number(process.env.ADMIN_NOTIFICATION_SMTP_PORT || 587);
     const user = process.env.ADMIN_NOTIFICATION_SMTP_USER || '';
     const pass = process.env.ADMIN_NOTIFICATION_SMTP_PASS || '';
+    const secure = String(process.env.ADMIN_NOTIFICATION_SMTP_SECURE || '').toLowerCase() === 'true' || port === 465;
+    const rejectUnauthorized = shouldRejectUnauthorized();
+    const shouldUseStartTls = !secure && Boolean(user);
 
     if (!host) {
         return nodemailer.createTransport({
@@ -35,8 +39,13 @@ const createTransport = () => {
     return nodemailer.createTransport({
         host,
         port,
-        secure: String(process.env.ADMIN_NOTIFICATION_SMTP_SECURE || '').toLowerCase() === 'true' || port === 465,
-        auth: user ? { user, pass } : undefined
+        secure,
+        requireTLS: shouldUseStartTls,
+        ignoreTLS: !secure && !shouldUseStartTls && !rejectUnauthorized,
+        auth: user ? { user, pass } : undefined,
+        tls: {
+            rejectUnauthorized
+        }
     });
 };
 
@@ -95,7 +104,7 @@ const buildHtml = ({ heading, accent, summary, rows, footer }) => `
 `;
 
 const sendMessage = async message => {
-    if (!isEnabled()) {
+    if (!hasAdminRecipients()) {
         return false;
     }
 
@@ -106,6 +115,28 @@ const sendMessage = async message => {
             {
                 from: getFromAddress(),
                 to: getRecipients().join(', ')
+            },
+            message
+        )
+    );
+
+    return true;
+};
+
+const sendDirectMessage = async ({ to, ...message }) => {
+    const recipients = parseRecipients(to);
+
+    if (!recipients.length) {
+        return false;
+    }
+
+    const transporter = createTransport();
+
+    await transporter.sendMail(
+        Object.assign(
+            {
+                from: getFromAddress(),
+                to: recipients.join(', ')
             },
             message
         )
@@ -138,11 +169,13 @@ module.exports.notifyFreeSignup = async details => {
 
 module.exports.notifyPaidSignup = async details => {
     const invoicePdf = await buildInvoicePdf(details);
+    const phoneValue = escapeHtml(details.billingPhone || 'Not provided');
 
     const rows = [
         { label: 'Mailbox', value: escapeHtml(details.emailAddress) },
         { label: 'Customer', value: escapeHtml(details.fullName) },
         { label: 'Billing Email', value: escapeHtml(details.billingEmail) },
+        { label: 'Billing Phone', value: phoneValue },
         { label: 'Plan', value: escapeHtml(details.planName) },
         { label: 'Amount Paid', value: `<strong>${escapeHtml(formatMoney(details.amount))}</strong>` },
         { label: 'Invoice', value: escapeHtml(details.invoiceNumber || 'Pending') },
@@ -150,24 +183,46 @@ module.exports.notifyPaidSignup = async details => {
         { label: 'Paid At', value: escapeHtml(formatDate(details.createdAt)) }
     ];
 
-    return sendMessage({
-        subject: `New paid Yoover account: ${details.emailAddress}`,
-        html: buildHtml({
-            heading: 'A new paid Yoover mailbox is now active',
-            accent: '#1d4ed8',
-            summary: `A paid mailbox for <strong>${escapeHtml(details.emailAddress)}</strong> has been created and the initial payment has been captured. The invoice PDF is attached to this email.`,
-            rows,
-            footer: 'Authorize.Net payment capture completed and mailbox provisioning finished.'
+    const attachments = [
+        {
+            filename: `${details.invoiceNumber || 'yoover-invoice'}.pdf`,
+            content: invoicePdf,
+            contentType: 'application/pdf'
+        }
+    ];
+
+    const [adminNotificationSent, customerNotificationSent] = await Promise.all([
+        sendMessage({
+            subject: `New paid Yoover account: ${details.emailAddress}`,
+            html: buildHtml({
+                heading: 'A new paid Yoover mailbox is now active',
+                accent: '#1d4ed8',
+                summary: `A paid mailbox for <strong>${escapeHtml(details.emailAddress)}</strong> has been created and the initial payment has been captured. The invoice PDF is attached to this email.`,
+                rows,
+                footer: 'Authorize.Net payment capture completed and mailbox provisioning finished.'
+            }),
+            text: `A new paid Yoover mailbox is active.\nMailbox: ${details.emailAddress}\nCustomer: ${details.fullName}\nBilling Email: ${details.billingEmail}\nBilling Phone: ${details.billingPhone || 'Not provided'}\nPlan: ${details.planName}\nAmount Paid: ${formatMoney(details.amount)}\nInvoice: ${details.invoiceNumber || 'Pending'}\nTransaction ID: ${details.transactionId || 'Pending'}\nPaid At: ${formatDate(details.createdAt)}`,
+            attachments
         }),
-        text: `A new paid Yoover mailbox is active.\nMailbox: ${details.emailAddress}\nCustomer: ${details.fullName}\nBilling Email: ${details.billingEmail}\nPlan: ${details.planName}\nAmount Paid: ${formatMoney(details.amount)}\nInvoice: ${details.invoiceNumber || 'Pending'}\nTransaction ID: ${details.transactionId || 'Pending'}\nPaid At: ${formatDate(details.createdAt)}`,
-        attachments: [
-            {
-                filename: `${details.invoiceNumber || 'yoover-invoice'}.pdf`,
-                content: invoicePdf,
-                contentType: 'application/pdf'
-            }
-        ]
-    });
+        sendDirectMessage({
+            to: details.billingEmail,
+            subject: `Your Yoover invoice ${details.invoiceNumber || ''}`.trim(),
+            html: buildHtml({
+                heading: 'Your Yoover billing receipt is ready',
+                accent: '#0f766e',
+                summary: `Your mailbox <strong>${escapeHtml(details.emailAddress)}</strong> is now active. We've attached your invoice PDF for this payment.`,
+                rows,
+                footer: 'Keep this invoice for your billing records. Future billing emails will use this billing contact.'
+            }),
+            text: `Your Yoover mailbox is active.\nMailbox: ${details.emailAddress}\nCustomer: ${details.fullName}\nBilling Email: ${details.billingEmail}\nBilling Phone: ${details.billingPhone || 'Not provided'}\nPlan: ${details.planName}\nAmount Paid: ${formatMoney(details.amount)}\nInvoice: ${details.invoiceNumber || 'Pending'}\nTransaction ID: ${details.transactionId || 'Pending'}\nPaid At: ${formatDate(details.createdAt)}`,
+            attachments
+        })
+    ]);
+
+    return {
+        adminNotificationSent,
+        customerNotificationSent
+    };
 };
 
-module.exports.isEnabled = isEnabled;
+module.exports.isEnabled = hasAdminRecipients;

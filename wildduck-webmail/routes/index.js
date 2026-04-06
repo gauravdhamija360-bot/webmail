@@ -113,11 +113,53 @@ const buildFaqSchema = faqItems => ({
     }))
 });
 
+const PHONE_COUNTRY_OPTIONS = [
+    { country: 'United States', isoCode: 'US', dialCode: '+1' },
+    { country: 'Canada', isoCode: 'CA', dialCode: '+1' },
+    { country: 'United Kingdom', isoCode: 'GB', dialCode: '+44' },
+    { country: 'India', isoCode: 'IN', dialCode: '+91' },
+    { country: 'Australia', isoCode: 'AU', dialCode: '+61' },
+    { country: 'Germany', isoCode: 'DE', dialCode: '+49' },
+    { country: 'France', isoCode: 'FR', dialCode: '+33' },
+    { country: 'Netherlands', isoCode: 'NL', dialCode: '+31' },
+    { country: 'Spain', isoCode: 'ES', dialCode: '+34' },
+    { country: 'Italy', isoCode: 'IT', dialCode: '+39' },
+    { country: 'Singapore', isoCode: 'SG', dialCode: '+65' },
+    { country: 'United Arab Emirates', isoCode: 'AE', dialCode: '+971' },
+    { country: 'Saudi Arabia', isoCode: 'SA', dialCode: '+966' },
+    { country: 'South Africa', isoCode: 'ZA', dialCode: '+27' },
+    { country: 'Brazil', isoCode: 'BR', dialCode: '+55' },
+    { country: 'Mexico', isoCode: 'MX', dialCode: '+52' },
+    { country: 'Japan', isoCode: 'JP', dialCode: '+81' },
+    { country: 'South Korea', isoCode: 'KR', dialCode: '+82' },
+    { country: 'New Zealand', isoCode: 'NZ', dialCode: '+64' },
+    { country: 'Nigeria', isoCode: 'NG', dialCode: '+234' }
+];
+
+const getPhoneCountryOptions = selectedDialCode =>
+    PHONE_COUNTRY_OPTIONS.map(option =>
+        Object.assign({}, option, {
+            selected: option.dialCode === selectedDialCode
+        })
+    );
+
+const normalizePhoneNumber = value => String(value || '').replace(/[^\d]/g, '');
+const combineBillingPhone = (countryCode, phoneNumber) => {
+    const normalizedNumber = normalizePhoneNumber(phoneNumber);
+    const normalizedCode = String(countryCode || '').trim();
+    return [normalizedCode, normalizedNumber].filter(Boolean).join(' ').trim();
+};
+
 const checkoutSchema = Joi.object({
     requestedUsername: Joi.string().trim().lowercase().required(),
     fullName: Joi.string().trim().min(2).max(120).required(),
     recoveryEmail: Joi.string().trim().email().required(),
     billingEmail: Joi.string().trim().email().required(),
+    billingPhoneCountryCode: Joi.string()
+        .trim()
+        .valid(...PHONE_COUNTRY_OPTIONS.map(option => option.dialCode))
+        .required(),
+    billingPhoneNumber: Joi.string().trim().min(6).max(20).required(),
     password: Joi.string().min(8).max(256).required(),
     password2: Joi.string().valid(Joi.ref('password')).required(),
     selectedPlan: Joi.string().trim().lowercase().required(),
@@ -475,6 +517,7 @@ const renderCheckout = async (req, res, values, options) =>
         values,
         errors: options.errors || {},
         plans: await getPlanOptions(values.selectedPlan),
+        phoneCountryOptions: getPhoneCountryOptions(values.billingPhoneCountryCode || '+1'),
         csrfToken: req.csrfToken(),
         serviceDomain: getServiceDomain()
     });
@@ -644,6 +687,8 @@ router.get('/purchase', async (req, res) => {
                 fullName: '',
                 recoveryEmail: '',
                 billingEmail: '',
+                billingPhoneCountryCode: '+1',
+                billingPhoneNumber: '',
                 password: '',
                 password2: '',
                 selectedPlan,
@@ -1246,6 +1291,7 @@ router.post('/execute-authorize-payment', async (req, res) => {
         const nextBillingAt = addBillingCycle(initialChargeDate, plan);
         const merchantCustomerId = buildAuthorizeMerchantCustomerId(values.requestedUsername);
         const invoiceNumber = `INV-${Date.now()}`;
+        const billingPhone = combineBillingPhone(values.billingPhoneCountryCode, values.billingPhoneNumber);
         const billTo = {
             firstName: name.firstName,
             lastName: name.lastName,
@@ -1254,7 +1300,8 @@ router.post('/execute-authorize-payment', async (req, res) => {
             city: values.city,
             state: values.state,
             zip: values.zip,
-            country: values.country
+            country: values.country,
+            phoneNumber: billingPhone
         };
 
         const profileIds = await authorizeNet.createCustomerProfile({
@@ -1315,6 +1362,9 @@ router.post('/execute-authorize-payment', async (req, res) => {
             emailAddress: `${values.requestedUsername}@${getServiceDomain()}`,
             fullName: values.fullName,
             billingEmail: values.billingEmail,
+            billingPhoneCountryCode: values.billingPhoneCountryCode,
+            billingPhoneNumber: normalizePhoneNumber(values.billingPhoneNumber),
+            billingPhone,
             recoveryEmail: values.recoveryEmail,
             wildduckUserId: null,
             plan,
@@ -1349,6 +1399,8 @@ router.post('/execute-authorize-payment', async (req, res) => {
             accountId: billingAccount._id,
             emailAddress: billingAccount.emailAddress,
             username: billingAccount.username,
+            billingEmail: billingAccount.billingEmail,
+            billingPhone: billingAccount.billingPhone,
             transactionId: transaction.transactionId,
             subscriptionId: subscription && subscription.subscriptionId,
             invoiceNumber,
@@ -1360,6 +1412,23 @@ router.post('/execute-authorize-payment', async (req, res) => {
             authCode: transaction.authCode
         });
 
+        adminNotifier
+            .notifyPaidSignup({
+                emailAddress: billingAccount.emailAddress,
+                fullName: billingAccount.fullName,
+                billingEmail: billingAccount.billingEmail,
+                billingPhone: billingAccount.billingPhone,
+                planName: plan.name,
+                amount: plan.price,
+                invoiceNumber,
+                transactionId: transaction.transactionId,
+                createdAt: new Date(),
+                paymentStatus: 'Paid'
+            })
+            .catch(notificationErr => {
+                console.error('Paid signup notification error:', notificationErr);
+            });
+
         try {
             const wildDuckUser = await createWildDuckAccount(req, values);
 
@@ -1370,21 +1439,6 @@ router.post('/execute-authorize-payment', async (req, res) => {
                 })
             );
 
-            adminNotifier
-                .notifyPaidSignup({
-                    emailAddress: billingAccount.emailAddress,
-                    fullName: billingAccount.fullName,
-                    billingEmail: billingAccount.billingEmail,
-                    planName: plan.name,
-                    amount: plan.price,
-                    invoiceNumber,
-                    transactionId: transaction.transactionId,
-                    createdAt: new Date(),
-                    paymentStatus: 'Paid'
-                })
-                .catch(notificationErr => {
-                    console.error('Paid signup admin notification error:', notificationErr);
-                });
         } catch (provisionErr) {
             console.error('Mailbox Provisioning Error:', provisionErr);
             req.flash('warning', 'Payment was successful, but mailbox provisioning needs manual review. Support can help using your billing email.');
@@ -1407,6 +1461,8 @@ router.post('/execute-authorize-payment', async (req, res) => {
                 fullName: payload.fullName || '',
                 recoveryEmail: payload.recoveryEmail || '',
                 billingEmail: payload.billingEmail || '',
+                billingPhoneCountryCode: payload.billingPhoneCountryCode || '+1',
+                billingPhoneNumber: payload.billingPhoneNumber || '',
                 password: '',
                 password2: '',
                 selectedPlan: payload.selectedPlan || 'monthly',

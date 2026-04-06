@@ -21,6 +21,7 @@ const SHARED_WEBMAIL_ENV_KEYS = new Set([
   'ADMIN_NOTIFICATION_SMTP_HOST',
   'ADMIN_NOTIFICATION_SMTP_PORT',
   'ADMIN_NOTIFICATION_SMTP_SECURE',
+  'ADMIN_NOTIFICATION_SMTP_TLS_REJECT_UNAUTHORIZED',
   'ADMIN_NOTIFICATION_SMTP_USER',
   'ADMIN_NOTIFICATION_SMTP_PASS',
   'AUTHORIZE_API_LOGIN_ID',
@@ -543,7 +544,8 @@ export const listCustomers = async ({ search = '', status = '', plan = '', limit
       { emailAddress: { $regex: search, $options: 'i' } },
       { username: { $regex: search, $options: 'i' } },
       { fullName: { $regex: search, $options: 'i' } },
-      { billingEmail: { $regex: search, $options: 'i' } }
+      { billingEmail: { $regex: search, $options: 'i' } },
+      { billingPhone: { $regex: search, $options: 'i' } }
     ];
   }
 
@@ -565,6 +567,9 @@ export const listCustomers = async ({ search = '', status = '', plan = '', limit
       emailAddress: 1,
       fullName: 1,
       billingEmail: 1,
+      billingPhoneCountryCode: 1,
+      billingPhoneNumber: 1,
+      billingPhone: 1,
       recoveryEmail: 1,
       status: 1,
       plan: 1,
@@ -723,6 +728,9 @@ export const createOrUpdateCustomerAccount = async account => {
     emailAddress,
     fullName: account.fullName || '',
     billingEmail: account.billingEmail || '',
+    billingPhoneCountryCode: account.billingPhoneCountryCode || '',
+    billingPhoneNumber: account.billingPhoneNumber || '',
+    billingPhone: account.billingPhone || '',
     recoveryEmail: account.recoveryEmail || '',
     wildduckUserId: account.wildduckUserId || (existing && existing.wildduckUserId) || null,
     plan: account.plan || (existing && existing.plan) || null,
@@ -744,7 +752,7 @@ export const updateCustomerAccount = async ({ accountId, updates }) => {
     updatedAt: now()
   };
 
-  ['fullName', 'billingEmail', 'recoveryEmail', 'status'].forEach(field => {
+  ['fullName', 'billingEmail', 'billingPhoneCountryCode', 'billingPhoneNumber', 'billingPhone', 'recoveryEmail', 'status'].forEach(field => {
     if (typeof updates[field] === 'string') {
       patch[field] = updates[field].trim();
     }
@@ -755,6 +763,16 @@ export const updateCustomerAccount = async ({ accountId, updates }) => {
       name: updates.planName || '',
       price: Number(updates.planPrice) || 0
     };
+  }
+
+  if (Object.prototype.hasOwnProperty.call(patch, 'billingPhoneCountryCode') || Object.prototype.hasOwnProperty.call(patch, 'billingPhoneNumber')) {
+    const currentAccount = await billingDb.collection(BILLING_ACCOUNTS).findOne({ _id: new ObjectId(accountId) });
+    const billingPhoneCountryCode =
+      patch.billingPhoneCountryCode !== undefined ? patch.billingPhoneCountryCode : (currentAccount && currentAccount.billingPhoneCountryCode) || '';
+    const billingPhoneNumber =
+      patch.billingPhoneNumber !== undefined ? patch.billingPhoneNumber : (currentAccount && currentAccount.billingPhoneNumber) || '';
+
+    patch.billingPhone = [billingPhoneCountryCode, billingPhoneNumber].filter(Boolean).join(' ').trim();
   }
 
   await billingDb.collection(BILLING_ACCOUNTS).updateOne({ _id: new ObjectId(accountId) }, { $set: patch });

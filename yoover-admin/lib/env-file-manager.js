@@ -123,6 +123,12 @@ const WEBMAIL_ENV_DEFINITIONS = [
     sensitive: false
   },
   {
+    key: 'ADMIN_NOTIFICATION_SMTP_TLS_REJECT_UNAUTHORIZED',
+    label: 'Notification SMTP Verify Certificates',
+    description: 'Whether notification SMTP must strictly verify the remote TLS certificate chain.',
+    sensitive: false
+  },
+  {
     key: 'ADMIN_NOTIFICATION_SMTP_USER',
     label: 'Notification SMTP Username',
     description: 'Authenticated mailbox used for admin notification delivery.',

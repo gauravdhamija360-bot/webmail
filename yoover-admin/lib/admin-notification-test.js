@@ -2,14 +2,16 @@ import nodemailer from 'nodemailer';
 import { getResolvedSetting } from './admin-store.js';
 
 const parseSecure = value => ['true', '1', 'yes'].includes(String(value || '').toLowerCase());
+const parseRejectUnauthorized = value => !['false', '0', 'no'].includes(String(value || '').toLowerCase());
 
 export const sendTestAdminNotification = async ({ requestedBy, requestedTo }) => {
-  const [recipients, from, host, port, secureFlag, user, pass] = await Promise.all([
+  const [recipients, from, host, port, secureFlag, rejectUnauthorizedFlag, user, pass] = await Promise.all([
     getResolvedSetting('ADMIN_NOTIFICATION_EMAILS'),
     getResolvedSetting('ADMIN_NOTIFICATION_FROM'),
     getResolvedSetting('ADMIN_NOTIFICATION_SMTP_HOST'),
     getResolvedSetting('ADMIN_NOTIFICATION_SMTP_PORT'),
     getResolvedSetting('ADMIN_NOTIFICATION_SMTP_SECURE'),
+    getResolvedSetting('ADMIN_NOTIFICATION_SMTP_TLS_REJECT_UNAUTHORIZED'),
     getResolvedSetting('ADMIN_NOTIFICATION_SMTP_USER'),
     getResolvedSetting('ADMIN_NOTIFICATION_SMTP_PASS')
   ]);
@@ -19,11 +21,20 @@ export const sendTestAdminNotification = async ({ requestedBy, requestedTo }) =>
     throw new Error('No notification recipient configured');
   }
 
+  const secure = parseSecure(secureFlag);
+  const rejectUnauthorized = parseRejectUnauthorized(rejectUnauthorizedFlag);
+  const shouldUseStartTls = !secure && Boolean(user);
+
   const transporter = nodemailer.createTransport({
     host: host || 'zonemta',
     port: Number(port || 587),
-    secure: parseSecure(secureFlag),
-    auth: user ? { user, pass } : undefined
+    secure,
+    requireTLS: shouldUseStartTls,
+    ignoreTLS: !secure && !shouldUseStartTls && !rejectUnauthorized,
+    auth: user ? { user, pass } : undefined,
+    tls: {
+      rejectUnauthorized
+    }
   });
 
   await transporter.sendMail({

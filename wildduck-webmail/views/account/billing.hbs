@@ -82,6 +82,10 @@
                         <span>Billing Email</span>
                         <strong>{{billingAccount.billingEmail}}</strong>
                     </div>
+                    <div class="account-dark-item">
+                        <span>Billing Phone</span>
+                        <strong>{{#if billingAccount.billingPhone}}{{billingAccount.billingPhone}}{{else}}Not saved yet{{/if}}</strong>
+                    </div>
                 </div>
             </div>
 
@@ -115,6 +119,11 @@
                     <span class="account-metric-label">Recovery Email</span>
                     <strong>{{billingAccount.recoveryEmail}}</strong>
                     <small>Used when account recovery or manual review is needed.</small>
+                </div>
+                <div class="account-metric">
+                    <span class="account-metric-label">Billing Phone</span>
+                    <strong>{{#if billingAccount.billingPhone}}{{billingAccount.billingPhone}}{{else}}Not saved yet{{/if}}</strong>
+                    <small>Used for billing follow-up and manual account verification.</small>
                 </div>
             </div>
 

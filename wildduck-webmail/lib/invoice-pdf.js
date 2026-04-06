@@ -46,7 +46,8 @@ module.exports = details =>
         doc.fillColor(text).font('Helvetica-Bold').fontSize(12).text('Billed To', 72, 162);
         doc.font('Helvetica').fontSize(13).text(details.fullName || '-', 72, 184);
         doc.fillColor(soft).fontSize(11).text(details.billingEmail || '-', 72, 204);
-        doc.text(details.emailAddress || '-', 72, 220);
+        doc.text(details.billingPhone || '-', 72, 220);
+        doc.text(details.emailAddress || '-', 72, 236);
 
         doc.fillColor(text).font('Helvetica-Bold').fontSize(12).text('Invoice Details', 332, 162);
         doc.font('Helvetica').fontSize(11).fillColor(soft);

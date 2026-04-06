@@ -103,6 +103,22 @@
                     </div>
                 </div>
                 <div class="row">
+                    <div class="col-sm-4 form-group">
+                        <label>Billing Phone Code</label>
+                        <select class="form-control {{#if errors.billingPhoneCountryCode}}field-error{{/if}}" name="billingPhoneCountryCode" required>
+                            {{#each phoneCountryOptions}}
+                            <option value="{{dialCode}}" {{#if selected}}selected{{/if}}>{{country}} ({{dialCode}})</option>
+                            {{/each}}
+                        </select>
+                        {{#if errors.billingPhoneCountryCode}}<span class="err-msg">{{errors.billingPhoneCountryCode}}</span>{{/if}}
+                    </div>
+                    <div class="col-sm-8 form-group">
+                        <label>Billing Phone Number</label>
+                        <input type="tel" class="form-control {{#if errors.billingPhoneNumber}}field-error{{/if}}" name="billingPhoneNumber" value="{{values.billingPhoneNumber}}" maxlength="20" inputmode="tel" autocomplete="tel-national" required>
+                        {{#if errors.billingPhoneNumber}}<span class="err-msg">{{errors.billingPhoneNumber}}</span>{{/if}}
+                    </div>
+                </div>
+                <div class="row">
                     <div class="col-sm-6 form-group">
                         <label>Password</label>
                         <input type="password" class="form-control {{#if errors.password}}field-error{{/if}}" name="password" minlength="8" maxlength="256" required>
@@ -220,6 +236,8 @@
             fullName: '{{#if errors.fullName}}{{errors.fullName}}{{/if}}',
             recoveryEmail: '{{#if errors.recoveryEmail}}{{errors.recoveryEmail}}{{/if}}',
             billingEmail: '{{#if errors.billingEmail}}{{errors.billingEmail}}{{/if}}',
+            billingPhoneCountryCode: '{{#if errors.billingPhoneCountryCode}}{{errors.billingPhoneCountryCode}}{{/if}}',
+            billingPhoneNumber: '{{#if errors.billingPhoneNumber}}{{errors.billingPhoneNumber}}{{/if}}',
             password: '{{#if errors.password}}{{errors.password}}{{/if}}',
             password2: '{{#if errors.password2}}{{errors.password2}}{{/if}}',
             addressLine1: '{{#if errors.addressLine1}}{{errors.addressLine1}}{{/if}}',
@@ -231,7 +249,15 @@
         };
 
         function getInitialStepFromErrors() {
-            if (serverErrors.password || serverErrors.password2 || serverErrors.fullName || serverErrors.recoveryEmail || serverErrors.billingEmail) {
+            if (
+                serverErrors.password ||
+                serverErrors.password2 ||
+                serverErrors.fullName ||
+                serverErrors.recoveryEmail ||
+                serverErrors.billingEmail ||
+                serverErrors.billingPhoneCountryCode ||
+                serverErrors.billingPhoneNumber
+            ) {
                 return 2;
             }
 
@@ -284,6 +310,7 @@
             var fullNameInput = form.querySelector('input[name="fullName"]');
             var recoveryEmailInput = form.querySelector('input[name="recoveryEmail"]');
             var billingEmailInput = form.querySelector('input[name="billingEmail"]');
+            var billingPhoneInput = form.querySelector('input[name="billingPhoneNumber"]');
             var passwordInput = form.querySelector('input[name="password"]');
             var password2Input = form.querySelector('input[name="password2"]');
 
@@ -301,6 +328,16 @@
                     return false;
                 }
                 billingEmailInput.setCustomValidity('');
+            }
+
+            if (billingPhoneInput) {
+                var normalizedPhone = billingPhoneInput.value.replace(/[^\d]/g, '');
+                if (normalizedPhone.length < 6) {
+                    billingPhoneInput.setCustomValidity('Enter a valid billing phone number.');
+                    billingPhoneInput.reportValidity();
+                    return false;
+                }
+                billingPhoneInput.setCustomValidity('');
             }
 
             if (passwordInput && passwordInput.value.length < 8) {
@@ -590,7 +627,7 @@
             });
         });
 
-        ['password', 'password2', 'billingEmail', 'recoveryEmail'].forEach(function (name) {
+        ['password', 'password2', 'billingEmail', 'recoveryEmail', 'billingPhoneNumber'].forEach(function (name) {
             var input = form.querySelector('input[name="' + name + '"]');
             if (!input) {
                 return;

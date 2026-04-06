@@ -27,6 +27,27 @@ const roleOptions = [
 ];
 
 const statusOptions = ['active', 'payment-captured', 'active-pending-billing', 'manual', 'disabled', 'canceled'];
+const phoneCountryOptions = [
+  { value: '+1', label: 'United States / Canada (+1)' },
+  { value: '+44', label: 'United Kingdom (+44)' },
+  { value: '+91', label: 'India (+91)' },
+  { value: '+61', label: 'Australia (+61)' },
+  { value: '+49', label: 'Germany (+49)' },
+  { value: '+33', label: 'France (+33)' },
+  { value: '+31', label: 'Netherlands (+31)' },
+  { value: '+34', label: 'Spain (+34)' },
+  { value: '+39', label: 'Italy (+39)' },
+  { value: '+65', label: 'Singapore (+65)' },
+  { value: '+971', label: 'United Arab Emirates (+971)' },
+  { value: '+966', label: 'Saudi Arabia (+966)' },
+  { value: '+27', label: 'South Africa (+27)' },
+  { value: '+55', label: 'Brazil (+55)' },
+  { value: '+52', label: 'Mexico (+52)' },
+  { value: '+81', label: 'Japan (+81)' },
+  { value: '+82', label: 'South Korea (+82)' },
+  { value: '+64', label: 'New Zealand (+64)' },
+  { value: '+234', label: 'Nigeria (+234)' }
+];
 
 const api = async (url, options = {}) => {
   const response = await fetch(url, {
@@ -185,11 +206,15 @@ export default function App() {
     username: '',
     password: '',
     billingEmail: '',
+    billingPhoneCountryCode: '+1',
+    billingPhoneNumber: '',
     recoveryEmail: ''
   });
   const [detailForm, setDetailForm] = useState({
     fullName: '',
     billingEmail: '',
+    billingPhoneCountryCode: '+1',
+    billingPhoneNumber: '',
     recoveryEmail: '',
     status: '',
     planName: '',
@@ -479,6 +504,8 @@ export default function App() {
     setDetailForm({
       fullName: account.fullName || '',
       billingEmail: account.billingEmail || '',
+      billingPhoneCountryCode: account.billingPhoneCountryCode || '+1',
+      billingPhoneNumber: account.billingPhoneNumber || '',
       recoveryEmail: account.recoveryEmail || '',
       status: account.status || '',
       planName: (account.plan && account.plan.name) || '',
@@ -645,6 +672,8 @@ export default function App() {
         username: '',
         password: '',
         billingEmail: '',
+        billingPhoneCountryCode: '+1',
+        billingPhoneNumber: '',
         recoveryEmail: ''
       });
       await loadSectionData('customers');
@@ -1921,6 +1950,20 @@ export default function App() {
                     <input type="email" value={manualProvisionForm.billingEmail} onChange={event => setManualProvisionForm(current => ({ ...current, billingEmail: event.target.value }))} />
                   </label>
                   <label>
+                    <span>Billing Phone Code</span>
+                    <select value={manualProvisionForm.billingPhoneCountryCode} onChange={event => setManualProvisionForm(current => ({ ...current, billingPhoneCountryCode: event.target.value }))}>
+                      {phoneCountryOptions.map(option => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    <span>Billing Phone Number</span>
+                    <input value={manualProvisionForm.billingPhoneNumber} onChange={event => setManualProvisionForm(current => ({ ...current, billingPhoneNumber: event.target.value }))} placeholder="Customer billing phone" />
+                  </label>
+                  <label>
                     <span>Recovery Email</span>
                     <input type="email" value={manualProvisionForm.recoveryEmail} onChange={event => setManualProvisionForm(current => ({ ...current, recoveryEmail: event.target.value }))} />
                   </label>
@@ -1983,6 +2026,10 @@ export default function App() {
                         <span>{(customerDetail.account.subscription && customerDetail.account.subscription.status) || '-'}</span>
                       </div>
                       <div className="detail-item">
+                        <strong>Billing Phone</strong>
+                        <span>{customerDetail.account.billingPhone || '-'}</span>
+                      </div>
+                      <div className="detail-item">
                         <strong>Created</strong>
                         <span>{customerDetail.account.createdAt ? new Date(customerDetail.account.createdAt).toLocaleString() : '-'}</span>
                       </div>
@@ -2002,6 +2049,20 @@ export default function App() {
                       <label>
                         <span>Billing Email</span>
                         <input value={detailForm.billingEmail} onChange={event => setDetailForm(current => ({ ...current, billingEmail: event.target.value }))} />
+                      </label>
+                      <label>
+                        <span>Billing Phone Code</span>
+                        <select value={detailForm.billingPhoneCountryCode} onChange={event => setDetailForm(current => ({ ...current, billingPhoneCountryCode: event.target.value }))}>
+                          {phoneCountryOptions.map(option => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label>
+                        <span>Billing Phone Number</span>
+                        <input value={detailForm.billingPhoneNumber} onChange={event => setDetailForm(current => ({ ...current, billingPhoneNumber: event.target.value }))} />
                       </label>
                       <label>
                         <span>Recovery Email</span>

@@ -196,23 +196,30 @@ app.get('/api/operations/overview', requireAdmin, requirePermission(PERMISSIONS.
 });
 
 app.post('/api/operations/test-notification', requireAdmin, requirePermission(PERMISSIONS.SETTINGS_EDIT), async (req, res) => {
-  const result = await sendTestAdminNotification({
-    requestedBy: req.admin.email,
-    requestedTo: req.body && req.body.recipient
-  });
+  try {
+    const result = await sendTestAdminNotification({
+      requestedBy: req.admin.email,
+      requestedTo: req.body && req.body.recipient
+    });
 
-  await recordAuditLog({
-    adminId: req.admin._id,
-    action: 'operations.test_notification',
-    targetType: 'notification',
-    targetId: result.recipient,
-    details: { recipient: result.recipient }
-  });
+    await recordAuditLog({
+      adminId: req.admin._id,
+      action: 'operations.test_notification',
+      targetType: 'notification',
+      targetId: result.recipient,
+      details: { recipient: result.recipient }
+    });
 
-  res.json({
-    success: true,
-    recipient: result.recipient
-  });
+    res.json({
+      success: true,
+      recipient: result.recipient
+    });
+  } catch (err) {
+    console.error('Admin Test Notification Error:', err);
+    res.status(400).json({
+      error: err.message || 'Unable to send test notification'
+    });
+  }
 });
 
 app.get('/api/operations/services', requireAdmin, requirePermission(PERMISSIONS.SETTINGS_VIEW), async (req, res) => {
@@ -589,6 +596,8 @@ app.post('/api/customers/manual-provision', requireAdmin, requirePermission(PERM
     const password = String(req.body.password || '');
     const fullName = String(req.body.fullName || '').trim();
     const billingEmail = String(req.body.billingEmail || '').trim().toLowerCase();
+    const billingPhoneCountryCode = String(req.body.billingPhoneCountryCode || '').trim();
+    const billingPhoneNumber = String(req.body.billingPhoneNumber || '').trim();
     const recoveryEmail = String(req.body.recoveryEmail || '').trim().toLowerCase();
 
     if (!username || !password || !fullName) {
@@ -615,6 +624,9 @@ app.post('/api/customers/manual-provision', requireAdmin, requirePermission(PERM
       emailAddress: `${username}@${getServiceDomain()}`,
       fullName,
       billingEmail,
+      billingPhoneCountryCode,
+      billingPhoneNumber,
+      billingPhone: `${billingPhoneCountryCode} ${billingPhoneNumber}`.trim(),
       recoveryEmail,
       wildduckUserId: wildduckUser && wildduckUser.id,
       status: 'active',
@@ -832,6 +844,7 @@ app.get('/api/billing/payments/:paymentId/invoice', requireAdmin, requirePermiss
     invoiceNumber: payment.invoiceNumber,
     fullName: account.fullName,
     billingEmail: account.billingEmail,
+    billingPhone: account.billingPhone || payment.billingPhone,
     emailAddress: account.emailAddress || payment.emailAddress,
     createdAt: payment.createdAt,
     planName: account.plan && account.plan.name,
